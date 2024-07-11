@@ -1,0 +1,213 @@
+﻿@page "/"
+@using AntDesign
+@inject HttpClient Http
+@inject IHttpClientFactory ClientFactory
+@inject MessageService _message
+
+<PageTitle>Home</PageTitle>
+
+<h3>회원가입 및 로그인</h3>
+
+<div>
+    <h4>회원가입</h4>
+    <Space>
+        <GridRow Justify="center">
+            <AntDesign.Input Placeholder="Email" @bind-Value="@registerUsername" Size="@AntDesign.InputSize.Large">
+                <Prefix>
+                    <Icon Type="user" />
+                </Prefix>
+            </AntDesign.Input>
+        </GridRow>
+        <Space />
+        <GridRow Justify="center">
+            <InputPassword Placeholder="Password" @bind-Value="@registerPassword" Size="@AntDesign.InputSize.Large">
+                <Prefix>
+                    <Icon Type="lock" />
+                </Prefix>
+            </InputPassword>
+        </GridRow>
+        <Space />
+        <GridRow Justify="end">
+            <SpaceItem>
+                <Button Type="primary" OnClick="RegisterUser">
+                    회원가입
+                </Button>
+            </SpaceItem>
+        </GridRow>
+    </Space>
+</div>
+
+<div>
+    <h4>로그인</h4>
+    <Space>
+        <GridRow Justify="center">
+        <AntDesign.Input Placeholder="Email" @bind-Value="@loginUsername" Size="@AntDesign.InputSize.Large">
+                <Prefix>
+                    <Icon Type="user" />
+                </Prefix>
+            </AntDesign.Input>
+        </GridRow>
+        <Space />
+        <GridRow Justify="center">
+            <InputPassword Placeholder="Password" @bind-Value="@loginPassword" Size="@AntDesign.InputSize.Large">
+                <Prefix>
+                    <Icon Type="lock" />
+                </Prefix>
+            </InputPassword>
+        </GridRow>
+        <Space />
+        <GridRow Justify="end">
+            <SpaceItem>
+                <Button Type="primary" OnClick="LoginUser">
+                    로그인
+                </Button>
+            </SpaceItem>
+        </GridRow>
+    </Space>
+</div>
+
+@* <div style="margin-top: 20px;">
+@* <div style="margin-top: 20px;">
+@* <div style="margin-top: 20px;">
+    <h4>로그인</h4>
+    <Space>
+        <div>
+            <label for="loginUsername">Email:</label>
+            <Input id="loginUsername" @bind="loginUsername" />
+        </div>
+        <div>
+            <label for="loginPassword">Password:</label>
+            <Input.Password id="loginPassword" @bind="loginPassword" />
+        </div>
+        <SpaceItem>
+            <Button Type="primary" OnClick="LoginUser">
+                로그인
+            </Button>
+        </SpaceItem>
+    </Space>
+</div> *@
+
+@* [코드 수정중] 테스트 진행중 *@
+
+@code {
+    private string registerUsername;
+    private string registerPassword;
+    private string loginUsername;
+    private string loginPassword;
+
+    private LoginResponse loginResponse;
+
+    private async Task RegisterUser()
+    {
+        var registerData = new AccountRequest
+        {
+            hive_player_id = registerUsername,
+            hive_player_pw = registerPassword
+        };
+
+        var client = ClientFactory.CreateClient("HiveAPI");
+        var response = await client.PostAsJsonAsync("Account/register", registerData);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+            if (result?.Result == ErrorCode.None)
+            {
+                Console.WriteLine("Registration successful");
+                await _message.Success("회원가입 성공", 8);
+            }
+            else
+            {
+                Console.WriteLine("Registration failed: " + result?.Result);
+                await _message.Error("회원가입 실패: " + result?.Result, 8);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Registration failed");
+            await _message.Error("회원가입 실패", 8);
+        }
+    }
+
+    private async Task LoginUser()
+    {
+        var loginData = new LoginRequest
+        {
+            hive_player_id = loginUsername,
+            hive_player_pw = loginPassword
+        };
+
+        var client = ClientFactory.CreateClient("HiveAPI");
+        var response = await client.PostAsJsonAsync("api/Login", loginData);
+        if (response.IsSuccessStatusCode)
+        {
+            loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (loginResponse?.Result == ErrorCode.None)
+            {
+                Console.WriteLine("Login successful");
+                await _message.Success("로그인 성공", 8);
+
+                // 로그인 후 받아온 정보를 저장해 다른 API 호출 시 사용
+            }
+            else
+            {
+                Console.WriteLine("Login failed: " + loginResponse?.Result);
+                await _message.Error("로그인 실패: " + loginResponse?.Result, 8);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Login failed");
+            await _message.Error("로그인 실패", 8);
+        }
+    }
+
+    private class AccountRequest
+    {
+        public required string hive_player_id { get; set; }
+        public required string hive_player_pw { get; set; }
+    }
+
+    private class AccountResponse
+    {
+        public required ErrorCode Result { get; set; }
+    }
+
+    private class LoginRequest
+    {
+        public required string hive_player_id { get; set; }
+        public required string hive_player_pw { get; set; }
+    }
+
+    private class LoginResponse
+    {
+        public required ErrorCode Result { get; set; }
+        public required string hive_player_id { get; set; }
+        public string hive_token { get; set; }
+    }
+
+    public enum ErrorCode
+    {
+        None,
+        InvalidCredentials,
+        UserNotFound,
+        ServerError,
+        // 추가적인 에러 코드 정의
+    }
+
+    private async Task Success()
+    {
+        await _message.Success("This is a success message", 8);
+    }
+
+    private async Task Error()
+    {
+        await _message.Error("This is an error message");
+
+    }
+
+    private async Task Warning()
+    {
+        await _message.Warning("This is a warning message");
+    }
+
+}
