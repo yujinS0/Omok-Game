@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using HiveServer.Model.DTO;
 using HiveServer.Services;
 using HiveServer.Repository;
+using HiveServer.DTO;
 
 namespace HiveServer.Controllers;
 

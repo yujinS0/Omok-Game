@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace HiveServer.Model.DTO
+namespace HiveServer.DTO
 {
     public class AccountRequest
     {
@@ -17,18 +17,18 @@ namespace HiveServer.Model.DTO
         public required string hive_player_pw { get; set; }
     }
 
-    public class AccountResponse 
+    public class AccountResponse
     {
         [Required]
         public ErrorCode Result { get; set; } = ErrorCode.None;
     }
 
-    public class UserNumRequest 
+    public class UserNumRequest
     {
         public long UserNum { get; set; }
     }
 
-    public class UserIdResponse 
+    public class UserIdResponse
     {
         public string hive_player_id { get; set; }
         public ErrorCode Result { get; set; } = ErrorCode.None;

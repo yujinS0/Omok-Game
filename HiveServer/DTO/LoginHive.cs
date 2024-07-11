@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace HiveServer.Model.DTO
+namespace HiveServer.DTO
 {
     public class LoginRequest
     {

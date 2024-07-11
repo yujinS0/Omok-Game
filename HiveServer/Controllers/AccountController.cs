@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using HiveServer.Model.DTO;
 using HiveServer.Repository;
+using HiveServer.DTO;
 
 namespace HiveServer.Controllers;
 [ApiController]
