@@ -2,6 +2,18 @@ using GameServer.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS 정책 추가 - blazor에서 호출을 위한
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig 설정 로드
 
 builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
@@ -16,6 +28,10 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// CORS 미들웨어 추가
+app.UseCors("AllowAllOrigins");
+
 app.MapControllers();
 
 app.Run();

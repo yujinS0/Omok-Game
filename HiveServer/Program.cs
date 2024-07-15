@@ -2,6 +2,18 @@ using HiveServer.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS 정책 추가 - blazor에서 호출을 위한
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig 설정 로드
 
 builder.Services.AddScoped<IHiveDb, HiveDb>(); // hive mysql
@@ -25,6 +37,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"));
 }
+
+// CORS 미들웨어 추가
+app.UseCors("AllowAllOrigins");
 
 //app.UseHttpsRedirection();
 app.UseAuthorization();
