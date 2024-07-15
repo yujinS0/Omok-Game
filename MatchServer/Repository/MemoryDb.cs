@@ -23,9 +23,17 @@ namespace MatchServer.Repository
             try
             {
                 var redisString = new RedisString<int>(_redisConn, playerId, null);
-                _logger.LogInformation("Attempting to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
-                await redisString.SetAsync(roomNum);
-                _logger.LogInformation("Stored match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+                _logger.LogInformation("Checking if match result already exists for PlayerId={PlayerId}", playerId);
+                if (!await redisString.ExistsAsync())
+                {
+                    _logger.LogInformation("Attempting to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+                    await redisString.SetAsync(roomNum);
+                    _logger.LogInformation("Stored match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+                }
+                else
+                {
+                    _logger.LogWarning("Match result for PlayerId={PlayerId} already exists. Skipping store operation.", playerId);
+                }
             }
             catch (Exception ex)
             {
