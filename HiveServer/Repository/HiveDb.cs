@@ -3,7 +3,6 @@ using SqlKata.Compilers;
 using SqlKata.Execution;
 using HiveServer.Services;
 using Microsoft.Extensions.Options;
-using CloudStructures.Structures;
 
 namespace HiveServer.Repository
 {

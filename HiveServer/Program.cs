@@ -1,4 +1,6 @@
 using HiveServer.Repository;
+using HiveServer.Services.Interfaces;
+using HiveServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,9 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig 설정 로드
 
 builder.Services.AddScoped<IHiveDb, HiveDb>(); // hive mysql
+builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IVerifyTokenService, VerifyTokenService>();
 
 // 로깅 설정
 builder.Logging.ClearProviders();
