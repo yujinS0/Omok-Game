@@ -5,18 +5,18 @@ using HiveServer.DTO;
 namespace HiveServer.Controllers;
 [ApiController]
 [Route("[controller]")]
-public class AccountController : ControllerBase
+public class RegisterController : ControllerBase
 {
     private readonly IHiveDb _hiveDb;
-    private readonly ILogger<AccountController> _logger; // 로거 인스턴스 추가
+    private readonly ILogger<RegisterController> _logger; // 로거 인스턴스 추가
 
-    public AccountController(IHiveDb hiveDb, ILogger<AccountController> logger)
+    public RegisterController(IHiveDb hiveDb, ILogger<RegisterController> logger)
     {
         _hiveDb = hiveDb;
         _logger = logger;
     }
 
-    [HttpPost("register")]
+    [HttpPost]
     public async Task<AccountResponse> Register([FromBody] AccountRequest request) 
     {
         AccountResponse response = new();
