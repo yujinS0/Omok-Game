@@ -1,18 +1,20 @@
 ﻿@page "/"
 @using AntDesign
 @inject HttpClient Http
-@inject IHttpClientFactory ClientFactory
 @inject MessageService _message
+@inject IHttpClientFactory ClientFactory
+@using System.Text.Json
+@using System.Text.Json.Serialization
 
 <PageTitle>Home</PageTitle>
 
-<h3>회원가입 및 로그인</h3>
+<h3>회원가입/로그인</h3>
 
 <div>
     <h4>회원가입</h4>
     <Space>
         <GridRow Justify="center">
-            <AntDesign.Input Placeholder="Email" @bind-Value="@registerUsername" Size="@AntDesign.InputSize.Large">
+            <AntDesign.Input Placeholder="Email" @bind-Value="@registerEmail" Size="@AntDesign.InputSize.Large">
                 <Prefix>
                     <Icon Type="user" />
                 </Prefix>
@@ -41,7 +43,7 @@
     <h4>로그인</h4>
     <Space>
         <GridRow Justify="center">
-        <AntDesign.Input Placeholder="Email" @bind-Value="@loginUsername" Size="@AntDesign.InputSize.Large">
+            <AntDesign.Input Placeholder="Email" @bind-Value="@loginEmail" Size="@AntDesign.InputSize.Large">
                 <Prefix>
                     <Icon Type="user" />
                 </Prefix>
@@ -66,101 +68,129 @@
     </Space>
 </div>
 
-@* <div style="margin-top: 20px;">
-@* <div style="margin-top: 20px;">
-@* <div style="margin-top: 20px;">
-    <h4>로그인</h4>
-    <Space>
-        <div>
-            <label for="loginUsername">Email:</label>
-            <Input id="loginUsername" @bind="loginUsername" />
-        </div>
-        <div>
-            <label for="loginPassword">Password:</label>
-            <Input.Password id="loginPassword" @bind="loginPassword" />
-        </div>
-        <SpaceItem>
-            <Button Type="primary" OnClick="LoginUser">
-                로그인
-            </Button>
-        </SpaceItem>
-    </Space>
-</div> *@
-
 @* [코드 수정중] 테스트 진행중 *@
 
 @code {
-    private string registerUsername;
-    private string registerPassword;
-    private string loginUsername;
-    private string loginPassword;
+    private string registerEmail = string.Empty;
+    private string registerPassword = string.Empty;
+    private string loginEmail = string.Empty;
+    private string loginPassword = string.Empty;
 
-    private LoginResponse loginResponse;
-
-    private async Task RegisterUser()
+    private async Task RegisterUser() // 회원가입
     {
+        // 입력받은 registerEmail과 registerPassword를 가지고 AccountRequest 만들어서 json 형식으로 넣어서
+        // http://localhost:5284/Account/register 호출 후 응답 받아오기
+        // 이때 응답값 result가 0이면, 오류 없는 것이므로 로그인 성공 로그 찍기! (더 나아가 팝업 메세지로 회원가입 성공 띄우기 등등)
+        // 이때 응답값 result가 0이 아니면, 오류이기 때문에 해당 오류 코드 실패 로그 찍기! (더 나아가 팝업 메세지로 회원가입 실패 띄우기 등등)   
+        // 하이브 회원가입 API (localhost:5284/register)
         var registerData = new AccountRequest
         {
-            hive_player_id = registerUsername,
+            hive_player_id = registerEmail,
             hive_player_pw = registerPassword
         };
-
-        var client = ClientFactory.CreateClient("HiveAPI");
-        var response = await client.PostAsJsonAsync("Account/register", registerData);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-            if (result?.Result == ErrorCode.None)
+            var response = await Http.PostAsJsonAsync("register", registerData);
+            if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Registration successful");
-                await _message.Success("회원가입 성공", 8);
+                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
+                if (result?.Result == ErrorCode.None)
+                {
+                    Console.WriteLine("Registration successful");
+                    await _message.Success("회원가입 성공", 5);
+                }
+                else
+                {
+                    Console.WriteLine("Registration failed: " + result?.Result);
+                    await _message.Error("회원가입 실패: " + result?.Result, 5);
+                }
             }
             else
             {
-                Console.WriteLine("Registration failed: " + result?.Result);
-                await _message.Error("회원가입 실패: " + result?.Result, 8);
+                Console.WriteLine("Registration failed");
+                await _message.Error("회원가입 실패", 5);
             }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Registration failed");
-            await _message.Error("회원가입 실패", 8);
+            Console.WriteLine("Error: " + ex.Message);
+            await _message.Error("회원가입 중 오류 발생", 5);
         }
     }
 
-    private async Task LoginUser()
+    private async Task LoginUser() // 로그인 과정 : 하이브 로그인(localhost:5284/login) -> 게임 로그인(localhost:5105/login)
     {
+        // 1. 하이브 로그인 API (localhost:5284/login)
         var loginData = new LoginRequest
         {
-            hive_player_id = loginUsername,
+            hive_player_id = loginEmail,
             hive_player_pw = loginPassword
         };
 
-        var client = ClientFactory.CreateClient("HiveAPI");
-        var response = await client.PostAsJsonAsync("api/Login", loginData);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            if (loginResponse?.Result == ErrorCode.None)
+            var response = await Http.PostAsJsonAsync("login", loginData);
+            if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Login successful");
-                await _message.Success("로그인 성공", 8);
+                LoginResponse loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (loginResponse?.Result == ErrorCode.None)
+                {
+                    Console.WriteLine("Login successful");
+                    await _message.Success("하이브 로그인 성공", 3);
 
-                // 로그인 후 받아온 정보를 저장해 다른 API 호출 시 사용
+                    // 2. 게임 로그인 API (localhost:5105/login)
+                    var gameLoginData = new GameLoginRequest
+                    {
+                        player_id = loginResponse.hive_player_id,
+                        token = loginResponse.hive_token
+                    };
+
+                    var gameClient = ClientFactory.CreateClient("GameAPI"); // HttpClientFactory 사용
+                    var gameResponse = await gameClient.PostAsJsonAsync("login", gameLoginData);
+                    if (gameResponse.IsSuccessStatusCode)
+                    {
+                        var gameResult = await gameResponse.Content.ReadFromJsonAsync<GameLoginResponse>();
+                        if (gameResult?.Result == ErrorCode.None)
+                        {
+                            Console.WriteLine("Game login successful");
+                            await _message.Success("게임 로그인 성공", 5);
+                            // 추후 화면 이동하는 코드 추가
+                        }
+                        else
+                        {
+                            Console.WriteLine("Game login failed: " + gameResult?.Result);
+                            await _message.Error("게임 로그인 실패: " + gameResult?.Result, 5);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Game login failed");
+                        await _message.Error("게임 로그인 실패", 5);
+                    }
+
+
+                }
+                else
+                {
+                    Console.WriteLine("Login failed: " + loginResponse?.Result);
+                    await _message.Error("하이브 로그인 실패: " + loginResponse?.Result, 5);
+                }
             }
             else
             {
-                Console.WriteLine("Login failed: " + loginResponse?.Result);
-                await _message.Error("로그인 실패: " + loginResponse?.Result, 8);
+                Console.WriteLine("Login failed");
+                await _message.Error("로그인 실패", 8);
             }
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Login failed");
-            await _message.Error("로그인 실패", 8);
+            Console.WriteLine("Error: " + ex.Message);
+            await _message.Error("로그인 중 오류 발생", 8);
         }
     }
 
+    // DTO 
+    // TODO : 파일 분리 ?
     private class AccountRequest
     {
         public required string hive_player_id { get; set; }
@@ -182,9 +212,21 @@
     {
         public required ErrorCode Result { get; set; }
         public required string hive_player_id { get; set; }
-        public string hive_token { get; set; }
+        public string hive_token { get; set; } = string.Empty;
+    }
+    private class GameLoginRequest
+    {
+        public required string player_id { get; set; }
+        public required string token { get; set; }
     }
 
+    private class GameLoginResponse
+    {
+        public required ErrorCode Result { get; set; }
+    }
+
+    // ErrorCode 
+    // TODO : 파일 분리
     public enum ErrorCode
     {
         None,
@@ -193,21 +235,4 @@
         ServerError,
         // 추가적인 에러 코드 정의
     }
-
-    private async Task Success()
-    {
-        await _message.Success("This is a success message", 8);
-    }
-
-    private async Task Error()
-    {
-        await _message.Error("This is an error message");
-
-    }
-
-    private async Task Warning()
-    {
-        await _message.Warning("This is a warning message");
-    }
-
 }

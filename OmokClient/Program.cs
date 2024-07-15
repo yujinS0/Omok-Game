@@ -15,12 +15,13 @@ builder.Services.AddBlazoredSessionStorage();
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// HttpClient 등록
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5284") });
 
-// 기본 API 주소를 가진 HttpClient 등록
-builder.Services.AddHttpClient("HiveAPI", client =>
+// 게임 API 주소를 가진 HttpClient 등록
+builder.Services.AddHttpClient("GameAPI", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:5284/");
+    client.BaseAddress = new Uri("http://localhost:5105");
 });
 
 await builder.Build().RunAsync();
