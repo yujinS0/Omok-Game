@@ -3,7 +3,6 @@ using SqlKata.Compilers;
 using SqlKata.Execution;
 using Microsoft.Extensions.Options;
 using GameServer.Models;
-using System.Threading.Tasks;
 
 namespace GameServer.Repository
 {

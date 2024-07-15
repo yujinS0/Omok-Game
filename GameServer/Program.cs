@@ -1,4 +1,6 @@
 using GameServer.Repository;
+using GameServer.Services.Interfaces;
+using GameServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +19,7 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig 설정 로드
 
 builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
+builder.Services.AddScoped<ILoginService, LoginService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory 추가
 
