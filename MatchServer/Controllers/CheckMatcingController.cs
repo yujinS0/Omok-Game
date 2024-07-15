@@ -24,6 +24,7 @@ namespace MatchServer.Controllers
         }
 
         // <IActionResult>와 함께 BadRequest / OK 형태로 응답을 처리하는 게 좋을까요?
+        // -> 클라이언트에서 처리할 때 MatchCompleteResponse 형태가 더 간편할 것 같긴 합니다
         //[HttpPost]
         //public async Task<IActionResult> IsMatched([FromBody] MatchRequest request)
         //{
