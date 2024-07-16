@@ -44,6 +44,15 @@ namespace HiveServer.Repository
                 });
 
                 _logger.LogInformation($"Account successfully registered with ID: {id}.");
+
+                // login_token 테이블에 기본 데이터 삽입
+                var tokenResult = await InitializeLoginToken(hive_player_id);
+                if (tokenResult != ErrorCode.None)
+                {
+                    _logger.LogError("Failed to initialize token entry for UserId: {UserId}", hive_player_id);
+                    return tokenResult;
+                }
+
                 return ErrorCode.None; // Success
             }
             catch (MySqlException ex)
@@ -57,6 +66,35 @@ namespace HiveServer.Repository
                 return ErrorCode.InternalError; // Generic error for unexpected issues
             }
         }
+
+        // login_token 테이블에 기본 세팅 (초기화 담당)
+        private async Task<ErrorCode> InitializeLoginToken(string hive_player_id)
+        {
+            try
+            {
+                await _queryFactory.Query("login_token").InsertAsync(new
+                {
+                    hive_player_id = hive_player_id,
+                    hive_token = "", // 빈 문자열로 초기화
+                    create_dt = DateTime.UtcNow,
+                    expires_dt = DateTime.UtcNow
+                });
+
+                _logger.LogInformation("Token entry initialized successfully for UserId: {UserId}", hive_player_id);
+                return ErrorCode.None;
+            }
+            catch (MySqlException ex)
+            {
+                _logger.LogError(ex, "Database error when initializing token entry for UserId: {UserId}", hive_player_id);
+                return ErrorCode.DatabaseError;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to initialize token entry for UserId: {UserId}", hive_player_id);
+                return ErrorCode.InternalError;
+            }
+        }
+
 
         // 하이브 로그인 시 id와 pw가 일치하는지 salt적용해서 검증하는 함수
         public async Task<(ErrorCode, string)> VerifyUser(string hive_player_id, string hive_player_pw)
@@ -100,21 +138,21 @@ namespace HiveServer.Repository
             }
         }
 
-        // account 테이블의 hive_player_id 값과 같을 경우 해당 hive_player_id의 hive_token필드에 token 값 저장하는 함수 실패시 false 반환
+        // login_token 테이블에 token 값 업데이트하는 함수 (실패시 false 반환)
         public async Task<bool> SaveToken(string hive_player_id, string token)
         {
             try
             {
-                var expirationTime = DateTime.UtcNow.AddHours(10); // 토큰 유효 기간을 10시간으로 설정
+                var expirationTime = DateTime.UtcNow.AddHours(10); // 토큰 유효 기간을 10시간으로 설정 [TODO] 이런식으로 숫자 넣기 X 
 
                 var affectedRows = await _queryFactory.Query("login_token")
-                                                      .InsertAsync(new
-                                                      {
-                                                          hive_player_id = hive_player_id,
-                                                          hive_token = token,
-                                                          create_dt = DateTime.UtcNow,
-                                                          expires_dt = expirationTime
-                                                      });
+                                              .Where("hive_player_id", hive_player_id)
+                                              .UpdateAsync(new
+                                              {
+                                                  hive_token = token,
+                                                  create_dt = DateTime.UtcNow,
+                                                  expires_dt = expirationTime
+                                              });
 
                 if (affectedRows > 0)
                 {
