@@ -9,7 +9,4 @@ public interface IMemoryDb : IDisposable
     Task<MatchResult> GetMatchResultAsync(string key);
     Task StoreGameDataAsync(string key, byte[] rawData, TimeSpan expiry);
     Task StorePlayingUserInfoAsync(string key, PlayingUserInfo playingUserInfo, TimeSpan expiry);
-    //Task<int?> PopRoomNumAsync();
-    //Task StoreMatchResultAsync(string playerId, int roomNum);
-    //Task<int?> GetMatchResultAsync(string playerId);
 }

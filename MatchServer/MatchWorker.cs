@@ -62,6 +62,8 @@ namespace MatchServer.Services
                         //// 게임 플레이 데이터 만드는 부분
                         var omokGameData = new OmokGameData();
 
+                        int rawDataSize = 328;
+
                         byte[] gameRawData = omokGameData.MakeRawData(rawDataSize, playerA, playerB);
 
                         _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, TimeSpan.FromHours(2)).Wait();
