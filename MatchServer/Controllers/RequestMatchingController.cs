@@ -18,9 +18,9 @@ public class RequestMatchingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<MatchResponse> Match([FromBody] MatchRequest request)
+    public MatchResponse Match([FromBody] MatchRequest request)
     {
-        var response = await _matchService.Match(request);
+        var response = _matchService.Matching(request);
         if (response.Result == ErrorCode.InvalidRequest)
         {
             return response;

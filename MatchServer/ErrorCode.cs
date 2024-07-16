@@ -1,4 +1,4 @@
-using System; // [TODO] ErrorCode 사용하도록 수정해야함! message 쓰지 말고
+using System;
 
 // 1000 ~ 19999
 public enum ErrorCode : UInt16
@@ -12,11 +12,14 @@ public enum ErrorCode : UInt16
     TokenDoesNotExist = 1004,
     UidDoesNotExist = 1005,
     AuthTokenFailWrongAuthToken = 1006,
-    JsonParsingError = 1007,
-    ResponseFormatError = 1008,
     Hive_Fail_InvalidResponse = 1010,
     InValidAppVersion = 1011,
     InvalidMasterDataVersion = 1012,
+    InvalidResponseFormat = 1013,
+    ServerError = 1014,
+    JsonParsingError = 1015,
+    InternalError = 1020, // HttpRequestException 및 JsonException 이외의 모든 예기치 않은 오류?
+    InvalidRequest = 1030,
 
     // Auth 2000 ~
     CreateUserFailException = 2001,
@@ -40,7 +43,7 @@ public enum ErrorCode : UInt16
     CheckAuthFailNotMatch = 2019,
     CheckAuthFailException = 2020,
     LogoutRedisDelFail = 2021,
-    LogoutRedisDelFailException= 2022,
+    LogoutRedisDelFailException = 2022,
     DeleteAccountFail = 2023,
     DeleteAccountFailException = 2024,
     InitNewUserGameDataFailException = 2025,
@@ -90,14 +93,11 @@ public enum ErrorCode : UInt16
     GetRankingFailException = 2302,
     GetUserRankFailException = 2303,
 
-    InvalidRequest = 2401,
-    MatchNotFound = 2402,
-
     // Item 3000 ~
     CharReceiveFailInsert = 3011,
     CharReceiveFailLevelUP = 3012,
     CharReceiveFailIncrementCharCnt = 3013,
-    CharReceiveFailException= 3014,
+    CharReceiveFailException = 3014,
     CharListFailException = 3015,
     CharNotExist = 3016,
     CharSetCostumeFailUpdate = 3017,
@@ -113,7 +113,7 @@ public enum ErrorCode : UInt16
     CostumeReceiveFailIncrementCharCnt = 3033,
     CostumeReceiveFailException = 3034,
     CostumeListFailException = 3035,
-    CharSetCostumeFailHeadNotExist= 3036,
+    CharSetCostumeFailHeadNotExist = 3036,
     CharSetCostumeFailFaceNotExist = 3037,
     CharSetCostumeFailHandNotExist = 3038,
 
@@ -125,18 +125,16 @@ public enum ErrorCode : UInt16
     FoodGearReceiveFailIncrementFoodGear = 3046,
     FoodGearReceiveFailException = 3047,
 
-    GachaReceiveFailException= 3051,
-
-    ServerError = 4001,
+    GachaReceiveFailException = 3051,
 
 
-    //GameDb 4000~ 
-    // GetGameDbConnectionFail = 4002,
+    // GameDb 4000~ 
+    GetGameDbConnectionFail = 4002,
 
 
     // MasterDb 5000 ~
-    // MasterDB_Fail_LoadData = 5001,
-    // MasterDB_Fail_InvalidData = 5002,
+    MasterDB_Fail_LoadData = 5001,
+    MasterDB_Fail_InvalidData = 5002,
 
     // User
     UserInfoFailException = 6001,

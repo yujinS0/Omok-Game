@@ -22,6 +22,7 @@ builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("Connectio
 builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
 builder.Services.AddScoped<IRequestMatchingService, RequestMatchingService>();
 builder.Services.AddScoped<ICheckMatchingService, CheckMatchingService>();
+builder.Services.AddSingleton<MatchWorker>(); // MatchWorker ΩÃ±€≈Ê?
 
 builder.Services.AddHttpClient(); // HttpClientFactory √ﬂ∞°
 
