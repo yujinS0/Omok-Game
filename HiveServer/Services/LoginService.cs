@@ -16,26 +16,16 @@ public class LoginService : ILoginService
         _hiveDb = hiveDb;
     }
 
-    public async Task<(ErrorCode, string)> VerifyUser(string hivePlayerId, string hivePlayerPw)
-    {
-        return await _hiveDb.VerifyUser(hivePlayerId, hivePlayerPw);
-    }
-
-    public async Task<bool> SaveToken(string hivePlayerId, string token)
-    {
-        return await _hiveDb.SaveToken(hivePlayerId, token);
-    }
-
     public async Task<LoginResponse> Login(LoginRequest request)
     {
-        var (error, hivePlayerId) = await VerifyUser(request.hive_player_id, request.hive_player_pw);
+        var (error, hivePlayerId) = await _hiveDb.VerifyUser(request.hive_player_id, request.hive_player_pw);
         if (error != ErrorCode.None)
         {
             return new LoginResponse { Result = error };
         }
 
         var token = Security.MakeHashingToken(_saltValue, hivePlayerId);
-        var tokenSet = await SaveToken(hivePlayerId, token);
+        var tokenSet = await _hiveDb.SaveToken(hivePlayerId, token);
 
         if (!tokenSet)
         {
