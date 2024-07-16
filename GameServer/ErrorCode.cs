@@ -19,6 +19,7 @@ public enum ErrorCode : UInt16
     ServerError = 1014,
     JsonParsingError = 1015,
     InternalError = 1020, // HttpRequestException 및 JsonException 이외의 모든 예기치 않은 오류?
+    InvalidRequest = 1030,
 
     // Auth 2000 ~
     CreateUserFailException = 2001,
