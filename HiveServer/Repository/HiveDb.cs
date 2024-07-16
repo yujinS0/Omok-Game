@@ -96,9 +96,16 @@ namespace HiveServer.Repository
         {
             try
             {
-                var affectedRows = await _queryFactory.Query("account")
-                                                      .Where("hive_player_id", hive_player_id)
-                                                      .UpdateAsync(new { hive_token = token });
+                var expirationTime = DateTime.UtcNow.AddHours(10); // 토큰 유효 기간을 10시간으로 설정
+
+                var affectedRows = await _queryFactory.Query("login_token")
+                                                      .InsertAsync(new
+                                                      {
+                                                          hive_player_id = hive_player_id,
+                                                          hive_token = token,
+                                                          create_dt = DateTime.UtcNow,
+                                                          expires_dt = expirationTime
+                                                      });
 
                 if (affectedRows > 0)
                 {
@@ -121,19 +128,27 @@ namespace HiveServer.Repository
             }
         }
 
-        // account 테이블의 hive_player_id 값d의 hive_token필드의 값과 token 값이 같은지 확인하는 함수
+        // login_token 테이블에서 hive_player_id에 해당하는 토큰 값을 검증하는 함수
         public async Task<bool> ValidateTokenAsync(string hive_player_id, string token)
         {
             try
             {
-                // account 테이블에서 hive_player_id에 해당하는 hive_token 값 조회
-                var query = _queryFactory.Query("account")
-                                         .Select("hive_token")
+                var query = _queryFactory.Query("login_token")
+                                         .Select("hive_token", "expires_dt")
                                          .Where("hive_player_id", hive_player_id);
 
-                var storedToken = await query.FirstOrDefaultAsync<string>(); // hive_token 값 가져오기
+                var tokenData = await query.FirstOrDefaultAsync();
 
-                if (storedToken == token) // 토큰 일치 여부 확인
+                if (tokenData == null)
+                {
+                    _logger.LogWarning("Token not found for UserId: {UserId}", hive_player_id);
+                    return false;
+                }
+
+                var storedToken = tokenData.hive_token;
+                var expirationTime = tokenData.expires_dt;
+
+                if (storedToken == token && expirationTime > DateTime.UtcNow) // 토큰 일치 여부 및 유효 시간 확인
                 {
                     _logger.LogInformation("Token validated successfully for UserId: {UserId}", hive_player_id);
                     return true;

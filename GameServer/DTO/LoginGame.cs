@@ -12,6 +12,10 @@ public class LoginRequest
 
     [Required]
     public required string token { get; set; }
+
+    [Required]
+    public string AppVersion { get; set; } = "0.1.0"; // 앱 버전 0.1.0 사용합니다.
+    public string DataVersion { get; set; } = "0.1.0"; // 데이터 버전 0.1.0 사용합니다.
 }
 
 public class LoginResponse
