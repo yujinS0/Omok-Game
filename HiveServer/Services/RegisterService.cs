@@ -15,15 +15,10 @@ public class RegisterService : IRegisterService
         _hiveDb = hiveDb;
     }
 
-    public async Task<ErrorCode> RegisterAccount(string hivePlayerId, string hivePlayerPw)
-    {
-        return await _hiveDb.RegisterAccount(hivePlayerId, hivePlayerPw);
-    }
-
     public async Task<AccountResponse> Register(AccountRequest request)
     {
         AccountResponse response = new();
-        response.Result = await RegisterAccount(request.hive_player_id, request.hive_player_pw);
+        response.Result = await _hiveDb.RegisterAccount(request.hive_player_id, request.hive_player_pw);
         return response;
     }
 }
