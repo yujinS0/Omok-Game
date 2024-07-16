@@ -63,20 +63,30 @@ namespace HiveServer.Repository
         {
             try
             {
-                var query = _queryFactory.Query("account")
-                                         .Select("hive_player_id")
-                                         .WhereRaw("hive_player_id = ? AND hive_player_pw = SHA2(CONCAT(salt, ?), 256)", hive_player_id, hive_player_pw);
+                // 1. 사용자 정보 가져오기
+                var user = await _queryFactory.Query("account")
+                                              .Select("hive_player_id", "hive_player_pw", "salt")
+                                              .Where("hive_player_id", hive_player_id)
+                                              .FirstOrDefaultAsync();
 
-                var player_id = await query.FirstOrDefaultAsync<string?>();
-
-                if (string.IsNullOrWhiteSpace(player_id))
+                if (user == null)
                 {
                     _logger.LogWarning("User not found with ID: {UserId}", hive_player_id);
                     return (ErrorCode.UserNotFound, "");
                 }
 
-                _logger.LogInformation("User verified successfully with ID: {UserId}", player_id);
-                return (ErrorCode.None, player_id);
+                // 2. 입력된 비밀번호 해싱 (salt 값으로)
+                var hashedInputPassword = Security.MakeHashingPassWord(user.salt, hive_player_pw);
+
+                // 3. 해싱된 비밀번호를 비교
+                if (user.hive_player_pw != hashedInputPassword)
+                {
+                    _logger.LogWarning("Password mismatch for UserId: {UserId}", hive_player_id);
+                    return (ErrorCode.LoginFailPwNotMatch, "");
+                }
+
+                _logger.LogInformation("User verified successfully with ID: {UserId}", hive_player_id);
+                return (ErrorCode.None, hive_player_id);
             }
             catch (MySqlException ex)
             {
@@ -89,7 +99,6 @@ namespace HiveServer.Repository
                 return (ErrorCode.InternalError, "");
             }
         }
-
 
         // account 테이블의 hive_player_id 값과 같을 경우 해당 hive_player_id의 hive_token필드에 token 값 저장하는 함수 실패시 false 반환
         public async Task<bool> SaveToken(string hive_player_id, string token)
