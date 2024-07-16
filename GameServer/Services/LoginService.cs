@@ -5,6 +5,7 @@ using GameServer.DTO;
 using GameServer.Models;
 using GameServer.Repository;
 using GameServer.Services.Interfaces;
+using StackExchange.Redis;
 
 namespace GameServer.Services;
 
@@ -13,12 +14,14 @@ public class LoginService : ILoginService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<LoginService> _logger;
     private readonly IGameDb _gameDb;
+    private readonly IMemoryDb _memoryDb;
 
-    public LoginService(IHttpClientFactory httpClientFactory, ILogger<LoginService> logger, IGameDb gameDb)
+    public LoginService(IHttpClientFactory httpClientFactory, ILogger<LoginService> logger, IGameDb gameDb, IMemoryDb memoryDb)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
         _gameDb = gameDb;
+        _memoryDb = memoryDb;
     }
 
     public async Task<LoginResponse> Login(LoginRequest request)
@@ -27,8 +30,8 @@ public class LoginService : ILoginService
 
         var verifyTokenRequest = new VerifyTokenRequest
         {
-            hive_player_id = request.player_id,
-            hive_token = request.token
+            hive_player_id = request.PlayerId,
+            hive_token = request.Token
         };
 
         var content = new StringContent(JsonSerializer.Serialize(verifyTokenRequest), Encoding.UTF8, "application/json");
@@ -58,21 +61,26 @@ public class LoginService : ILoginService
                 };
             }
 
+            // Redis에 사용자 로그인 정보 저장
+            var saveResult = await _memoryDb.SaveUserLoginInfo(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
+            if (!saveResult)
+            {
+                _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", request.PlayerId);
+                return new LoginResponse { Result = ErrorCode.InternalError };
+            }
+
             _logger.LogInformation("Successfully authenticated user with token");
 
-            var charInfo = await _gameDb.GetUserGameDataAsync(request.player_id);
+            var charInfo = await _gameDb.GetUserGameDataAsync(request.PlayerId);
             if (charInfo == null)
             {
-                _logger.LogInformation("First login detected, creating new char_info for hive_player_id: {PlayerId}", request.player_id);
-                charInfo = await _gameDb.CreateUserGameDataAsync(request.player_id);
+                _logger.LogInformation("First login detected, creating new char_info for hive_player_id: {PlayerId}", request.PlayerId);
+                charInfo = await _gameDb.CreateUserGameDataAsync(request.PlayerId);
             }
 
             return new LoginResponse
             {
-                Result = ErrorCode.None,
-                //Token = gameToken,
-                //Uid = request.UserNum,
-                //UserGameData = charInfo
+                Result = ErrorCode.None
             };
         }
         catch (HttpRequestException e)
@@ -85,5 +93,24 @@ public class LoginService : ILoginService
             _logger.LogError(e, "Error parsing JSON from token validation service.");
             return new LoginResponse { Result = ErrorCode.JsonParsingError };
         }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Unexpected error occurred during login.");
+            return new LoginResponse { Result = ErrorCode.InternalError };
+        }
     }
+
+    // Q. Login() 코드가 너무 길어서, Redis에 사용자 로그인 정보를 저장하는 부분 분리하는 게 좋을까요?
+    // -> 그런데 막성 구상해보니까 너무 작네요, 그냥 나중에 Service에서 응답구조 안만들고 Controller에서 처리하면 괜찮을 듯 합니다.
+    //private async Task<bool> SaveLoginInfoToRedis(string playerId, string token, string appVersion, string dataVersion)
+    //{
+    //    var saveResult = await _memoryDb.SaveUserLoginInfo(playerId, token, appVersion, dataVersion);
+    //    if (!saveResult)
+    //    {
+    //        _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", playerId);
+    //        return false;
+    //    }
+    //    return true;
+    //}
 }
+

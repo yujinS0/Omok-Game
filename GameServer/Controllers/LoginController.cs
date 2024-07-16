@@ -21,7 +21,7 @@ public class LoginController : ControllerBase
     public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
         var response = await _loginService.Login(request);
-        _logger.LogInformation($"[Login] player_id: {request.player_id}, Result: {response.Result}");
+        _logger.LogInformation($"[Login] PlayerId: {request.PlayerId}, Result: {response.Result}");
         return response;
     }
 }

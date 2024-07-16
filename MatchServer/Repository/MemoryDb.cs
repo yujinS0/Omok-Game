@@ -4,77 +4,76 @@ using CloudStructures;
 using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 
-namespace MatchServer.Repository
+namespace MatchServer.Repository;
+
+public class MemoryDb : IMemoryDb
 {
-    public class MemoryDb : IMemoryDb
+    private readonly RedisConnection _redisConn;
+    private readonly ILogger<MemoryDb> _logger;
+
+    public MemoryDb(IOptions<DbConfig> dbConfig, ILogger<MemoryDb> logger)
     {
-        private readonly RedisConnection _redisConn;
-        private readonly ILogger<MemoryDb> _logger;
+        _logger = logger;
+        RedisConfig config = new RedisConfig("default", dbConfig.Value.RedisGameDBConnection);
+        _redisConn = new RedisConnection(config);
+    }
 
-        public MemoryDb(IOptions<DbConfig> dbConfig, ILogger<MemoryDb> logger)
+    public async Task StoreMatchResultAsync(string playerId, int roomNum)
+    {
+        try
         {
-            _logger = logger;
-            RedisConfig config = new RedisConfig("default", dbConfig.Value.RedisGameDBConnection);
-            _redisConn = new RedisConnection(config);
-        }
-
-        public async Task StoreMatchResultAsync(string playerId, int roomNum)
-        {
-            try
+            var redisString = new RedisString<int>(_redisConn, playerId, null);
+            _logger.LogInformation("Checking if match result already exists for PlayerId={PlayerId}", playerId);
+            if (!await redisString.ExistsAsync())
             {
-                var redisString = new RedisString<int>(_redisConn, playerId, null);
-                _logger.LogInformation("Checking if match result already exists for PlayerId={PlayerId}", playerId);
-                if (!await redisString.ExistsAsync())
-                {
-                    _logger.LogInformation("Attempting to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
-                    await redisString.SetAsync(roomNum);
-                    _logger.LogInformation("Stored match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
-                }
-                else
-                {
-                    _logger.LogWarning("Match result for PlayerId={PlayerId} already exists. Skipping store operation.", playerId);
-                }
+                _logger.LogInformation("Attempting to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+                await redisString.SetAsync(roomNum);
+                _logger.LogInformation("Stored match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "Failed to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+                _logger.LogWarning("Match result for PlayerId={PlayerId} already exists. Skipping store operation.", playerId);
             }
         }
-
-        public async Task<int?> GetMatchResultAsync(string playerId)
+        catch (Exception ex)
         {
-            try
-            {
-                var redisString = new RedisString<int>(_redisConn, playerId, null);
-                _logger.LogInformation("Attempting to retrieve match result for PlayerId={PlayerId}", playerId);
-                var roomNumResult = await redisString.GetAsync();
+            _logger.LogError(ex, "Failed to store match result: PlayerId={PlayerId}, RoomNum={RoomNum}", playerId, roomNum);
+        }
+    }
 
-                if (roomNumResult.HasValue)
-                {
-                    var roomNum = roomNumResult.Value;
-                    _logger.LogInformation("Retrieved match result for PlayerId={PlayerId}: RoomNum={RoomNum}", playerId, roomNum);
-                    await redisString.DeleteAsync(); // 조회 후 삭제
-                    _logger.LogInformation("Deleted match result for PlayerId={PlayerId} from Redis", playerId);
-                    return roomNum;
-                }
-                else
-                {
-                    _logger.LogWarning("No match result found for PlayerId={PlayerId}", playerId);
-                    return null;
-                }
-            }
-            catch (Exception ex)
+    public async Task<int?> GetMatchResultAsync(string playerId)
+    {
+        try
+        {
+            var redisString = new RedisString<int>(_redisConn, playerId, null);
+            _logger.LogInformation("Attempting to retrieve match result for PlayerId={PlayerId}", playerId);
+            var roomNumResult = await redisString.GetAsync();
+
+            if (roomNumResult.HasValue)
             {
-                _logger.LogError(ex, "Failed to retrieve match result for PlayerId={PlayerId}", playerId);
+                var roomNum = roomNumResult.Value;
+                _logger.LogInformation("Retrieved match result for PlayerId={PlayerId}: RoomNum={RoomNum}", playerId, roomNum);
+                await redisString.DeleteAsync(); // 조회 후 삭제
+                _logger.LogInformation("Deleted match result for PlayerId={PlayerId} from Redis", playerId);
+                return roomNum;
+            }
+            else
+            {
+                _logger.LogWarning("No match result found for PlayerId={PlayerId}", playerId);
                 return null;
             }
         }
-
-
-        public void Dispose()
+        catch (Exception ex)
         {
-            // _redisConn?.Dispose(); // Redis 연결 해제
+            _logger.LogError(ex, "Failed to retrieve match result for PlayerId={PlayerId}", playerId);
+            return null;
         }
+    }
+
+
+    public void Dispose()
+    {
+        // _redisConn?.Dispose(); // Redis 연결 해제
     }
 }
 
