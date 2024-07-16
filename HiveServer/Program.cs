@@ -16,7 +16,8 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig 설정 로드
+builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings"));
+builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("MysqlConfig"));
 
 builder.Services.AddScoped<IHiveDb, HiveDb>(); // hive mysql
 builder.Services.AddScoped<ILoginService, LoginService>();

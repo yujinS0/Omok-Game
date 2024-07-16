@@ -12,6 +12,7 @@ namespace HiveServer.Repository
         private readonly ILogger<HiveDb> _logger;
         private MySqlConnection _connection;
         readonly QueryFactory _queryFactory;
+        private readonly int _tokenExpiryHours;
 
         public HiveDb(IOptions<DbConfig> dbConfig, ILogger<HiveDb> logger)
         {
@@ -22,6 +23,7 @@ namespace HiveServer.Repository
             _connection.Open();
 
             _queryFactory = new QueryFactory(_connection, new MySqlCompiler());
+            _tokenExpiryHours = dbConfig.Value.TokenExpiryHours;
         }
 
         public void Dispose()
@@ -77,8 +79,8 @@ namespace HiveServer.Repository
                     hive_player_id = hive_player_id,
                     hive_token = "", // 빈 문자열로 초기화
                     create_dt = DateTime.UtcNow,
-                    expires_dt = DateTime.UtcNow
-                });
+                    expires_dt = DateTime.UtcNow.AddHours(_tokenExpiryHours)
+            });
 
                 _logger.LogInformation("Token entry initialized successfully for UserId: {UserId}", hive_player_id);
                 return ErrorCode.None;
@@ -143,7 +145,7 @@ namespace HiveServer.Repository
         {
             try
             {
-                var expirationTime = DateTime.UtcNow.AddHours(10); // 토큰 유효 기간을 10시간으로 설정 [TODO] 이런식으로 숫자 넣기 X 
+                var expirationTime = DateTime.UtcNow.AddHours(_tokenExpiryHours);
 
                 var affectedRows = await _queryFactory.Query("login_token")
                                               .Where("hive_player_id", hive_player_id)
