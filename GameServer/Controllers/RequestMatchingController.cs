@@ -13,7 +13,6 @@ public class RequestMatchingController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<RequestMatchingController> _logger;
-    //private readonly IMatchService _MatchService;
 
     public RequestMatchingController(ILogger<RequestMatchingController> logger, IHttpClientFactory httpClientFactory)
     {

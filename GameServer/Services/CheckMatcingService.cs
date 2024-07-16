@@ -3,6 +3,7 @@ using GameServer.DTO;
 using GameServer.Repository;
 using GameServer.Models;
 using GameServer.Services.Interfaces;
+using static Humanizer.In;
 
 namespace MatchServer.Services;
 public class CheckMatchingService : ICheckMatchingService
@@ -30,7 +31,14 @@ public class CheckMatchingService : ICheckMatchingService
 
         // 매칭 성공 확인 시
         var userGameDatakey = KeyGenerator.GenerateUserGameDataKey(request.PlayerId);
-        _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, request.PlayerId, TimeSpan.FromHours(2)).Wait();
+
+        var userGameData = new UserGameData
+        {
+            PlayerId = request.PlayerId,
+            GameRoomId = result.GameRoomId
+        };
+
+        _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, userGameData, TimeSpan.FromHours(2)).Wait();
 
 
         return new MatchCompleteResponse
