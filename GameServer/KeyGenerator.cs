@@ -7,7 +7,7 @@ public class KeyGenerator
         return $"M_{playerId}_Result";
     }
 
-    public static string GeneratePlayingUserKey(string playerId)
+    public static string GenerateUserGameDataKey(string playerId)
     {
         return $"P_{playerId}_Info";
     }
@@ -15,4 +15,5 @@ public class KeyGenerator
     {
         return $"U_{playerId}_Login";
     }
+    
 }
