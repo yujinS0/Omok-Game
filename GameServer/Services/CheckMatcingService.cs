@@ -2,8 +2,8 @@
 using GameServer.DTO;
 using GameServer.Repository;
 using GameServer.Models;
+using ServerShared;
 using GameServer.Services.Interfaces;
-using static Humanizer.In;
 
 namespace MatchServer.Services;
 public class CheckMatchingService : ICheckMatchingService
@@ -30,7 +30,7 @@ public class CheckMatchingService : ICheckMatchingService
         }
 
         // 매칭 성공 확인 시
-        var userGameDatakey = KeyGenerator.GenerateUserGameDataKey(request.PlayerId);
+        var userGameDatakey = KeyGenerator.GeneratePlayingUserKey(request.PlayerId); // ?
 
         var userGameData = new UserGameData
         {

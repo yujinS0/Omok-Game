@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using ServerShared;
 
 namespace GameServer.DTO;
 

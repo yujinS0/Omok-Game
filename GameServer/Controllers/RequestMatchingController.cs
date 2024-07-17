@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text;
 using GameServer.DTO;
 using GameServer.Services.Interfaces;
+using ServerShared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameServer.Controllers;
