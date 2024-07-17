@@ -2,6 +2,8 @@
 
 namespace ServerShared;
 
+// TODO : 모든 ErrorCode 중복 사용 X = 유니크해야 함!
+
 // 1000 ~ 19999
 public enum ErrorCode : UInt16
 {

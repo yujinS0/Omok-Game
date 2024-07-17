@@ -23,7 +23,7 @@ public class CheckMatchingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<MatchCompleteResponse> IsMatched([FromBody] MatchRequest request)
+    public async Task<MatchCompleteResponse> IsMatched([FromBody] MatchRequest request) // TODO : IsMatched() 함수 이름 바꾸기
     {
         return await _checkMatchingService.IsMatched(request);
     }

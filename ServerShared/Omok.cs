@@ -204,6 +204,9 @@ public class OmokGameData
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
         Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
 
+        // TODO : 오목 승리 조건 체크하는 함수 구현 및 추가
+        OmokCheck();
+
         return rawData;
     }
 
@@ -221,7 +224,7 @@ public class OmokGameData
     //    Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
     //}
 
-    public void OmokCheck()
+    public void OmokCheck() // 돌 5개 있는지 체크하는 함수
     {
 
     }

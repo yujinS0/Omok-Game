@@ -52,7 +52,7 @@ namespace GameServer.Repository
         {
             try
             {
-                var redisString = new RedisString<byte[]>(_redisConn, key, TimeSpan.FromMinutes(20));
+                var redisString = new RedisString<byte[]>(_redisConn, key, TimeSpan.FromMinutes(20)); // TODO : Magic number 사용 금지! ServerShared에 상수 정의해서 사용하도록
                 var result = await redisString.GetAsync();
 
                 if (result.HasValue)
