@@ -45,13 +45,13 @@ namespace MatchServer.Services
 
                     if (_reqQueue.TryDequeue(out var playerA) && _reqQueue.TryDequeue(out var playerB))
                     {
-                        var gameRoomId = KeyGenerator.GenerateGameRoomId();
+                        var gameRoomId = KeyGenerator.GameRoomId();
 
                         var matchResultA = new MatchResult { GameRoomId = gameRoomId, Opponent = playerB };
                         var matchResultB = new MatchResult { GameRoomId = gameRoomId, Opponent = playerA };
 
-                        var keyA = KeyGenerator.GenerateMatchResultKey(playerA);
-                        var keyB = KeyGenerator.GenerateMatchResultKey(playerB);
+                        var keyA = KeyGenerator.MatchResult(playerA);
+                        var keyB = KeyGenerator.MatchResult(playerB);
 
                         _memoryDb.StoreMatchResultAsync(keyA, matchResultA, TimeSpan.FromMinutes(10)).Wait();
                         _memoryDb.StoreMatchResultAsync(keyB, matchResultB, TimeSpan.FromMinutes(10)).Wait();

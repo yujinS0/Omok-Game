@@ -25,7 +25,7 @@ namespace GameServer.Repository
 
         public async Task<bool> SaveUserLoginInfo(string playerId, string token, string appVersion, string dataVersion)
         {
-            var key = KeyGenerator.GenerateUserLoginKey(playerId);
+            var key = KeyGenerator.UserLogin(playerId);
             var playerLoginInfo = new PlayerLoginInfo
             {
                 PlayerId = playerId,

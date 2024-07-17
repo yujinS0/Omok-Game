@@ -22,7 +22,7 @@ public class CheckMatchingService : ICheckMatchingService
 
     public async Task<MatchCompleteResponse> IsMatched(MatchRequest request)
     {
-        var matchResultkey = KeyGenerator.GenerateMatchResultKey(request.PlayerId);
+        var matchResultkey = KeyGenerator.MatchResult(request.PlayerId);
         var result = await _memoryDb.GetMatchResultAsync(matchResultkey);
 
         if (result == null)
@@ -35,7 +35,7 @@ public class CheckMatchingService : ICheckMatchingService
         }
 
         // 매칭 성공 확인 시
-        var userGameDatakey = KeyGenerator.GeneratePlayingUserKey(request.PlayerId); // ?
+        var userGameDatakey = KeyGenerator.PlayingUser(request.PlayerId); // ?
 
         var userGameData = new UserGameData
         {

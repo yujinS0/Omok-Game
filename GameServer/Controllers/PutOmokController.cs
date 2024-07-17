@@ -30,7 +30,7 @@ public class PutOmokController : ControllerBase
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request)
     {
         // GameRoomID 가져오는 로직
-        string playingUserKey = KeyGenerator.GeneratePlayingUserKey(request.PlayerId);
+        string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);
 
         if (userGameData == null)
