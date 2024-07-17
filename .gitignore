@@ -396,6 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/HiveServer/appsettings.json
-appsettings.json
-/HiveServer/appsettings.json
+#/HiveServer/appsettings.json
+#appsettings.json
+#/HiveServer/appsettings.json
