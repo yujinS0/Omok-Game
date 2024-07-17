@@ -9,7 +9,6 @@ public class PlayerLoginInfo
 }
 public class UserGameData
 {
-    public string PlayerId { get; set; }
     public string GameRoomId { get; set; }
     public DateTime CreatedAt { get; set; }
 }

@@ -39,8 +39,8 @@ public class CheckMatchingService : ICheckMatchingService
 
         var userGameData = new UserGameData
         {
-            PlayerId = request.PlayerId,
             GameRoomId = result.GameRoomId
+            // CreatedAt Redis에 넣을 때 생성
         };
 
         _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, userGameData, TimeSpan.FromHours(2)).Wait();
