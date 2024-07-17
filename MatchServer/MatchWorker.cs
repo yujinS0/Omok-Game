@@ -5,7 +5,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using MatchServer.Models;
 using MatchServer.Repository;
-using GameServer;
+using ServerShared;
 
 namespace MatchServer.Services
 {
@@ -45,7 +45,7 @@ namespace MatchServer.Services
 
                     if (_reqQueue.TryDequeue(out var playerA) && _reqQueue.TryDequeue(out var playerB))
                     {
-                        var gameRoomId = KeyGenerator.GenerateRoomId();
+                        var gameRoomId = KeyGenerator.GenerateGameRoomId();
 
                         var matchResultA = new MatchResult { GameRoomId = gameRoomId, Opponent = playerB };
                         var matchResultB = new MatchResult { GameRoomId = gameRoomId, Opponent = playerA };
@@ -62,9 +62,9 @@ namespace MatchServer.Services
                         //// 게임 플레이 데이터 만드는 부분
                         var omokGameData = new OmokGameData();
 
-                        int rawDataSize = 328;
+                        //int rawDataSize = 328;
 
-                        byte[] gameRawData = omokGameData.MakeRawData(rawDataSize, playerA, playerB);
+                        byte[] gameRawData = omokGameData.MakeRawData(playerA, playerB);
 
                         _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, TimeSpan.FromHours(2)).Wait();
 

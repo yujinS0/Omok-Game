@@ -10,4 +10,8 @@
     <PackageReference Include="CloudStructures" Version="3.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ServerShared\ServerShared.csproj" />
+  </ItemGroup>
+
 </Project>

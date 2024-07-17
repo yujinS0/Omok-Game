@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MatchServer.DTO;
+using ServerShared;
 using MatchServer.Services.Interfaces;
 
 namespace MatchServer.Controllers;

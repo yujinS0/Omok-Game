@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MatchServer.DTO;
 using MatchServer.Repository;
+using ServerShared;
 using MatchServer.Services.Interfaces;
 
 namespace MatchServer.Services;

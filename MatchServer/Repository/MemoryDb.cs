@@ -38,7 +38,7 @@ public class MemoryDb : IMemoryDb
     {
         try
         {
-            var redisString = new RedisString<byte[]>(_redisConn, key, expiry);
+            var redisString = new RedisString<byte[]>(_redisConn, key, expiry); // byte[]? OmokGameData?
             _logger.LogInformation("Attempting to store game info: Key={Key}, GamerawData={rawData}", key, rawData);
             await redisString.SetAsync(rawData); // 결과 저장
             _logger.LogInformation("Stored game info: Key={Key}, GamerawData={rawData}", key, rawData);
