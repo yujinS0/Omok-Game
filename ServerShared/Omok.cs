@@ -97,12 +97,27 @@ public class OmokGameData
         // 6. 이긴 사람 정보 저장 (초기값 0)
         rawData[index++] = (byte)OmokStone.None;
 
+       
+        // TODO StartGame 로직 분리 및 구현 추가하기
+        rawData = StartGame(rawData); // 임시 StartGame 처리까지 여기서 진행
+
         return rawData;
     }
 
     public OmokStone GetStoneAt(int x, int y) // 좌표의 돌 색
     {
         int index = y * BoardSize + x;
+        return (OmokStone)_rawData[index];
+    }
+
+    // TODO 현재 턴인 PlayerId 가져오는 함수 추가하기 
+    // : GetCurrentTurn() 활용해서 만들기
+    // GetCurrentTurnPlayerId() 
+
+
+    public OmokStone GetCurrentTurn() // 현재 턴 정보 반환
+    {
+        int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length;
         return (OmokStone)_rawData[index];
     }
 
@@ -122,12 +137,6 @@ public class OmokGameData
         int whitePlayerNameLength = _rawData[index];
         index += 1;
         return Encoding.UTF8.GetString(_rawData, index, whitePlayerNameLength);
-    }
-
-    public OmokStone GetCurrentTurn() // 현재 턴 정보 반환
-    {
-        int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length;
-        return (OmokStone)_rawData[index];
     }
 
     public UInt64 GetTurnTime() // 현재 턴 시작 시각 반환
@@ -177,7 +186,7 @@ public class OmokGameData
     //    Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
     //}
 
-    public byte[] SetStone(byte[] rawData, bool isBlack, int x, int y)
+    public byte[] SetStone(byte[] rawData, bool isBlack, int x, int y) // TODO 가독성/코드 유지보수를 위해 isBlack을 받는 게 아니라. PlayerId 받기
     {
         Decoding(rawData);
 
