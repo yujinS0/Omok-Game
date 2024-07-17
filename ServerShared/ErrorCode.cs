@@ -54,6 +54,9 @@ public enum ErrorCode : UInt16
     InitNewUserGameDataFailMoney = 2028,
     InitNewUserGameDataFailAttendance = 2029,
 
+    // Match Error 2050
+    UpdateStartGameDataFailException = 2050,
+
     // Friend 2100
     FriendSendReqFailUserNotExist = 2101,
     FriendSendReqFailInsert = 2102,
@@ -94,6 +97,11 @@ public enum ErrorCode : UInt16
     SetUserScoreFailException = 2301,
     GetRankingFailException = 2302,
     GetUserRankFailException = 2303,
+
+    GameDataNotFound = 2400,
+    SetStoneFailException = 2401,
+    UpdateGameDataFailException = 2402,
+
 
     // Item 3000 ~
     CharReceiveFailInsert = 3011,
