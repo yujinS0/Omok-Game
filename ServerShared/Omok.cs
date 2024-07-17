@@ -180,14 +180,18 @@ public class OmokGameData
     public byte[] SetStone(byte[] rawData, bool isBlack, int x, int y)
     {
         Decoding(rawData);
+
+        // 돌 두기
         int index = y * BoardSize + x;
         rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
 
+        // 턴 변경
         _turnPlayerStone = isBlack ? OmokStone.White : OmokStone.Black;
-        _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
         rawData[turnIndex] = (byte)_turnPlayerStone;
 
+        // 턴 둔 시간 변경
+        _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
         Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
 
