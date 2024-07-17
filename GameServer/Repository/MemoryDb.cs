@@ -48,18 +48,71 @@ namespace GameServer.Repository
             return result;
         }
 
-        public async Task UpdateGameDataAsync(string key, byte[] rawData, TimeSpan expiry) // key로 OmokData 값 업데이트
+        public async Task<byte[]> GetGameDataAsync(string key)
+        {
+            try
+            {
+                var redisString = new RedisString<byte[]>(_redisConn, key, TimeSpan.FromMinutes(20));
+                var result = await redisString.GetAsync();
+
+                if (result.HasValue)
+                {
+                    _logger.LogInformation("Successfully retrieved data for Key={Key}", key);
+                    return result.Value;
+                }
+                else
+                {
+                    _logger.LogWarning("No data found for Key={Key}", key);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve data for Key={Key}", key);
+                return null;
+            }
+        }
+
+        public async Task<bool> UpdateGameDataAsync(string key, byte[] rawData, TimeSpan expiry) // key로 OmokData 값 업데이트
         {
             try
             {
                 var redisString = new RedisString<byte[]>(_redisConn, key, expiry);  // byte[]? OmokGameData?
                 var result = await redisString.SetAsync(rawData);
                 _logger.LogInformation("Update game info: Key={Key}, GamerawData={rawData}", key, rawData);
+                return result;
             }
             catch (Exception ex) {
                 _logger.LogError(ex, "Failed to update game info: Key={Key}, GamerawData={rawData}", key, rawData);
+                return false;
             }
         }
+
+        public async Task<UserGameData> GetPlayingUserInfoAsync(string key)
+        {
+            try
+            {
+                var redisString = new RedisString<UserGameData>(_redisConn, key, TimeSpan.FromMinutes(20));
+                var result = await redisString.GetAsync();
+
+                if (result.HasValue)
+                {
+                    _logger.LogInformation("Successfully retrieved playing user info for Key={Key}", key);
+                    return result.Value;
+                }
+                else
+                {
+                    _logger.LogWarning("No playing user info found for Key={Key}", key);
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to retrieve playing user info for Key={Key}", key);
+                return null;
+            }
+        }
+
 
         public async Task<MatchResult> GetMatchResultAsync(string key) // 매칭 결과 조회
         {
