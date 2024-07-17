@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
 using GameServer.DTO;
 using GameServer.Models;
+using ServerShared;
 
 namespace GameServer.Repository
 {
@@ -24,7 +25,7 @@ namespace GameServer.Repository
 
         public async Task<bool> SaveUserLoginInfo(string playerId, string token, string appVersion, string dataVersion)
         {
-            var key = KeyGenerator.GeneratePlayerLoginKey(playerId);
+            var key = KeyGenerator.GenerateUserLoginKey(playerId);
             var playerLoginInfo = new PlayerLoginInfo
             {
                 PlayerId = playerId,
@@ -45,6 +46,19 @@ namespace GameServer.Repository
                 _logger.LogWarning("Failed to save login info for UserId: {UserId}", playerId);
             }
             return result;
+        }
+
+        public async Task UpdateGameDataAsync(string key, byte[] rawData, TimeSpan expiry) // key로 OmokData 값 업데이트
+        {
+            try
+            {
+                var redisString = new RedisString<byte[]>(_redisConn, key, expiry);  // byte[]? OmokGameData?
+                var result = await redisString.SetAsync(rawData);
+                _logger.LogInformation("Update game info: Key={Key}, GamerawData={rawData}", key, rawData);
+            }
+            catch (Exception ex) {
+                _logger.LogError(ex, "Failed to update game info: Key={Key}, GamerawData={rawData}", key, rawData);
+            }
         }
 
         public async Task<MatchResult> GetMatchResultAsync(string key) // 매칭 결과 조회
