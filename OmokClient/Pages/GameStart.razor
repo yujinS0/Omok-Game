@@ -1,0 +1,106 @@
+﻿@page "/gamestart"
+@inject IHttpClientFactory ClientFactory
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject ILogger<GameStart> Logger
+@using Blazored.SessionStorage
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ISessionStorageService sessionStorage
+
+<PageTitle>Game Start</PageTitle>
+
+<h3>오목 게임</h3>
+
+<p>오목 게임에 오신 것을 환영합니다, @userId !</p>
+<button class="btn btn-primary" @onclick="StartMatching" disabled="@isMatching">매칭 시작</button>
+
+@if (isMatching)
+{
+    <p>매칭 상대 찾는 중...</p>
+}
+
+@code {
+    private string userId = string.Empty;
+    private bool isMatching = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("GameStart page initialized.");
+
+        userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+
+        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        // var user = authState.User;
+        // if (user.Identity.IsAuthenticated)
+        // {
+        //     username = user.Identity.Name;
+        //     Console.WriteLine($"User '{username}' is authenticated.");
+        // }
+        // else
+        // {
+        //     Logger.LogWarning("User is not authenticated. Redirecting to home page.");
+        //     Navigation.NavigateTo("/");
+        // }
+    }
+
+    private async Task StartMatching()
+    {
+        Console.WriteLine("Start matching button clicked.");
+        isMatching = true; // 매칭 버튼 비활성화
+
+        try
+        {
+            var matchRequest = new MatchRequest { PlayerID = userId };
+            var gameClient = ClientFactory.CreateClient("GameAPI");
+
+            var response = await gameClient.PostAsJsonAsync("RequestMatching", matchRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                var matchResponse = await response.Content.ReadFromJsonAsync<MatchResponse>();
+                if (matchResponse != null && matchResponse.Result == ErrorCode.None)
+                {
+                    Console.WriteLine("Matching request successful.");
+                    isMatching = true;
+                }
+                else
+                {
+                    Console.WriteLine($"Matching request failed: {matchResponse?.Result}");
+                    isMatching = false; // 매칭 실패 시 버튼 활성화
+                }
+            }
+            else
+            {
+                Console.WriteLine("Matching request failed.");
+                isMatching = false; // 매칭 실패 시 버튼 활성화
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during matching: {ex.Message}");
+            isMatching = false; // 매칭 실패 시 버튼 활성화
+        }
+
+        Console.WriteLine("Matching process completed.");
+    }
+
+    private class MatchRequest
+    {
+        public string PlayerID { get; set; }
+    }
+
+    private class MatchResponse
+    {
+        public ErrorCode Result { get; set; }
+    }
+
+    public enum ErrorCode
+    {
+        None,
+        InvalidCredentials,
+        UserNotFound,
+        ServerError,
+        // 추가적인 에러 코드 정의
+    }
+}

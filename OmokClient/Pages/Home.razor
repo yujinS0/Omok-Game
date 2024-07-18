@@ -3,8 +3,13 @@
 @inject HttpClient Http
 @inject MessageService _message
 @inject IHttpClientFactory ClientFactory
+@inject CustomAuthenticationStateProvider CustomAuthProvider
+@inject NavigationManager Navigation
 @using System.Text.Json
 @using System.Text.Json.Serialization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.SessionStorage
+@inject ISessionStorageService sessionStorage
 
 <PageTitle>Home</PageTitle>
 
@@ -12,60 +17,64 @@
 
 <div>
     <h4>회원가입</h4>
-    <Space>
-        <GridRow Justify="center">
-            <AntDesign.Input Placeholder="Email" @bind-Value="@registerEmail" Size="@AntDesign.InputSize.Large">
-                <Prefix>
-                    <Icon Type="user" />
-                </Prefix>
-            </AntDesign.Input>
-        </GridRow>
-        <Space />
-        <GridRow Justify="center">
-            <InputPassword Placeholder="Password" @bind-Value="@registerPassword" Size="@AntDesign.InputSize.Large">
-                <Prefix>
-                    <Icon Type="lock" />
-                </Prefix>
-            </InputPassword>
-        </GridRow>
-        <Space />
-        <GridRow Justify="end">
-            <SpaceItem>
-                <Button Type="primary" OnClick="RegisterUser">
-                    회원가입
-                </Button>
-            </SpaceItem>
-        </GridRow>
-    </Space>
+    <form>
+        <Space>
+            <GridRow Justify="center">
+                <AntDesign.Input Placeholder="Email" @bind-Value="@registerEmail" Size="@AntDesign.InputSize.Large">
+                    <Prefix>
+                        <Icon Type="user" />
+                    </Prefix>
+                </AntDesign.Input>
+            </GridRow>
+            <Space />
+            <GridRow Justify="center">
+                <InputPassword Placeholder="Password" @bind-Value="@registerPassword" Size="@AntDesign.InputSize.Large">
+                    <Prefix>
+                        <Icon Type="lock" />
+                    </Prefix>
+                </InputPassword>
+            </GridRow>
+            <Space />
+            <GridRow Justify="end">
+                <SpaceItem>
+                    <Button Type="primary" OnClick="RegisterUser">
+                        회원가입
+                    </Button>
+                </SpaceItem>
+            </GridRow>
+        </Space>
+    </form>
 </div>
 
 <div>
     <h4>로그인</h4>
-    <Space>
-        <GridRow Justify="center">
-            <AntDesign.Input Placeholder="Email" @bind-Value="@loginEmail" Size="@AntDesign.InputSize.Large">
-                <Prefix>
-                    <Icon Type="user" />
-                </Prefix>
-            </AntDesign.Input>
-        </GridRow>
-        <Space />
-        <GridRow Justify="center">
-            <InputPassword Placeholder="Password" @bind-Value="@loginPassword" Size="@AntDesign.InputSize.Large">
-                <Prefix>
-                    <Icon Type="lock" />
-                </Prefix>
-            </InputPassword>
-        </GridRow>
-        <Space />
-        <GridRow Justify="end">
-            <SpaceItem>
-                <Button Type="primary" OnClick="LoginUser">
-                    로그인
-                </Button>
-            </SpaceItem>
-        </GridRow>
-    </Space>
+    <form>
+        <Space>
+            <GridRow Justify="center">
+                <AntDesign.Input Placeholder="Email" @bind-Value="@loginEmail" Size="@AntDesign.InputSize.Large">
+                    <Prefix>
+                        <Icon Type="user" />
+                    </Prefix>
+                </AntDesign.Input>
+            </GridRow>
+            <Space />
+            <GridRow Justify="center">
+                <InputPassword Placeholder="Password" @bind-Value="@loginPassword" Size="@AntDesign.InputSize.Large">
+                    <Prefix>
+                        <Icon Type="lock" />
+                    </Prefix>
+                </InputPassword>
+            </GridRow>
+            <Space />
+            <GridRow Justify="end">
+                <SpaceItem>
+                    <Button Type="primary" OnClick="LoginUser">
+                        로그인
+                    </Button>
+                </SpaceItem>
+            </GridRow>
+        </Space>
+    </form>
 </div>
 
 @* [코드 수정중] 테스트 진행중 *@
@@ -141,8 +150,10 @@
                     // 2. 게임 로그인 API (localhost:5105/login)
                     var gameLoginData = new GameLoginRequest
                     {
-                        player_id = loginResponse.hive_player_id,
-                        token = loginResponse.hive_token
+                        PlayerId = loginResponse.hive_player_id,
+                        Token = loginResponse.hive_token,
+                        AppVersion = "0.1.0",
+                        DataVersion = "0.1.0"
                     };
 
                     var gameClient = ClientFactory.CreateClient("GameAPI"); // HttpClientFactory 사용
@@ -153,8 +164,16 @@
                         if (gameResult?.Result == ErrorCode.None)
                         {
                             Console.WriteLine("Game login successful");
-                            await _message.Success("게임 로그인 성공", 5);
-                            // 추후 화면 이동하는 코드 추가
+                            await _message.Success("게임 로그인 성공");
+                            
+                            // 인증 상태 업데이트 및 페이지 이동
+                            CustomAuthProvider.NotifyUserLoggedIn(loginResponse.hive_player_id);
+
+                            // 세션 스토리지에 이메일 저장
+                            await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
+
+                            Console.WriteLine("Navigating to /gamestart");
+                            Navigation.NavigateTo("gamestart", true);
                         }
                         else
                         {
@@ -216,8 +235,10 @@
     }
     private class GameLoginRequest
     {
-        public required string player_id { get; set; }
-        public required string token { get; set; }
+        public required string PlayerId { get; set; }
+        public required string Token { get; set; }
+        public string AppVersion { get; set; } = "0.1.0";
+        public string DataVersion { get; set; } = "0.1.0";
     }
 
     private class GameLoginResponse
