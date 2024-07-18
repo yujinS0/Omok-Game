@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -23,5 +24,12 @@ builder.Services.AddHttpClient("GameAPI", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5105");
 });
+
+// CustomAuthenticationStateProvider 등록
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
+
+// 인증 및 권한 부여 서비스 등록
+builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();
