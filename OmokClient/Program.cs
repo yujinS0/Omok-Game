@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using OmokClient;
+using OmokClient.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -18,6 +19,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // HttpClient 등록
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5284") });
+
+// MatchingService 등록
+builder.Services.AddScoped<MatchingService>();
 
 // 게임 API 주소를 가진 HttpClient 등록
 builder.Services.AddHttpClient("GameAPI", client =>

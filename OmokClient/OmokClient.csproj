@@ -19,6 +19,9 @@
 	<PackageReference Include="MudBlazor" Version="7.0.0" />
 	<PackageReference Include="Radzen.Blazor" Version="4.33.3" />
 	<PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
+	<!--<Content Update="Pages\OmokGame.razor.css">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Content>-->
   </ItemGroup>
 
 </Project>

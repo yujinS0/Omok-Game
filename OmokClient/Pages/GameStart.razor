@@ -7,7 +7,9 @@
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using OmokClient.Services
 @inject ISessionStorageService sessionStorage
+@inject MatchingService MatchingService
 
 <PageTitle>Game Start</PageTitle>
 
@@ -24,6 +26,7 @@
 @code {
     private string userId = string.Empty;
     private bool isMatching = false;
+    private Timer? checkMatchTimer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -50,57 +53,44 @@
         Console.WriteLine("Start matching button clicked.");
         isMatching = true; // 매칭 버튼 비활성화
 
-        try
+        var matchResponse = await MatchingService.RequestMatchingAsync(userId);
+        if (matchResponse != null && matchResponse.Result == ErrorCode.None)
         {
-            var matchRequest = new MatchRequest { PlayerID = userId };
-            var gameClient = ClientFactory.CreateClient("GameAPI");
-
-            var response = await gameClient.PostAsJsonAsync("RequestMatching", matchRequest);
-            if (response.IsSuccessStatusCode)
-            {
-                var matchResponse = await response.Content.ReadFromJsonAsync<MatchResponse>();
-                if (matchResponse != null && matchResponse.Result == ErrorCode.None)
-                {
-                    Console.WriteLine("Matching request successful.");
-                    isMatching = true;
-                }
-                else
-                {
-                    Console.WriteLine($"Matching request failed: {matchResponse?.Result}");
-                    isMatching = false; // 매칭 실패 시 버튼 활성화
-                }
-            }
-            else
-            {
-                Console.WriteLine("Matching request failed.");
-                isMatching = false; // 매칭 실패 시 버튼 활성화
-            }
+            Console.WriteLine("Matching request successful.");
+            isMatching = true;
+            StartCheckMatching();
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine($"Error during matching: {ex.Message}");
+            Console.WriteLine($"Matching request failed: {matchResponse?.Result}");
             isMatching = false; // 매칭 실패 시 버튼 활성화
         }
 
         Console.WriteLine("Matching process completed.");
     }
 
-    private class MatchRequest
+    private void StartCheckMatching()
     {
-        public string PlayerID { get; set; }
+        checkMatchTimer = new Timer(async _ =>
+        {
+            await CheckMatching();
+        }, null, 1000, 1000); // 1초마다 CheckMatching 호출
     }
 
-    private class MatchResponse
+    private async Task CheckMatching()
     {
-        public ErrorCode Result { get; set; }
-    }
+        Console.WriteLine("Checking match status...");
 
-    public enum ErrorCode
-    {
-        None,
-        InvalidCredentials,
-        UserNotFound,
-        ServerError,
-        // 추가적인 에러 코드 정의
+        var matchResponse = await MatchingService.CheckMatchingAsync(userId);
+        if (matchResponse != null && matchResponse.Success == 1)
+        {
+            Console.WriteLine("Match found! Navigating to game page.");
+            checkMatchTimer?.Dispose();
+            Navigation.NavigateTo("omok", true);
+        }
+        else
+        {
+            Console.WriteLine("No match found yet.");
+        }
     }
 }
