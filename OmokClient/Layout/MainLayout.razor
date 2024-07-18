@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.SessionStorage
+@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISessionStorageService sessionStorage
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +11,17 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            @* @if (isAuthenticated)
+            {
+                <span class="ml-auto navbar-text">Welcome, @username!</span>
+            } *@
+            @if (!string.IsNullOrEmpty(sessionStorageId))
+            {
+                @if (!string.IsNullOrEmpty(sessionStorageId))
+                {
+                    <span class="user-email">@sessionStorageId</span>
+                }
+            }
         </div>
 
         <article class="content px-4">
@@ -15,3 +29,20 @@
         </article>
     </main>
 </div>
+
+@code {
+    private bool isAuthenticated = false;
+    private string username = string.Empty;
+    private string sessionStorageId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        sessionStorageId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        // isAuthenticated = authState.User.Identity.IsAuthenticated;
+        // if (isAuthenticated)
+        // {
+        //     username = authState.User.Identity.Name;
+        // }
+    }
+}
