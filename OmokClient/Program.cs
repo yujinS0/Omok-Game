@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using OmokClient;
 using OmokClient.Services;
+using Radzen;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddMudServices();
 builder.Services.AddAntDesign();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
+builder.Services.AddRadzenComponents();
 
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
