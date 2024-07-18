@@ -39,3 +39,9 @@
 .info {
     margin-bottom: 20px; /* 정보 패널의 아래쪽에 20px의 여백을 추가합니다 */
 }
+
+.info-panel {
+    background-color: #F5DEB3; /* 배경 색상을 연한 갈색으로 설정 */
+    border: 1px solid #45230b; /* 보드의 테두리를 짙은 갈색의 1px 실선으로 설정 */
+    width: 465px; /* 오목 보드의 전체 너비 */
+}

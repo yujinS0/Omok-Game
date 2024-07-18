@@ -27,8 +27,8 @@
     </div>
     <p>남은 시간: @remainingTime 초</p>
     <div class="button-container">
-        <button>게임 초기화</button>
-        <button>취소 요청</button>
+        <button @onclick="ResetBoard">게임 초기화</button>
+        <button @onclick="RequestUndo">취소 요청</button>
     </div>
 </div>
 
@@ -38,6 +38,7 @@
     private string currentTurn = "User"; // 임시로 설정, 추후 API를 통해 가져올 예정
     private int remainingTime = 30;
     private StoneType[,] board = new StoneType[15, 15];
+    private Timer timer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -48,6 +49,7 @@
         // 타이머 시작
         StartTimer();
     }
+
     private void ResetBoard()
     {
         for (int i = 0; i < 15; i++)
@@ -58,11 +60,14 @@
             }
         }
         currentTurn = "Black";
+        remainingTime = 30;
         StateHasChanged();
     }
 
     private void MakeMove(int row, int col)
     {
+        Console.WriteLine($"MakeMove : ({row}, {col})");
+
         if (row < 0 || row >= 15 || col < 0 || col >= 15)
         {
             // 배열의 범위를 벗어나는 경우
@@ -79,10 +84,12 @@
         if (CheckWin(row, col))
         {
             // 승리 처리
+            Console.WriteLine($"Player {currentTurn} wins!");
             return;
         }
 
         currentTurn = currentTurn == "Black" ? "White" : "Black";
+        remainingTime = 30; // 다음 턴의 시간을 초기화
         StateHasChanged();
     }
 
@@ -116,18 +123,25 @@
 
     private void StartTimer()
     {
-        Timer timer = new Timer(async _ =>
+        timer = new Timer(async _ =>
         {
             if (remainingTime > 0)
             {
                 remainingTime--;
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
             }
             else
             {
                 // 시간 초과 처리 로직
+                Console.WriteLine($"{currentTurn}'s turn timed out.");
             }
         }, null, 1000, 1000);
+    }
+
+    private void RequestUndo()
+    {
+        // 취소 요청 처리 로직
+        Console.WriteLine("RequestUndo called");
     }
 
     private enum StoneType
