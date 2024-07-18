@@ -1,0 +1,37 @@
+﻿@page "/omok"
+@using Blazored.SessionStorage
+@inject ISessionStorageService sessionStorage
+@using System.Drawing
+
+<h3>Omok Game</h3>
+
+<CascadingValue Value="userId">
+    <CascadingValue Value="opponentId">
+        <CascadingValue Value="currentTurn">
+            <OmokBoardLayout />
+        </CascadingValue>
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    private string userId = string.Empty;
+    private string opponentId = "Opponent";
+    private string currentTurn = "Black";
+
+    protected override async Task OnInitializedAsync()
+    {
+        userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // 강제로 스타일 재적용
+            await InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
+        }
+    }
+}

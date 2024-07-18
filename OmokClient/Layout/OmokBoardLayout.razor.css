@@ -1,0 +1,41 @@
+.omok-board {
+    display: grid; /* 그리드 레이아웃을 사용 */
+    grid-template-columns: repeat(15, 30px); /* 15개의 열을 만들고, 각 열의 너비는 30px */
+    grid-template-rows: repeat(15, 30px); /* 15개의 행을 만들고, 각 행의 높이는 30px */
+    gap: 1px; /* 각 그리드 셀 사이의 간격을 1px로 설정 */
+    background-color: #F5DEB3; /* 배경 색상을 연한 갈색으로 설정 */
+    border: 1px solid #45230b; /* 보드의 테두리를 짙은 갈색의 1px 실선으로 설정 */
+    width: 465px; /* 오목 보드의 전체 너비 */
+}
+
+.row {
+    display: contents; /* 자식 요소들을 그대로 렌더링하고, 자체적으로는 렌더링되지 않도록 설정합니다 */
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    display: flex; /* 플렉스 박스를 사용하여 자식 요소들을 정렬합니다 */
+    align-items: center; /* 자식 요소들을 수직으로 중앙 정렬합니다 */
+    background-color: #F5DEB3; /* 배경 색상을 연한 갈색으로 설정 */
+    justify-content: center; /* 자식 요소들을 수평으로 중앙 정렬합니다 */
+    border: 1px solid #45230b;
+}
+
+.black-stone, .white-stone { /*돌*/
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.black-stone {
+    background-color: black;
+}
+
+.white-stone {
+    background-color: white;
+}
+
+.info {
+    margin-bottom: 20px; /* 정보 패널의 아래쪽에 20px의 여백을 추가합니다 */
+}
