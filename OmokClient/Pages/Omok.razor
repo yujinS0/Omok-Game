@@ -5,6 +5,7 @@
 @inject ISessionStorageService sessionStorage
 @inject GameService GameService
 @inject MessageService _message
+@inject NavigationManager Navigation
 
 <h3>Omok Game</h3>
 
@@ -103,7 +104,9 @@
         if (success)
         {
             board[row, col] = playerId == blackPlayer ? OmokStone.Black : OmokStone.White;
-            await LoadGameStateAsync();
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true); // 임시 : 돌 두기 성공 시 페이지 새로고침 
+                                                                    // TODO long polling으로 체크해서 턴 바뀌면 새로고침하도록
+            // await LoadGameStateAsync();
         }
     }
 
@@ -160,111 +163,6 @@
     }
 }
 
-
-@* @page "/omok"
-@using Blazored.SessionStorage
-@inject ISessionStorageService sessionStorage
-
-<h3>Omok Game</h3>
-
-<div class="wrapper">
-    <div class="omok-container">
-        <table class="omok-table">
-            @for (int i = 0; i < 15; i++)
-            {
-                <tr>
-                    @for (int j = 0; j < 15; j++)
-                    {
-                        var row = i;
-                        var col = j;
-                        <td>
-                            <button @onclick="@(args => PlaceStone(row, col))" class="omok-button" onmouseover="this.style.border='2px solid #000'" onmouseout="this.style.border='1px solid #ccc'">
-                                <img src="@GetStoneImage(row, col)" alt="stone" class="stone-img" />
-                            </button>
-                        </td>
-                    }
-                </tr>
-            }
-        </table>
-    </div>
-    <div class="info-container">
-        <div class="info-item">검은 돌: <span class="info-value">@playerId</span></div>
-        <div class="info-item">흰 돌: <span class="info-value">@opponent</span></div>
-        <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
-        <div class="info-item">남은 시간: <span class="info-value">00:30</span></div>
-    </div>
-</div>
-
-@code {
-    private string[,] board;
-    private string playerId;
-    private string opponent = "상대";
-
-    protected override async Task OnInitializedAsync()
-    {
-        playerId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
-        board = new string[15, 15]; // 배열 초기화
-    }
-
-    protected override void OnInitialized()
-    {
-        board = new string[15, 15]; // 배열 초기화
-    }
-
-    private string currentTurn = "black";
-
-    private async Task PlaceStone(int row, int col)
-    {
-        Console.WriteLine($"PlaceStone called with row: {row}, col: {col}");
-
-        if (row < 0 || row >= 15 || col < 0 || col >= 15)
-        {
-            Console.WriteLine("Index out of bounds.");
-            return; // 배열 경계 검사
-        }
-
-        if (board[row, col] != null)
-        {
-            Console.WriteLine("Position already occupied.");
-            return; // 이미 돌이 있는 곳에는 둘 수 없음
-        }
-
-        var response = "black";  // 임시로 설정된 현재 턴
-        if (response == currentTurn)
-        {
-            board[row, col] = currentTurn;
-            currentTurn = currentTurn == "black" ? "white" : "black";
-            Console.WriteLine($"Placed {board[row, col]} stone at row: {row}, col: {col}");
-        }
-        else
-        {
-            Console.WriteLine($"Turn mismatch: expected {currentTurn}, got {response}");
-        }
-        StateHasChanged();
-    }
-
-    private string GetStoneImage(int row, int col)
-    {
-        if (row < 0 || row >= 15 || col < 0 || col >= 15)
-        {
-            return "/images/empty.png"; // 배열 경계 검사
-        }
-
-        if (board[row, col] == "black")
-        {
-            return "/images/black_stone.png";
-        }
-        else if (board[row, col] == "white")
-        {
-            return "/images/white_stone.png";
-        }
-        else
-        {
-            return "/images/empty.png";
-        }
-    }
-}
- *@
 <style>
     body {
         margin: 0;
