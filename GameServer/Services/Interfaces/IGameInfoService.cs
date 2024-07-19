@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Services.Interfaces;
 
-public interface IGetGameInfoService
+public interface IGameInfoService
 {
     Task<OmokGameData> GetGameData(string playerId);
     Task<byte[]> GetBoard(string playerId);

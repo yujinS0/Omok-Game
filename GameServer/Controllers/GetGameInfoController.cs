@@ -12,9 +12,9 @@ namespace GameServer.Controllers;
 public class GetGameInfoController : ControllerBase
 {
     private readonly ILogger<GetGameInfoController> _logger;
-    private readonly IGetGameInfoService _gameInfoService;
+    private readonly IGameInfoService _gameInfoService;
 
-    public GetGameInfoController(ILogger<GetGameInfoController> logger, IGetGameInfoService gameInfoService)
+    public GetGameInfoController(ILogger<GetGameInfoController> logger, IGameInfoService gameInfoService)
     {
         _logger = logger;
         _gameInfoService = gameInfoService;

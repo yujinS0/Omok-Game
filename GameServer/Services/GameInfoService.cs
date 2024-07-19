@@ -7,12 +7,12 @@ using GameServer.Services.Interfaces;
 
 namespace GameServer.Services;
 
-public class GetGameInfoService : IGetGameInfoService
+public class GameInfoService : IGameInfoService
 {
     private readonly IMemoryDb _memoryDb;
-    private readonly ILogger<GetGameInfoService> _logger;
+    private readonly ILogger<GameInfoService> _logger;
 
-    public GetGameInfoService(IMemoryDb memoryDb, ILogger<GetGameInfoService> logger)
+    public GameInfoService(IMemoryDb memoryDb, ILogger<GameInfoService> logger)
     {
         _memoryDb = memoryDb;
         _logger = logger;
