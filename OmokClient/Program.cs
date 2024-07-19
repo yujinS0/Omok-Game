@@ -22,15 +22,17 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 // HttpClient 등록
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5284") });
 
-// MatchingService 등록
-builder.Services.AddScoped<MatchingService>();
-builder.Services.AddScoped<GameService>();
-
 // 게임 API 주소를 가진 HttpClient 등록
 builder.Services.AddHttpClient("GameAPI", client =>
 {
     client.BaseAddress = new Uri("http://localhost:5105");
 });
+
+// Service 등록
+builder.Services.AddScoped<BaseService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<MatchingService>();
+builder.Services.AddScoped<GameService>();
 
 // CustomAuthenticationStateProvider 등록
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();

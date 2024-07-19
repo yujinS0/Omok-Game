@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using AntDesign;
+using Blazored.SessionStorage;
 
 namespace OmokClient.Services;
 
@@ -12,14 +13,12 @@ public class GameService : BaseService
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public GameService(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-    }
+    public GameService(IHttpClientFactory httpClientFactory, ISessionStorageService sessionStorage)
+            : base(httpClientFactory, sessionStorage) { }
 
     public async Task<bool> PlaceStoneAsync(string playerId, int x, int y)
     {
-        var gameClient = _httpClientFactory.CreateClient("GameAPI");
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         var response = await gameClient.PostAsJsonAsync("PutOmok", new { PlayerId = playerId, X = x, Y = y });
         if (response.IsSuccessStatusCode)
@@ -32,7 +31,7 @@ public class GameService : BaseService
 
     public async Task<byte[]> GetBoardAsync(string playerId)
     {
-        var gameClient = _httpClientFactory.CreateClient("GameAPI");
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         Console.WriteLine($"Sending request to GetGameInfo/board for PlayerId: {playerId}");
 
@@ -88,7 +87,7 @@ public class GameService : BaseService
 
     public async Task<string> GetBlackPlayerAsync(string playerId)
     {
-        var gameClient = _httpClientFactory.CreateClient("GameAPI");
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         var response = await gameClient.PostAsJsonAsync("GetGameInfo/black", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
@@ -101,7 +100,7 @@ public class GameService : BaseService
 
     public async Task<string> GetWhitePlayerAsync(string playerId)
     {
-        var gameClient = _httpClientFactory.CreateClient("GameAPI");
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         var response = await gameClient.PostAsJsonAsync("GetGameInfo/white", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
@@ -114,7 +113,7 @@ public class GameService : BaseService
 
     public async Task<string> GetCurrentTurnAsync(string playerId)
     {
-        var gameClient = _httpClientFactory.CreateClient("GameAPI");
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         var response = await gameClient.PostAsJsonAsync("GetGameInfo/turn", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)

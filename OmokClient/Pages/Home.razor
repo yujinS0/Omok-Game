@@ -1,15 +1,10 @@
 ﻿@page "/"
 @using AntDesign
-@inject HttpClient Http
 @inject MessageService _message
-@inject IHttpClientFactory ClientFactory
 @inject CustomAuthenticationStateProvider CustomAuthProvider
 @inject NavigationManager Navigation
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@using Microsoft.AspNetCore.Components.Authorization
-@using Blazored.SessionStorage
-@inject ISessionStorageService sessionStorage
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject OmokClient.Services.AuthService AuthService
 
 <PageTitle>Home</PageTitle>
 
@@ -77,183 +72,58 @@
     </form>
 </div>
 
-@* [코드 수정중] 테스트 진행중 *@
-
 @code {
     private string registerEmail = string.Empty;
     private string registerPassword = string.Empty;
     private string loginEmail = string.Empty;
     private string loginPassword = string.Empty;
 
-    private async Task RegisterUser() // 회원가입
+    private async Task RegisterUser()
     {
-        // 입력받은 registerEmail과 registerPassword를 가지고 AccountRequest 만들어서 json 형식으로 넣어서
-        // http://localhost:5284/Account/register 호출 후 응답 받아오기
-        // 이때 응답값 result가 0이면, 오류 없는 것이므로 로그인 성공 로그 찍기! (더 나아가 팝업 메세지로 회원가입 성공 띄우기 등등)
-        // 이때 응답값 result가 0이 아니면, 오류이기 때문에 해당 오류 코드 실패 로그 찍기! (더 나아가 팝업 메세지로 회원가입 실패 띄우기 등등)   
-        // 하이브 회원가입 API (localhost:5284/register)
-        var registerData = new AccountRequest
+        var result = await AuthService.RegisterUserAsync(registerEmail, registerPassword);
+        if (result?.Result == ErrorCode.None)
         {
-            hive_player_id = registerEmail,
-            hive_player_pw = registerPassword
-        };
-        try
+            Console.WriteLine("Registration successful");
+            await _message.Success("회원가입 성공");
+        }
+        else
         {
-            var response = await Http.PostAsJsonAsync("register", registerData);
-            if (response.IsSuccessStatusCode)
+            Console.WriteLine("Registration failed: " + result?.Result);
+            await _message.Error("회원가입 실패: " + result?.Result, 5);
+        }
+    }
+
+    private async Task LoginUser()
+    {
+        var loginResponse = await AuthService.LoginUserAsync(loginEmail, loginPassword);
+        if (loginResponse?.Result == ErrorCode.None)
+        {
+            Console.WriteLine("Login successful");
+            await _message.Success("하이브 로그인 성공");
+
+            var gameLoginResponse = await AuthService.GameLoginAsync(loginResponse);
+            if (gameLoginResponse?.Result == ErrorCode.None)
             {
-                var result = await response.Content.ReadFromJsonAsync<AccountResponse>();
-                if (result?.Result == ErrorCode.None)
-                {
-                    Console.WriteLine("Registration successful");
-                    await _message.Success("회원가입 성공");
-                }
-                else
-                {
-                    Console.WriteLine("Registration failed: " + result?.Result);
-                    await _message.Error("회원가입 실패: " + result?.Result, 5);
-                }
+                Console.WriteLine("Game login successful");
+                await _message.Success("게임 로그인 성공");
+
+                CustomAuthProvider.NotifyUserLoggedIn(loginResponse.hive_player_id);
+
+                await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
+
+                Console.WriteLine("Navigating to /gamestart");
+                Navigation.NavigateTo("gamestart", true);
             }
             else
             {
-                Console.WriteLine("Registration failed");
-                await _message.Error("회원가입 실패", 5);
+                Console.WriteLine("Game login failed: " + gameLoginResponse?.Result);
+                await _message.Error("게임 로그인 실패: " + gameLoginResponse?.Result, 5);
             }
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine("Error: " + ex.Message);
-            await _message.Error("회원가입 중 오류 발생", 5);
+            Console.WriteLine("Login failed: " + loginResponse?.Result);
+            await _message.Error("하이브 로그인 실패: " + loginResponse?.Result, 5);
         }
-    }
-
-    private async Task LoginUser() // 로그인 과정 : 하이브 로그인(localhost:5284/login) -> 게임 로그인(localhost:5105/login)
-    {
-        // 1. 하이브 로그인 API (localhost:5284/login)
-        var loginData = new LoginRequest
-        {
-            hive_player_id = loginEmail,
-            hive_player_pw = loginPassword
-        };
-
-        try
-        {
-            var response = await Http.PostAsJsonAsync("login", loginData);
-            if (response.IsSuccessStatusCode)
-            {
-                LoginResponse loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (loginResponse?.Result == ErrorCode.None)
-                {
-                    Console.WriteLine("Login successful");
-                    await _message.Success("하이브 로그인 성공");
-
-                    // 2. 게임 로그인 API (localhost:5105/login)
-                    var gameLoginData = new GameLoginRequest
-                    {
-                        PlayerId = loginResponse.hive_player_id,
-                        Token = loginResponse.hive_token,
-                        AppVersion = "0.1.0",
-                        DataVersion = "0.1.0"
-                    };
-
-                    var gameClient = ClientFactory.CreateClient("GameAPI"); // HttpClientFactory 사용
-                    var gameResponse = await gameClient.PostAsJsonAsync("login", gameLoginData);
-                    if (gameResponse.IsSuccessStatusCode)
-                    {
-                        var gameResult = await gameResponse.Content.ReadFromJsonAsync<GameLoginResponse>();
-                        if (gameResult?.Result == ErrorCode.None)
-                        {
-                            Console.WriteLine("Game login successful");
-                            await _message.Success("게임 로그인 성공");
-                            
-                            // 인증 상태 업데이트 및 페이지 이동
-                            CustomAuthProvider.NotifyUserLoggedIn(loginResponse.hive_player_id);
-
-                            // 세션 스토리지에 이메일 저장
-                            await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
-
-                            Console.WriteLine("Navigating to /gamestart");
-                            Navigation.NavigateTo("gamestart", true);
-                        }
-                        else
-                        {
-                            Console.WriteLine("Game login failed: " + gameResult?.Result);
-                            await _message.Error("게임 로그인 실패: " + gameResult?.Result, 5);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Game login failed");
-                        await _message.Error("게임 로그인 실패", 5);
-                    }
-
-
-                }
-                else
-                {
-                    Console.WriteLine("Login failed: " + loginResponse?.Result);
-                    await _message.Error("하이브 로그인 실패: " + loginResponse?.Result, 5);
-                }
-            }
-            else
-            {
-                Console.WriteLine("Login failed");
-                await _message.Error("로그인 실패", 8);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error: " + ex.Message);
-            await _message.Error("로그인 중 오류 발생", 8);
-        }
-    }
-
-    // DTO 
-    // TODO : 파일 분리 ?
-    private class AccountRequest
-    {
-        public required string hive_player_id { get; set; }
-        public required string hive_player_pw { get; set; }
-    }
-
-    private class AccountResponse
-    {
-        public required ErrorCode Result { get; set; }
-    }
-
-    private class LoginRequest
-    {
-        public required string hive_player_id { get; set; }
-        public required string hive_player_pw { get; set; }
-    }
-
-    private class LoginResponse
-    {
-        public required ErrorCode Result { get; set; }
-        public required string hive_player_id { get; set; }
-        public string hive_token { get; set; } = string.Empty;
-    }
-    private class GameLoginRequest
-    {
-        public required string PlayerId { get; set; }
-        public required string Token { get; set; }
-        public string AppVersion { get; set; } = "0.1.0";
-        public string DataVersion { get; set; } = "0.1.0";
-    }
-
-    private class GameLoginResponse
-    {
-        public required ErrorCode Result { get; set; }
-    }
-
-    // ErrorCode 
-    // TODO : 파일 분리
-    public enum ErrorCode
-    {
-        None,
-        InvalidCredentials,
-        UserNotFound,
-        ServerError,
-        // 추가적인 에러 코드 정의
     }
 }
