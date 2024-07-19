@@ -139,6 +139,11 @@ public class OmokGameData
         return Encoding.UTF8.GetString(_rawData, index, whitePlayerNameLength);
     }
 
+    public string GetCurrentTurnPlayerName()
+    {
+        return GetCurrentTurn() == OmokStone.Black ? GetBlackPlayerName() : GetWhitePlayerName();
+    }
+
     public UInt64 GetTurnTime() // 현재 턴 시작 시각 반환
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1;
@@ -175,23 +180,20 @@ public class OmokGameData
         return rawData;
     }
 
-    //public void StartGame()
-    //{
-    //    _turnPlayerStone = OmokStone.Black;
-    //    _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-    //    int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
-    //    _rawData[turnIndex] = (byte)OmokStone.Black;
-
-    //    var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
-    //    Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
-    //}
-
-    public byte[] SetStone(byte[] rawData, bool isBlack, int x, int y) // TODO 가독성/코드 유지보수를 위해 isBlack을 받는 게 아니라. PlayerId 받기
+    public byte[] SetStone(byte[] rawData, string playerId, int x, int y) // TODO 가독성/코드 유지보수를 위해 isBlack을 받는 게 아니라. PlayerId 받기
     {
         Decoding(rawData);
 
+        // 현재 턴인 플레이어 이름 확인
+        string currentTurnPlayerName = GetCurrentTurnPlayerName();
+        if (currentTurnPlayerName != playerId)
+        {
+            throw new InvalidOperationException("Not the player's turn.");
+        }
+
         // 돌 두기
         int index = y * BoardSize + x;
+        bool isBlack = playerId == GetBlackPlayerName();
         rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
 
         // 턴 변경
