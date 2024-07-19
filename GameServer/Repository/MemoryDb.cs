@@ -44,6 +44,13 @@ namespace GameServer.Repository
             return result;
         }
 
+        public async Task<string> GetGameRoomIdAsync(string playerId)
+        {
+            var key = KeyGenerator.PlayingUser(playerId);
+            var userGameData = await GetPlayingUserInfoAsync(key);
+            return userGameData?.GameRoomId;
+        }
+
         public async Task<byte[]> GetGameDataAsync(string key)
         {
             try
