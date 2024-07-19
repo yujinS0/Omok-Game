@@ -106,7 +106,7 @@
                 if (result?.Result == ErrorCode.None)
                 {
                     Console.WriteLine("Registration successful");
-                    await _message.Success("회원가입 성공", 5);
+                    await _message.Success("회원가입 성공");
                 }
                 else
                 {
@@ -145,7 +145,7 @@
                 if (loginResponse?.Result == ErrorCode.None)
                 {
                     Console.WriteLine("Login successful");
-                    await _message.Success("하이브 로그인 성공", 3);
+                    await _message.Success("하이브 로그인 성공");
 
                     // 2. 게임 로그인 API (localhost:5105/login)
                     var gameLoginData = new GameLoginRequest
