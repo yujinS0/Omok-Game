@@ -43,7 +43,7 @@ public class CheckMatchingService : ICheckMatchingService
             // CreatedAt Redis에 넣을 때 생성
         };
 
-        _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, userGameData, TimeSpan.FromHours(2)).Wait();
+        _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, userGameData).Wait();
 
 
         // 매칭 성공 했으니 게임 시작 상태로 바꿔주기 (근데 여기서 처리하면 플레이어 별로 Update해서 총 두번씩 호출된다..)
@@ -52,7 +52,7 @@ public class CheckMatchingService : ICheckMatchingService
         var omokGameData = new OmokGameData();
         byte[] gameRawData = omokGameData.StartGame(getGameRawData);
 
-        var gameStartResult = await _memoryDb.UpdateGameDataAsync(result.GameRoomId, gameRawData, TimeSpan.FromHours(2)); // 게임 시작 상태로 데이터 업데이트
+        var gameStartResult = await _memoryDb.UpdateGameDataAsync(result.GameRoomId, gameRawData); // 게임 시작 상태로 데이터 업데이트
         _logger.LogInformation("Update game info: GamerawData={gameStartResult}", gameStartResult);
 
         if (!gameStartResult)

@@ -72,7 +72,7 @@ public class PutOmokController : ControllerBase
         }
 
         // 업데이트된 데이터 Redis 저장
-        bool updateResult = await _memoryDb.UpdateGameDataAsync(gameRoomId, updatedRawData, TimeSpan.FromHours(2));
+        bool updateResult = await _memoryDb.UpdateGameDataAsync(gameRoomId, updatedRawData);
         if (!updateResult)
         {
             _logger.LogError("Failed to update game data for RoomId: {RoomId}", gameRoomId);
