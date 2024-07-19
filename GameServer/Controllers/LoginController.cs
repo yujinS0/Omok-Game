@@ -61,13 +61,19 @@ public class LoginController : ControllerBase
             var saveResult = await _loginService.SaveLoginInfoAsync(request);
             if (saveResult != ErrorCode.None)
             {
-                return new LoginResponse { Result = saveResult };
+                return new LoginResponse 
+                { 
+                    Result = saveResult 
+                };
             }
 
             var initializeResult = await _loginService.InitializeUserDataAsync(request.PlayerId);
             if (initializeResult != ErrorCode.None)
             {
-                return new LoginResponse { Result = initializeResult };
+                return new LoginResponse 
+                { 
+                    Result = initializeResult 
+                };
             }
 
             _logger.LogInformation("Successfully authenticated user with token");
@@ -80,17 +86,26 @@ public class LoginController : ControllerBase
         catch (HttpRequestException e)
         {
             _logger.LogError(e, "HTTP request to token validation service failed.");
-            return new LoginResponse { Result = ErrorCode.ServerError };
+            return new LoginResponse 
+            { 
+                Result = ErrorCode.ServerError 
+            };
         }
         catch (JsonException e)
         {
             _logger.LogError(e, "Error parsing JSON from token validation service.");
-            return new LoginResponse { Result = ErrorCode.JsonParsingError };
+            return new LoginResponse 
+            { 
+                Result = ErrorCode.JsonParsingError 
+            };
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Unexpected error occurred during login.");
-            return new LoginResponse { Result = ErrorCode.InternalError };
+            return new LoginResponse 
+            { 
+                Result = ErrorCode.InternalError 
+            };
         }
 
         //var response = await _loginService.Login(request);
