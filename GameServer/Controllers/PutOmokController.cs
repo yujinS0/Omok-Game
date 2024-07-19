@@ -51,15 +51,19 @@ public class PutOmokController : ControllerBase
         var omokGameData = new OmokGameData();
         omokGameData.Decoding(rawData);
 
-        // 흑돌 플레이어 이름을 가져와서 요청을 보낸 사람이 흑돌인지 확인
-        string blackPlayerName = omokGameData.GetBlackPlayerName();
-        bool isBlack = request.PlayerId == blackPlayerName;
+        // 현재 턴인 플레이어 이름을 가져와서 요청을 보낸 사람이 현재 턴인지 확인
+        string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
+        if (request.PlayerId != currentTurnPlayerName)
+        {
+            _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", request.PlayerId);
+            return new PutOmokResponse { Result = ErrorCode.NotYourTurn };
+        }
 
         // 돌을 두는 로직을 수행
         byte[] updatedRawData;
         try
         {
-            updatedRawData = omokGameData.SetStone(rawData, isBlack, request.X, request.Y);
+            updatedRawData = omokGameData.SetStone(rawData, request.PlayerId, request.X, request.Y);
         }
         catch (Exception ex)
         {

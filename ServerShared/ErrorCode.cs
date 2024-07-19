@@ -103,6 +103,7 @@ public enum ErrorCode : UInt16
     GameDataNotFound = 2400,
     SetStoneFailException = 2401,
     UpdateGameDataFailException = 2402,
+    NotYourTurn = 2403,
 
 
     // Item 3000 ~
