@@ -8,7 +8,7 @@ using GameServer.DTO;
 using GameServer.Services.Interfaces;
 using ServerShared;
 
-namespace GameServer.Controllers;
+namespace GameServer.Controllers.Matching;
 
 [ApiController]
 [Route("[controller]")]

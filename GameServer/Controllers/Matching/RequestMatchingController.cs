@@ -6,7 +6,7 @@ using GameServer.Services.Interfaces;
 using ServerShared;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GameServer.Controllers;
+namespace GameServer.Controllers.Matching;
 
 [ApiController]
 [Route("[controller]")]
@@ -33,17 +33,26 @@ public class RequestMatchingController : ControllerBase
         catch (HttpRequestException e)
         {
             _logger.LogError(e, "Error while calling match server");
-            return new MatchResponse { Result = ErrorCode.ServerError };
+            return new MatchResponse 
+            { 
+                Result = ErrorCode.ServerError 
+            };
         }
         catch (JsonException e)
         {
             _logger.LogError(e, "Error parsing JSON from match server");
-            return new MatchResponse { Result = ErrorCode.JsonParsingError };
+            return new MatchResponse 
+            { 
+                Result = ErrorCode.JsonParsingError 
+            };
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Unexpected error occurred");
-            return new MatchResponse { Result = ErrorCode.InternalError };
+            return new MatchResponse 
+            { 
+                Result = ErrorCode.InternalError 
+            };
         }
     }
 }
