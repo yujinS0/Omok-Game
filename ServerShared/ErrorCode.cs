@@ -100,10 +100,16 @@ public enum ErrorCode : UInt16
     GetRankingFailException = 2302,
     GetUserRankFailException = 2303,
 
-    GameDataNotFound = 2400,
-    SetStoneFailException = 2401,
-    UpdateGameDataFailException = 2402,
-    NotYourTurn = 2403,
+    GameDataNotFound = 2401,
+    GameRoomNotFound = 2402,
+    GameBoardNotFound = 2403,
+    GameBlackNotFound = 2404,
+    GameWhiteNotFound = 2405,
+    GameTurnNotFound = 2406,
+
+    UpdateGameDataFailException = 2501,
+    SetStoneFailException = 2502,
+    NotYourTurn = 2503,
 
 
     // Item 3000 ~

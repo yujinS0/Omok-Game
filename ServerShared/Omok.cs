@@ -28,8 +28,8 @@ public enum OmokStone
 
 public class OmokGameData
 {
-    const int BoardSize = 15;
-    const int BoardSizeSquare = BoardSize * BoardSize;
+    public const int BoardSize = 15;
+    public const int BoardSizeSquare = BoardSize * BoardSize;
 
     const byte BlackStone = 1;
     const byte WhiteStone = 2;
