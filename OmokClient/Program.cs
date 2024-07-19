@@ -24,6 +24,7 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://
 
 // MatchingService 등록
 builder.Services.AddScoped<MatchingService>();
+builder.Services.AddScoped<GameService>();
 
 // 게임 API 주소를 가진 HttpClient 등록
 builder.Services.AddHttpClient("GameAPI", client =>

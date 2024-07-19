@@ -1,4 +1,167 @@
 ﻿@page "/omok"
+@using AntDesign
+@using Blazored.SessionStorage
+@using OmokClient.Services
+@inject ISessionStorageService sessionStorage
+@inject GameService GameService
+@inject MessageService _message
+
+<h3>Omok Game</h3>
+
+<div class="wrapper">
+    <div class="omok-container">
+        <table class="omok-table">
+            @for (int i = 0; i < 15; i++)
+            {
+                <tr>
+                    @for (int j = 0; j < 15; j++)
+                    {
+                        var row = i;
+                        var col = j;
+                        <td>
+                            <button @onclick="@(args => PlaceStone(row, col))" class="omok-button" onmouseover="this.style.border='2px solid #000'" onmouseout="this.style.border='1px solid #ccc'">
+                                <img src="@GetStoneImage(row, col)" alt="stone" class="stone-img" />
+                            </button>
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+    <div class="info-container">
+        <div class="info-item">흑돌: <span class="info-value">@blackPlayer</span></div>
+        <div class="info-item">백돌: <span class="info-value">@whitePlayer</span></div>
+        <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
+        <div class="info-item">남은 시간: <span class="info-value">00:30</span></div>
+    </div>
+</div>
+
+@code {
+    private OmokStone[,] board = new OmokStone[15, 15]; // 기본값으로 초기화
+    private string playerId = string.Empty;
+    private string blackPlayer = string.Empty;
+    private string whitePlayer = string.Empty;
+    private string currentTurn = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        playerId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+
+        blackPlayer = await sessionStorage.GetItemAsync<string>("blackPlayer") ?? string.Empty;
+        whitePlayer = await sessionStorage.GetItemAsync<string>("whitePlayer") ?? string.Empty;
+
+        if (string.IsNullOrEmpty(blackPlayer) || string.IsNullOrEmpty(whitePlayer))
+        {
+            blackPlayer = await GameService.GetBlackPlayerAsync(playerId);
+            whitePlayer = await GameService.GetWhitePlayerAsync(playerId);
+            await sessionStorage.SetItemAsync("blackPlayer", blackPlayer);
+            await sessionStorage.SetItemAsync("whitePlayer", whitePlayer);
+        }
+
+        await LoadGameStateAsync();
+    }
+
+    private async Task LoadGameStateAsync()
+    {
+        try
+        {
+            var rawData = await GameService.GetBoardAsync(playerId);
+            if (rawData != null)
+            {
+                DecodeBoard(rawData);
+            }
+
+            currentTurn = await GameService.GetCurrentTurnAsync(playerId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading game state: {ex.Message}");
+        }
+    }
+
+    private async Task PlaceStone(int row, int col)
+    {
+        if (board == null)
+        {
+            await _message.Error("오목판이 초기화되지 않았습니다.", 5);
+            return;
+        }
+
+        if (row < 0 || row >= 15 || col < 0 || col >= 15 || board[row, col] != OmokStone.None)
+        {
+            return;
+        }
+
+        if ((currentTurn == "black" && playerId != blackPlayer) || (currentTurn == "white" && playerId != whitePlayer))
+        {
+            await _message.Error("당신의 차례가 아닙니다!!", 5);
+            return;
+        }
+
+        var success = await GameService.PlaceStoneAsync(playerId, col, row);
+        if (success)
+        {
+            board[row, col] = playerId == blackPlayer ? OmokStone.Black : OmokStone.White;
+            await LoadGameStateAsync();
+        }
+    }
+
+    private string GetStoneImage(int row, int col)
+    {
+        if (board == null || row < 0 || row >= 15 || col < 0 || col >= 15)
+        {
+            return "/images/empty.png"; // 배열 경계 검사 및 board가 null인 경우 처리
+        }
+
+        return board[row, col] switch
+        {
+            OmokStone.Black => "/images/black_stone.png",
+            OmokStone.White => "/images/white_stone.png",
+            _ => "/images/empty.png"
+        };
+    }
+
+    private void DecodeBoard(byte[] rawData)
+    {
+        if (rawData != null)
+        {
+            Console.WriteLine($"Raw data length: {rawData.Length}");
+            Console.WriteLine($"Raw data: {BitConverter.ToString(rawData)}");
+        }
+        else
+        {
+            Console.WriteLine("Raw data is null.");
+        }
+
+        if (rawData != null && rawData.Length >= 15 * 15)
+        {
+            Console.WriteLine("Decoding board...");
+
+            board = new OmokStone[15, 15];
+            for (int y = 0; y < 15; y++)
+            {
+                for (int x = 0; x < 15; x++)
+                {
+                    board[y, x] = (OmokStone)rawData[y * 15 + x];
+                    Console.WriteLine($"Stone at ({x}, {y}): {board[y, x]}");
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid raw data length or raw data is null. Initializing board to default.");
+
+            // 데이터가 올바르지 않은 경우 기본값으로 초기화
+            board = new OmokStone[15, 15];
+        }
+
+        Console.WriteLine("Board decoding complete.");
+    }
+}
+
+
+@* @page "/omok"
 @using Blazored.SessionStorage
 @inject ISessionStorageService sessionStorage
 
@@ -25,8 +188,8 @@
         </table>
     </div>
     <div class="info-container">
-        <div class="info-item">내 닉네임: <span class="info-value">@playerId</span></div>
-        <div class="info-item">상대 닉네임: <span class="info-value">@opponent</span></div>
+        <div class="info-item">검은 돌: <span class="info-value">@playerId</span></div>
+        <div class="info-item">흰 돌: <span class="info-value">@opponent</span></div>
         <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
         <div class="info-item">남은 시간: <span class="info-value">00:30</span></div>
     </div>
@@ -101,7 +264,7 @@
         }
     }
 }
-
+ *@
 <style>
     body {
         margin: 0;
