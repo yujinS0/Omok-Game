@@ -40,6 +40,9 @@ var app = builder.Build();
 // CORS 미들웨어 추가
 app.UseCors("AllowAllOrigins");
 
+app.UseMiddleware<GameServer.Middleware.CheckVersion>();
+app.UseMiddleware<GameServer.Middleware.CheckUserAuth>();
+
 app.MapControllers();
 
 app.Run();

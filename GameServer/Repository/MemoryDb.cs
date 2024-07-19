@@ -44,6 +44,25 @@ namespace GameServer.Repository
             return result;
         }
 
+        public async Task<string> GetUserLoginTokenAsync(string playerId)
+        {
+            var key = KeyGenerator.UserLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var result = await redisString.GetAsync();
+
+            if (result.HasValue)
+            {
+                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                return result.Value.Token;
+            }
+            else
+            {
+                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                return null;
+            }
+        }
+
+
         public async Task<string> GetGameRoomIdAsync(string playerId)
         {
             var key = KeyGenerator.PlayingUser(playerId);
