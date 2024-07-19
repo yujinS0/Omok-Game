@@ -150,7 +150,7 @@ public class OmokGameData
         return BitConverter.ToUInt64(_rawData, index);
     }
 
-    public OmokStone GetWinner() // 이긴 사람 정보 반환
+    public OmokStone GetWinnerStone() // 이긴 사람 정보 반환
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1 + 8;
         return (OmokStone)_rawData[index];
@@ -211,20 +211,6 @@ public class OmokGameData
 
         return rawData;
     }
-
-    //public void SetStone(bool isBlack, int x, int y)
-    //{
-    //    int index = y * BoardSize + x;
-    //    _rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
-
-    //    _turnPlayerStone = isBlack ? OmokStone.White : OmokStone.Black;
-    //    _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-    //    int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
-    //    _rawData[turnIndex] = (byte)_turnPlayerStone;
-
-    //    var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
-    //    Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
-    //}
 
     public void OmokCheck() // 돌 5개 있는지 체크하는 함수
     {
