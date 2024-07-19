@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using GameServer.DTO;
 using GameServer.Services.Interfaces;
+using ServerShared;
 
 namespace GameServer.Controllers;
 
@@ -23,9 +24,24 @@ public class CheckMatchingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request) // TODO : IsMatched() 함수 이름 바꾸기
+    public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request)
     {
-        return await _checkMatchingService.CheckAndInitializeMatch(request);
+        var result = await _checkMatchingService.CheckAndInitializeMatch(request.PlayerId);
+
+        if (result == null)
+        {
+            return new MatchCompleteResponse
+            {
+                Result = ErrorCode.None,
+                Success = 0
+            };
+        }
+
+        return new MatchCompleteResponse
+        {
+            Result = ErrorCode.None,
+            Success = 1
+        };
     }
 }
 // Redis에서 Player의 매칭 결과 확인

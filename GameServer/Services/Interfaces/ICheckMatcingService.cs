@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using GameServer.DTO;
+using GameServer.Models;
 
 namespace GameServer.Services.Interfaces;
 
 public interface ICheckMatchingService
 {
-    Task<MatchCompleteResponse> CheckAndInitializeMatch(MatchRequest request);
+    Task<MatchResult> CheckAndInitializeMatch(string playerId);
 }
