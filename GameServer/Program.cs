@@ -24,7 +24,7 @@ builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
 builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
-builder.Services.AddScoped<IGameInfoService, GameInfoService>();
+builder.Services.AddScoped<IGameService, GameService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory Ãß°¡
 

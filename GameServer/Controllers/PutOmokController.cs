@@ -17,68 +17,24 @@ namespace GameServer.Controllers;
 public class PutOmokController : ControllerBase
 {
     private readonly ILogger<PutOmokController> _logger;
-    //private readonly IPutOmokControllerService _putOmokControllerService;
-    private readonly IMemoryDb _memoryDb;
+    private readonly IGameService _gameService;
 
-    public PutOmokController(ILogger<PutOmokController> logger, IMemoryDb memoryDb)
+    public PutOmokController(ILogger<PutOmokController> logger, IGameService gameService)
     {
         _logger = logger;
-        _memoryDb = memoryDb;
+        _gameService = gameService;
     }
 
     [HttpPost]
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request)
     {
-        // GameRoomID 가져오는 로직
-        string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
-        UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);
+        var result = await _gameService.PutOmokAsync(request);
 
-        if (userGameData == null)
+        if (result != ErrorCode.None)
         {
-            _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", request.PlayerId);
-            return new PutOmokResponse { Result = ErrorCode.GameDataNotFound };
+            _logger.LogError($"[PutOmok] PlayerId: {request.PlayerId}, ErrorCode: {result}");
         }
 
-        string gameRoomId = userGameData.GameRoomId;
-
-        byte[] rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
-        if (rawData == null)
-        {
-            _logger.LogError("Failed to retrieve game data for RoomId: {RoomId}", gameRoomId);
-            return new PutOmokResponse { Result = ErrorCode.GameDataNotFound };
-        }
-
-        var omokGameData = new OmokGameData();
-        omokGameData.Decoding(rawData);
-
-        // 현재 턴인 플레이어 이름을 가져와서 요청을 보낸 사람이 현재 턴인지 확인
-        string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
-        if (request.PlayerId != currentTurnPlayerName)
-        {
-            _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", request.PlayerId);
-            return new PutOmokResponse { Result = ErrorCode.NotYourTurn };
-        }
-
-        // 돌을 두는 로직을 수행
-        byte[] updatedRawData;
-        try
-        {
-            updatedRawData = omokGameData.SetStone(rawData, request.PlayerId, request.X, request.Y);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to set stone at ({X}, {Y}) for PlayerId: {PlayerId}", request.X, request.Y, request.PlayerId);
-            return new PutOmokResponse { Result = ErrorCode.SetStoneFailException };
-        }
-
-        // 업데이트된 데이터 Redis 저장
-        bool updateResult = await _memoryDb.UpdateGameDataAsync(gameRoomId, updatedRawData);
-        if (!updateResult)
-        {
-            _logger.LogError("Failed to update game data for RoomId: {RoomId}", gameRoomId);
-            return new PutOmokResponse { Result = ErrorCode.UpdateGameDataFailException };
-        }
-
-        return new PutOmokResponse { Result = ErrorCode.None };
+        return new PutOmokResponse { Result = result };
     }
 }

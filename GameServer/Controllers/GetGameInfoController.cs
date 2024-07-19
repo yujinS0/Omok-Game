@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GameServer.DTO;
 using GameServer.Services.Interfaces;
 using ServerShared;
+using GameServer.Services;
 
 namespace GameServer.Controllers;
 
@@ -12,71 +13,105 @@ namespace GameServer.Controllers;
 public class GetGameInfoController : ControllerBase
 {
     private readonly ILogger<GetGameInfoController> _logger;
-    private readonly IGameInfoService _gameInfoService;
+    private readonly IGameService _gameService;
 
-    public GetGameInfoController(ILogger<GetGameInfoController> logger, IGameInfoService gameInfoService)
+    public GetGameInfoController(ILogger<GetGameInfoController> logger, IGameService gameService)
     {
         _logger = logger;
-        _gameInfoService = gameInfoService;
+        _gameService = gameService;
     }
 
     [HttpPost("board")]
     public async Task<BoardResponse> GetBoard([FromBody] PlayerRequest request)
     {
-        var rawData = await _gameInfoService.GetBoard(request.PlayerId);
+        var rawData = await _gameService.GetBoard(request.PlayerId);
         if (rawData == null)
         {
-            return new BoardResponse { Result = ErrorCode.GameBoardNotFound };
+            return new BoardResponse 
+            { 
+                Result = ErrorCode.GameBoardNotFound 
+            };
         }
-        return new BoardResponse { Result = ErrorCode.None, Board = rawData };
+        return new BoardResponse 
+        { 
+            Result = ErrorCode.None, 
+            Board = rawData 
+        };
     }
 
 
     [HttpPost("black")]
     public async Task<PlayerResponse> GetBlackPlayer([FromBody] PlayerRequest request)
     {
-        var blackPlayer = await _gameInfoService.GetBlackPlayer(request.PlayerId);
+        var blackPlayer = await _gameService.GetBlackPlayer(request.PlayerId);
         if (blackPlayer == null)
         {
-            return new PlayerResponse { Result = ErrorCode.GameBlackNotFound };
+            return new PlayerResponse 
+            { 
+                Result = ErrorCode.GameBlackNotFound 
+            };
         }
 
-        return new PlayerResponse { Result = ErrorCode.None, PlayerId = blackPlayer };
+        return new PlayerResponse 
+        { 
+            Result = ErrorCode.None, 
+            PlayerId = blackPlayer 
+        };
     }
 
     [HttpPost("white")]
     public async Task<PlayerResponse> GetWhitePlayer([FromBody] PlayerRequest request)
     {
-        var whitePlayer = await _gameInfoService.GetWhitePlayer(request.PlayerId);
+        var whitePlayer = await _gameService.GetWhitePlayer(request.PlayerId);
         if (whitePlayer == null)
         {
-            return new PlayerResponse { Result = ErrorCode.GameWhiteNotFound };
+            return new PlayerResponse 
+            { 
+                Result = ErrorCode.GameWhiteNotFound 
+            };
         }
 
-        return new PlayerResponse { Result = ErrorCode.None, PlayerId = whitePlayer };
+        return new PlayerResponse 
+        { 
+            Result = ErrorCode.None, 
+            PlayerId = whitePlayer 
+        };
     }
 
     [HttpPost("turn")]
     public async Task<CurrentTurnResponse> GetCurrentTurn([FromBody] PlayerRequest request)
     {
-        var currentTurn = await _gameInfoService.GetCurrentTurn(request.PlayerId);
+        var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
         if (currentTurn == OmokStone.None)
         {
-            return new CurrentTurnResponse { Result = ErrorCode.GameTurnNotFound };
+            return new CurrentTurnResponse 
+            { 
+                Result = ErrorCode.GameTurnNotFound 
+            };
         }
 
-        return new CurrentTurnResponse { Result = ErrorCode.None, CurrentTurn = currentTurn };
+        return new CurrentTurnResponse 
+        { 
+            Result = ErrorCode.None, 
+            CurrentTurn = currentTurn 
+        };
     }
 
     [HttpPost("winner")]
     public async Task<WinnerResponse> GetWinner([FromBody] PlayerRequest request)
     {
-        var winner = await _gameInfoService.GetWinner(request.PlayerId);
-        if (winner == null)
+        var (result, winner) = await _gameService.GetWinnerAsync(request.PlayerId);
+
+        if (result != ErrorCode.None)
         {
-            return new WinnerResponse { Result = ErrorCode.None, Winner = null };
+            _logger.LogError($"[GetWinner] PlayerId: {request.PlayerId}, ErrorCode: {result}");
+            return new WinnerResponse { Result = result, Winner = null };
         }
 
-        return new WinnerResponse { Result = ErrorCode.None, Winner = winner };
+        return new WinnerResponse
+        {
+            Result = ErrorCode.None,
+            Winner = winner
+        };
     }
 }
