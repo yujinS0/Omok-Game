@@ -19,11 +19,11 @@
 
 <body>
     <div id="app">
-        <svg class="loading-progress">
+        <svg class="loading-progress" id="loading-progress">
             <circle r="40%" cx="50%" cy="50%" />
             <circle r="40%" cx="50%" cy="50%" />
         </svg>
-        <div class="loading-progress-text"></div>
+        <div class="loading-progress-text" id="loading-progress-text">Loading...</div>
     </div>
 
     <div id="blazor-error-ui">
@@ -33,6 +33,24 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var path = window.location.pathname;
+            if (path === '/omok') {
+                document.getElementById('loading-progress').style.display = 'none';
+                document.getElementById('loading-progress-text').style.display = 'none';
+            }
+        });
+
+        // 페이지 이동 시에도 로딩 화면 제어
+        Blazor.start().then(() => {
+            var path = window.location.pathname;
+            if (path === '/omok') {
+                document.getElementById('loading-progress').style.display = 'none';
+                document.getElementById('loading-progress-text').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 
 </html>
