@@ -15,18 +15,18 @@ namespace GameServer.Controllers;
 public class CheckMatchingController : ControllerBase
 {
     private readonly ILogger<CheckMatchingController> _logger;
-    private readonly ICheckMatchingService _checkMatchingService;
+    private readonly IMatchingService _matchingService;
 
-    public CheckMatchingController(ILogger<CheckMatchingController> logger, ICheckMatchingService checkMatchingService)
+    public CheckMatchingController(ILogger<CheckMatchingController> logger, IMatchingService matchingService)
     {
         _logger = logger;
-        _checkMatchingService = checkMatchingService;
+        _matchingService = matchingService;
     }
 
     [HttpPost]
     public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request)
     {
-        var result = await _checkMatchingService.CheckAndInitializeMatch(request.PlayerId);
+        var result = await _matchingService.CheckAndInitializeMatch(request.PlayerId);
 
         if (result == null)
         {

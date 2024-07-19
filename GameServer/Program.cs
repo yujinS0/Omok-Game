@@ -23,8 +23,8 @@ builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("RedisConf
 builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
 builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
 builder.Services.AddScoped<ILoginService, LoginService>();
-builder.Services.AddScoped<ICheckMatchingService, CheckMatchingService>();
-builder.Services.AddScoped<IGetGameInfoService, GetGameInfoService>();
+builder.Services.AddScoped<IMatchingService, MatchingService>();
+builder.Services.AddScoped<IGameInfoService, GameInfoService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory Ãß°¡
 
