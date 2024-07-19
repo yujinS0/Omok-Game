@@ -20,7 +20,7 @@ public class CheckMatchingService : ICheckMatchingService
         _logger = logger;
     }
 
-    public async Task<MatchCompleteResponse> IsMatched(MatchRequest request)
+    public async Task<MatchCompleteResponse> CheckAndInitializeMatch(MatchRequest request)
     {
         var matchResultkey = KeyGenerator.MatchResult(request.PlayerId);
         var result = await _memoryDb.GetMatchResultAsync(matchResultkey);

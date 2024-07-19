@@ -23,9 +23,9 @@ public class CheckMatchingController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<MatchCompleteResponse> IsMatched([FromBody] MatchRequest request) // TODO : IsMatched() 함수 이름 바꾸기
+    public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request) // TODO : IsMatched() 함수 이름 바꾸기
     {
-        return await _checkMatchingService.IsMatched(request);
+        return await _checkMatchingService.CheckAndInitializeMatch(request);
     }
 }
 // Redis에서 Player의 매칭 결과 확인

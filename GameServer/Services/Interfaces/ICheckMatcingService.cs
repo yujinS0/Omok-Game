@@ -5,5 +5,5 @@ namespace GameServer.Services.Interfaces;
 
 public interface ICheckMatchingService
 {
-    Task<MatchCompleteResponse> IsMatched(MatchRequest request);
+    Task<MatchCompleteResponse> CheckAndInitializeMatch(MatchRequest request);
 }
