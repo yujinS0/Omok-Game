@@ -22,7 +22,7 @@ public class VerifyTokenService : IVerifyTokenService
 
     public async Task<VerifyTokenResponse> Verify(VerifyTokenRequest request)
     {
-        bool isValid = await ValidateTokenAsync(request.hive_player_id, request.hive_token);
+        bool isValid = await ValidateTokenAsync(request.HivePlayerId, request.HiveToken);
 
         if (!isValid)
         {

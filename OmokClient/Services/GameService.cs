@@ -66,25 +66,6 @@ public class GameService : BaseService
         return null;
     }
 
-
-
-    //public async Task<byte[]> GetBoardAsync(string playerId)
-    //{
-    //    var gameClient = _httpClientFactory.CreateClient("GameAPI");
-    //    Console.WriteLine($"Sending request to GetGameInfo/board for PlayerId: {playerId}");
-
-    //    var response = await gameClient.PostAsJsonAsync("GetGameInfo/board", new { PlayerId = playerId });
-    //    if (response.IsSuccessStatusCode)
-    //    {
-    //        var result = await response.Content.ReadFromJsonAsync<BoardResponse>();
-    //        if (result?.RawData != null)
-    //        {
-    //            return Convert.FromBase64String(result.RawData);
-    //        }
-    //    }
-    //    return null;
-    //}
-
     public async Task<string> GetBlackPlayerAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");

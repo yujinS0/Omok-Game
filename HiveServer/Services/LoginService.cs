@@ -18,7 +18,7 @@ public class LoginService : ILoginService
 
     public async Task<LoginResponse> Login(LoginRequest request)
     {
-        var (error, hivePlayerId) = await _hiveDb.VerifyUser(request.hive_player_id, request.hive_player_pw);
+        var (error, hivePlayerId) = await _hiveDb.VerifyUser(request.HivePlayerId, request.HivePlayerPw);
         if (error != ErrorCode.None)
         {
             return new LoginResponse { Result = error };
@@ -32,6 +32,6 @@ public class LoginService : ILoginService
             return new LoginResponse { Result = ErrorCode.InternalError };
         }
 
-        return new LoginResponse { hive_player_id = hivePlayerId, hive_token = token, Result = ErrorCode.None };
+        return new LoginResponse { HivePlayerId = hivePlayerId, HiveToken = token, Result = ErrorCode.None };
     }
 }

@@ -1,7 +1,7 @@
 namespace HiveServer.Models;
 public class HdbAccount
 {
-    public long account_uid { get; set; }
-    public required string hive_player_id { get; set; } // email
-    public required string hive_player_pw { get; set; }
+    public long AccountUid { get; set; }
+    public required string HivePlayerId { get; set; } // email
+    public required string HivePlayerPw { get; set; }
 }

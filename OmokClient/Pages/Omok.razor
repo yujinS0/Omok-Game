@@ -104,9 +104,9 @@
         if (success)
         {
             board[row, col] = playerId == blackPlayer ? OmokStone.Black : OmokStone.White;
-            Navigation.NavigateTo(Navigation.Uri, forceLoad: true); // 임시 : 돌 두기 성공 시 페이지 새로고침 
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true); // 임시 : 돌 두기 성공 시 페이지 새로고침
                                                                     // TODO long polling으로 체크해서 턴 바뀌면 새로고침하도록
-            // await LoadGameStateAsync();
+                                                                    // await LoadGameStateAsync();
         }
     }
 

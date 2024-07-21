@@ -22,8 +22,8 @@ public class AuthService
     {
         var registerData = new AccountRequest
         {
-            hive_player_id = email,
-            hive_player_pw = password
+            HivePlayerId = email,
+            HivePlayerPw = password
         };
 
         var response = await _httpClient.PostAsJsonAsync("register", registerData);
@@ -38,8 +38,8 @@ public class AuthService
     {
         var loginData = new LoginRequest
         {
-            hive_player_id = email,
-            hive_player_pw = password
+            HivePlayerId = email,
+            HivePlayerPw = password
         };
 
         var response = await _httpClient.PostAsJsonAsync("login", loginData);
@@ -48,8 +48,8 @@ public class AuthService
             var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
             if (loginResponse != null && loginResponse.Result == ErrorCode.None)
             {
-                await _sessionStorage.SetItemAsync("PlayerId", loginResponse.hive_player_id);
-                await _sessionStorage.SetItemAsync("Token", loginResponse.hive_token);
+                await _sessionStorage.SetItemAsync("PlayerId", loginResponse.HivePlayerId);
+                await _sessionStorage.SetItemAsync("Token", loginResponse.HiveToken);
             }
             return loginResponse;
         }
@@ -60,8 +60,8 @@ public class AuthService
     {
         var gameLoginData = new GameLoginRequest
         {
-            PlayerId = loginResponse.hive_player_id,
-            Token = loginResponse.hive_token,
+            PlayerId = loginResponse.HivePlayerId,
+            Token = loginResponse.HiveToken,
             AppVersion = "0.1.0",
             DataVersion = "0.1.0"
         };
@@ -81,8 +81,8 @@ public class AuthService
 // DTO 
 public class AccountRequest
 {
-    public required string hive_player_id { get; set; }
-    public required string hive_player_pw { get; set; }
+    public required string HivePlayerId { get; set; }
+    public required string HivePlayerPw { get; set; }
 }
 
 public class AccountResponse
@@ -92,15 +92,15 @@ public class AccountResponse
 
 public class LoginRequest
 {
-    public required string hive_player_id { get; set; }
-    public required string hive_player_pw { get; set; }
+    public required string HivePlayerId { get; set; }
+    public required string HivePlayerPw { get; set; }
 }
 
 public class LoginResponse
 {
     public required ErrorCode Result { get; set; }
-    public required string hive_player_id { get; set; }
-    public string hive_token { get; set; } = string.Empty;
+    public required string HivePlayerId { get; set; }
+    public string HiveToken { get; set; } = string.Empty;
 }
 
 public class GameLoginRequest

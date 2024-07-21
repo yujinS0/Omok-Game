@@ -26,8 +26,8 @@ public class LoginController : ControllerBase
         {
             var verifyTokenRequest = new VerifyTokenRequest
             {
-                hive_player_id = request.PlayerId,
-                hive_token = request.Token
+                HivePlayerId = request.PlayerId,
+                HiveToken = request.Token
             };
 
             var (result, responseBody) = await _loginService.VerifyTokenAsync(verifyTokenRequest);

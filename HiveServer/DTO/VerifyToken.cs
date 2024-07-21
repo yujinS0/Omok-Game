@@ -5,9 +5,9 @@ namespace HiveServer.DTO;
 public class VerifyTokenRequest
 {
     [Required]
-    public string hive_player_id { get; set; }
+    public string HivePlayerId { get; set; }
     [Required]
-    public required string hive_token { get; set; }
+    public required string HiveToken { get; set; }
 }
 
 public class VerifyTokenResponse

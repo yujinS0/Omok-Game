@@ -107,7 +107,7 @@
                 Console.WriteLine("Game login successful");
                 await _message.Success("게임 로그인 성공");
 
-                CustomAuthProvider.NotifyUserLoggedIn(loginResponse.hive_player_id);
+                CustomAuthProvider.NotifyUserLoggedIn(loginResponse.HivePlayerId);
 
                 await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
 

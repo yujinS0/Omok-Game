@@ -18,7 +18,7 @@ public class RegisterService : IRegisterService
     public async Task<AccountResponse> Register(AccountRequest request)
     {
         AccountResponse response = new();
-        response.Result = await _hiveDb.RegisterAccount(request.hive_player_id, request.hive_player_pw);
+        response.Result = await _hiveDb.RegisterAccount(request.HivePlayerId, request.HivePlayerPw);
         return response;
     }
 }
