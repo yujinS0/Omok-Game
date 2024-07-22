@@ -206,7 +206,7 @@ public class OmokGameData
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
         Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
 
-        // TODO : 오목 승리 조건 체크하는 함수 구현 및 추가
+        // 오목 승리 조건 체크하는 함수
         OmokCheck();
 
         return rawData;
