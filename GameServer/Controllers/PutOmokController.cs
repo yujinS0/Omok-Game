@@ -28,13 +28,13 @@ public class PutOmokController : ControllerBase
     [HttpPost]
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request)
     {
-        var result = await _gameService.PutOmokAsync(request);
+        var (result, winner) = await _gameService.PutOmokAsync(request);
 
         if (result != ErrorCode.None)
         {
             _logger.LogError($"[PutOmok] PlayerId: {request.PlayerId}, ErrorCode: {result}");
         }
 
-        return new PutOmokResponse { Result = result };
+        return new PutOmokResponse { Result = result, Winner = winner };
     }
 }

@@ -212,9 +212,78 @@ public class OmokGameData
         return rawData;
     }
 
-    public void OmokCheck() // 돌 5개 있는지 체크하는 함수
+    public void OmokCheck() // 결과 체크
     {
+        for (int y = 0; y < BoardSize; y++)
+        {
+            for (int x = 0; x < BoardSize; x++)
+            {
+                var stone = GetStoneAt(x, y);
+                if (stone == OmokStone.None)
+                    continue;
 
+                if (CheckDirection(x, y, 1, 0, stone) || // 가로 방향 체크
+                    CheckDirection(x, y, 0, 1, stone) || // 세로 방향 체크
+                    CheckDirection(x, y, 1, 1, stone) || // 대각선 방향 체크 (↘)
+                    CheckDirection(x, y, 1, -1, stone))  // 대각선 방향 체크 (↗)
+                {
+                    _winner = stone;
+                    int winnerIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length + 1 + 8;
+                    _rawData[winnerIndex] = (byte)stone;
+                    return;
+                }
+            }
+        }
+    }
+
+    private bool CheckDirection(int startX, int startY, int dx, int dy, OmokStone stone)
+    {
+        int count = 1;
+        for (int step = 1; step < 5; step++)
+        {
+            int x = startX + step * dx;
+            int y = startY + step * dy;
+
+            if (x < 0 || x >= BoardSize || y < 0 || y >= BoardSize)
+                break;
+
+            if (GetStoneAt(x, y) == stone)
+            {
+                count++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return count >= 5;
+    }
+
+    public byte[] ChangeTurn(byte[] rawData, string playerId) 
+    {
+        Decoding(rawData);
+
+        // 현재 턴인 플레이어 이름 확인
+        string currentTurnPlayerName = GetCurrentTurnPlayerName();
+        if (currentTurnPlayerName != playerId)
+        {
+            throw new InvalidOperationException("Not the player's turn.");
+        }
+
+        bool isBlack = playerId == GetBlackPlayerName();
+
+        // 턴 변경
+        _turnPlayerStone = isBlack ? OmokStone.White : OmokStone.Black;
+        int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
+        rawData[turnIndex] = (byte)_turnPlayerStone;
+
+        // 턴 둔 시간 변경
+        _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
+        Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
+
+        return rawData;
     }
 
 
