@@ -97,6 +97,64 @@ public class GetGameInfoController : ControllerBase
         };
     }
 
+    [HttpPost("WaitForTurnChange")]
+    public async Task<WaitForTurnChangeResponse> WaitForTurnChange([FromBody] PlayerRequest request, int timeoutSeconds = 30)
+    {
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+        var (result, gameInfo) = await _gameService.WaitForTurnChangeAsync(request.PlayerId, cts.Token);
+        return new WaitForTurnChangeResponse
+        {
+            Result = result,
+            GameInfo = gameInfo
+        };
+    }
+
+    [HttpPost("turnplayer")]
+    public async Task<PlayerResponse> GetCurrentTurnPlayer([FromBody] PlayerRequest request)
+    {
+        var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
+
+        if (currentTurn == OmokStone.None)
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnNotFound
+            };
+        }
+
+        string currentTurnPlayer;
+        if (currentTurn == OmokStone.Black)
+        {
+            currentTurnPlayer = await _gameService.GetBlackPlayer(request.PlayerId);
+        }
+        else if (currentTurn == OmokStone.White)
+        {
+            currentTurnPlayer = await _gameService.GetWhitePlayer(request.PlayerId);
+        }
+        else
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnPlayerNotFound
+            };
+        }
+
+        if (string.IsNullOrEmpty(currentTurnPlayer))
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnPlayerNotFound
+            };
+        }
+
+        return new PlayerResponse
+        {
+            Result = ErrorCode.None,
+            PlayerId = currentTurnPlayer
+        };
+    }
+
+
     [HttpPost("winner")]
     public async Task<WinnerResponse> GetWinner([FromBody] PlayerRequest request)
     {

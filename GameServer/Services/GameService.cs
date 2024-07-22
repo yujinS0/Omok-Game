@@ -94,25 +94,7 @@ public class GameService : IGameService
         return (ErrorCode.None, new Winner { Stone = winner, PlayerId = winnerPlayerId });
     }
 
-    //public async Task<Winner> GetWinner(string playerId)
-    //{
-    //    var omokGameData = await GetGameData(playerId);
-    //    if (omokGameData == null)
-    //    {
-    //        return null;
-    //    }
-
-    //    var winner = omokGameData.GetWinner();
-    //    if (winner == OmokStone.None)
-    //    {
-    //        return null;
-    //    }
-
-    //    var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
-    //    return new Winner { Stone = winner, PlayerId = winnerPlayerId };
-    //}
-
-    public async Task<ErrorCode> PutOmokAsync(PutOmokRequest request)
+    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request)
     {
         string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);
@@ -120,7 +102,7 @@ public class GameService : IGameService
         if (userGameData == null)
         {
             _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", request.PlayerId);
-            return ErrorCode.GameDataNotFound;
+            return (ErrorCode.UserGameDataNotFound, null);
         }
 
         string gameRoomId = userGameData.GameRoomId;
@@ -129,17 +111,25 @@ public class GameService : IGameService
         if (rawData == null)
         {
             _logger.LogError("Failed to retrieve game data for RoomId: {RoomId}", gameRoomId);
-            return ErrorCode.GameDataNotFound;
+            return (ErrorCode.GameRoomNotFound, null);
         }
 
         var omokGameData = new OmokGameData();
         omokGameData.Decoding(rawData);
 
+        // Check if the game has already ended
+        var currentWinner = omokGameData.GetWinnerStone();
+        if (currentWinner != OmokStone.None)
+        {
+            _logger.LogError("The game has already ended. PlayerId: {PlayerId}", request.PlayerId);
+            return (ErrorCode.GameEnd, new Winner { Stone = currentWinner, PlayerId = currentWinner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName() });
+        }
+
         string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
         if (request.PlayerId != currentTurnPlayerName)
         {
             _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", request.PlayerId);
-            return ErrorCode.NotYourTurn;
+            return (ErrorCode.NotYourTurn, null);
         }
 
         try
@@ -150,15 +140,95 @@ public class GameService : IGameService
             if (!updateResult)
             {
                 _logger.LogError("Failed to update game data for RoomId: {RoomId}", gameRoomId);
-                return ErrorCode.UpdateGameDataFailException;
+                return (ErrorCode.UpdateGameDataFailException, null);
             }
 
-            return ErrorCode.None;
+            // 
+            var winner = omokGameData.GetWinnerStone(); // TODO 체크 전 후로 다 하고 있음 이게 최선인가?
+            if (winner != OmokStone.None)
+            {
+                var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
+                return (ErrorCode.None, new Winner { Stone = winner, PlayerId = winnerPlayerId });
+            }
+
+            return (ErrorCode.None, null);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to set stone at ({X}, {Y}) for PlayerId: {PlayerId}", request.X, request.Y, request.PlayerId);
-            return ErrorCode.SetStoneFailException;
+            return (ErrorCode.SetStoneFailException, null);
         }
     }
+
+
+    // WaitForTurnChangeAsync : 30초 간격 long polling을 처리
+    public async Task<(ErrorCode, GameInfo)> WaitForTurnChangeAsync(string playerId, CancellationToken cancellationToken)
+    {
+        var initialTurn = await GetCurrentTurn(playerId);
+        var initialTurnTime = DateTime.UtcNow;
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested) // 취소 요청 있을 때까지 반복
+            {
+                var currentTurn = await GetCurrentTurn(playerId);
+                if (currentTurn != initialTurn)
+                {
+                    return (ErrorCode.None, new GameInfo
+                    {
+                        Board = await GetBoard(playerId),
+                        CurrentTurn = currentTurn,
+                    });
+                }
+                await Task.Delay(500, cancellationToken); // 0.5초 대기
+            }
+            // 정상적인 상황에서는 여기 X
+            // 타임아웃이 발생하지 않고 루프가 종료된 경우
+            return (ErrorCode.RequestTurnEnd, null);
+            //throw new InvalidOperationException("Loop terminated unexpectedly");
+        }
+        catch (OperationCanceledException)
+        {
+            // 30초 타임아웃이 발생
+            await AutoChangeTurn(playerId);
+            return (ErrorCode.TurnChangedByTimeout, new GameInfo
+            {
+                Board = await GetBoard(playerId),
+                CurrentTurn = await GetCurrentTurn(playerId),
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in WaitForTurnChangeAsync.");
+            return (ErrorCode.InternalError, null);
+        }
+    }
+
+    private async Task AutoChangeTurn(string playerId)
+    {
+        _logger.LogInformation("AutoChangeTurn 함수 호출");
+        var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
+        var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
+
+        var omokGameData = new OmokGameData();
+
+        try
+        {
+            var updatedRawData = omokGameData.ChangeTurn(rawData, playerId);
+            await _memoryDb.UpdateGameDataAsync(gameRoomId, updatedRawData);
+            _logger.LogInformation("Turn changed successfully for player {PlayerId}", playerId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to change turn for player {PlayerId}", playerId);
+        }
+    }
+
+    // CheckTurnAsync : 현재 턴 확인
+    public async Task<OmokStone> CheckTurnAsync(string playerId) 
+    {
+        return await GetCurrentTurn(playerId);
+    }
+
+    
 }
