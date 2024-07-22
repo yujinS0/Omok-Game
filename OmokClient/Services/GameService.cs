@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AntDesign;
 using Blazored.SessionStorage;
+using System.Reflection;
 
 namespace OmokClient.Services;
 
@@ -16,7 +17,7 @@ public class GameService : BaseService
     public GameService(IHttpClientFactory httpClientFactory, ISessionStorageService sessionStorage)
             : base(httpClientFactory, sessionStorage) { }
 
-    public async Task<bool> PlaceStoneAsync(string playerId, int x, int y)
+    public async Task<PutOmokResponse> PutStoneAsync(string playerId, int x, int y)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
@@ -24,9 +25,9 @@ public class GameService : BaseService
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<PutOmokResponse>();
-            return result != null && result.Result == ErrorCode.None;
+            return result;
         }
-        return false;
+        return new PutOmokResponse { Result = ErrorCode.RequestFailed };
     }
 
     public async Task<byte[]> GetBoardAsync(string playerId)
@@ -105,7 +106,62 @@ public class GameService : BaseService
         return "none";
     }
 
+    // Long Polling
+    public async Task<WaitForTurnChangeResponse> WaitForTurnChangeAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GetGameInfo/WaitForTurnChange", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<WaitForTurnChangeResponse>();
+            return result;
+        }
+        return new WaitForTurnChangeResponse
+        {
+            Result = ErrorCode.RequestFailed,
+            GameInfo = null
+        };
+    }
+
+    public async Task<string> CheckTurnAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GetGameInfo/turnplayer", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
+            return result.PlayerId;
+        }
+        return null;
+    }
+
+    public async Task<WinnerResponse> GetWinnerAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GetGameInfo/winner", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<WinnerResponse>();
+            return result;
+        }
+        return new WinnerResponse
+        {
+            Result = ErrorCode.RequestFailed,
+            Winner = null
+        };
+    }
+
+
 }
+
+
+
+public class GameInfo
+{
+    public byte[] Board { get; set; }
+    public OmokStone CurrentTurn { get; set; }
+}
+
 
 public class BoardResponse
 {
@@ -128,4 +184,27 @@ public class CurrentTurnResponse
 public class PutOmokResponse
 {
     public ErrorCode Result { get; set; }
+    public Winner Winner { get; set; }
+}
+public class CheckTurnResponse
+{
+    public ErrorCode Result { get; set; }
+}
+
+public class WinnerResponse
+{
+    public ErrorCode Result { get; set; }
+    public Winner Winner { get; set; }
+}
+
+public class Winner
+{
+    public OmokStone Stone { get; set; }
+    public string PlayerId { get; set; }
+}
+
+public class WaitForTurnChangeResponse
+{
+    public ErrorCode Result { get; set; }
+    public GameInfo GameInfo { get; set; }
 }
