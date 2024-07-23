@@ -59,15 +59,54 @@ public class GameDb : IGameDb
 
         return newCharInfo;
     }
-
-    public async Task<CharInfo> GetCharInfoDataAsync(string playerId) // 오류 있음
+    public async Task<CharInfo> GetCharInfoDataAsync(string playerId)
     {
-        var charInfo = await _queryFactory.Query("char_info")
-            .Where("hive_player_id", playerId)
-            .FirstOrDefaultAsync<CharInfo>(); // 이 부분에서 DTO 매핑 오류?
-        _logger.LogInformation("GetCharInfoDataAsync");
-        return charInfo;
+        try
+        {
+            var result = await _queryFactory.Query("char_info")
+                .Where("hive_player_id", playerId)
+                .Select("hive_player_id", "char_name", "char_exp", "char_level", "char_win", "char_lose", "char_draw")
+                .FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
+                return null;
+            }
+
+            var charInfo = new CharInfo
+            {
+                HivePlayerId = result.hive_player_id,
+                CharName = result.char_name,
+                Exp = result.char_exp,
+                Level = result.char_level,
+                Win = result.char_win,
+                Lose = result.char_lose,
+                Draw = result.char_draw
+            };
+
+            _logger.LogInformation("GetCharInfoDataAsync succeeded for playerId: {PlayerId}", playerId);
+            return charInfo;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting char info data for playerId: {PlayerId}", playerId);
+            throw;
+        }
     }
+
+
+    ////  직전 이전 코드 : DTO 매핑에 오류 생겨서 수정
+    //public async Task<CharInfo> GetCharInfoDataAsync(string playerId) // 오류 있음
+    //{
+    //    var charInfo = await _queryFactory.Query("char_info")
+    //        .Where("hive_player_id", playerId)
+    //        .FirstOrDefaultAsync<CharInfo>(); // 이 부분에서 DTO 매핑 오류?
+    //    _logger.LogInformation("GetCharInfoDataAsync");
+    //    return charInfo;
+    //}
+
+
     //public async Task<CharInfo> GetCharInfoDataAsync(string playerId)
     //{
     //    try

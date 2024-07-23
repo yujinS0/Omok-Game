@@ -97,6 +97,17 @@ public class GetGameInfoController : ControllerBase
         };
     }
 
+    [HttpPost("turnchange")]
+    public async Task<WaitForTurnChangeResponse> TurnChange([FromBody] PlayerRequest request)
+    {
+        var (result, gameInfo) = await _gameService.TurnChangeAsync(request.PlayerId);
+        return new WaitForTurnChangeResponse
+        {
+            Result = result,
+            GameInfo = gameInfo
+        };
+    }
+
     [HttpPost("WaitForTurnChange")]
     public async Task<WaitForTurnChangeResponse> WaitForTurnChange([FromBody] PlayerRequest request, int timeoutSeconds = 30)
     {
