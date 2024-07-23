@@ -120,12 +120,12 @@ public class GameService : IGameService
         omokGameData.Decoding(rawData);
 
         // Check if the game has already ended
-        var currentWinner = omokGameData.GetWinnerStone();
-        if (currentWinner != OmokStone.None)
-        {
-            _logger.LogError("The game has already ended. PlayerId: {PlayerId}", request.PlayerId);
-            return (ErrorCode.GameEnd, new Winner { Stone = currentWinner, PlayerId = currentWinner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName() });
-        }
+        //var currentWinner = omokGameData.GetWinnerStone();
+        //if (currentWinner != OmokStone.None)
+        //{
+        //    _logger.LogError("The game has already ended. PlayerId: {PlayerId}", request.PlayerId);
+        //    return (ErrorCode.GameEnd, new Winner { Stone = currentWinner, PlayerId = currentWinner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName() });
+        //}
 
         string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
         if (request.PlayerId != currentTurnPlayerName)
@@ -211,7 +211,21 @@ public class GameService : IGameService
         }
     }
 
-    private async Task AutoChangeTurn(string playerId)
+    public async Task<(ErrorCode, GameInfo)> TurnChangeAsync(string playerId)
+    {
+        var initialTurn = await GetCurrentTurn(playerId);
+        var initialTurnTime = DateTime.UtcNow;
+
+        await AutoChangeTurn(playerId);
+
+        return (ErrorCode.None, new GameInfo
+        {
+            Board = await GetBoard(playerId),
+            CurrentTurn = await GetCurrentTurn(playerId)
+        });
+    }
+
+    public async Task AutoChangeTurn(string playerId)
     {
         _logger.LogInformation("AutoChangeTurn 함수 호출");
         var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
