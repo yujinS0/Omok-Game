@@ -191,8 +191,14 @@ public class OmokGameData
             throw new InvalidOperationException("Not the player's turn.");
         }
 
-        // 돌 두기
+        // 돌이 이미 놓여진 위치인지 확인
         int index = y * BoardSize + x;
+        if (_rawData[index] != (byte)OmokStone.None)
+        {
+            throw new InvalidOperationException("The position is already occupied.");
+        }
+
+        // 돌 두기
         bool isBlack = playerId == GetBlackPlayerName();
         rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
 
