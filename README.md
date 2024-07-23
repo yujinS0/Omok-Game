@@ -1,6 +1,9 @@
 # Omok-Game
 2024 컴투스 지니어스 - ASP.NET core 를 사용한 API Server 학습을 위한 오목 게임 프로젝트
 
+[시퀀스 다이어그램](https://github.com/yujinS0/Omok-Game/tree/main/SequenceDiagram)
+[데이터베이스](https://github.com/yujinS0/Omok-Game/blob/main/DB.md)
+
 # TODO-LIST
 앞으로의 개발 계획 및 진행상황 공유
   
