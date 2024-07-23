@@ -20,25 +20,25 @@ public class CharacterService : BaseService
     public async Task<string> GetCharacterNameAsync(string playerId)
     {
         var response = await GetCharacterInfoAsync(playerId);
-        if (response != null && response.Error == ErrorCode.None)
+        if (response != null && response.Result == ErrorCode.None)
         {
-            return response.CharacterInfo.CharName;
+            return response.CharInfoDTO.CharName;
         }
         return null;
     }
 
-    public async Task<CharacterInfoResponse> GetCharacterInfoAsync(string playerId)
+    public async Task<CharacterInfoDTOResponse> GetCharacterInfoAsync(string playerId)
     {
         var client = await CreateClientWithHeadersAsync("GameAPI");
         var response = await client.PostAsJsonAsync("Character/getinfo", new CharacterInfoRequest { PlayerId = playerId });
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<CharacterInfoResponse>();
+            return await response.Content.ReadFromJsonAsync<CharacterInfoDTOResponse>();
         }
         else
         {
-            return new CharacterInfoResponse { Error = ErrorCode.InternalServerError };
+            return new CharacterInfoDTOResponse { Result = ErrorCode.InternalServerError };
         }
     }
 
@@ -53,7 +53,7 @@ public class CharacterService : BaseService
         }
         else
         {
-            return new UpdateCharacterNameResponse { Error = ErrorCode.InternalServerError };
+            return new UpdateCharacterNameResponse { Result = ErrorCode.InternalServerError };
         }
     }
 }
@@ -72,21 +72,23 @@ public class CharacterInfoRequest
 
 public class UpdateCharacterNameResponse
 {
-    public ErrorCode Error { get; set; }
+    public ErrorCode Result { get; set; }
 }
 
-public class CharacterInfoResponse
+
+public class CharacterInfoDTOResponse
 {
-    public ErrorCode Error { get; set; }
-    public CharacterDetails CharacterInfo { get; set; }
+    public ErrorCode Result { get; set; }
+    public CharInfoDTO CharInfoDTO { get; set; }
 }
 
-public class CharacterDetails  // 클라이언트에게 제공할 정보만
+
+public class CharInfoDTO
 {
     public string CharName { get; set; }
-    public int CharExp { get; set; }
-    public int CharLevel { get; set; }
-    public int CharWin { get; set; }
-    public int CharLose { get; set; }
-    public int CharDraw { get; set; }
+    public int Exp { get; set; }
+    public int Level { get; set; }
+    public int Win { get; set; }
+    public int Lose { get; set; }
+    public int Draw { get; set; }
 }

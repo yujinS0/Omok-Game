@@ -83,14 +83,14 @@ else
             if (!string.IsNullOrEmpty(charName))
             {
                 var characterInfo = await CharacterService.GetCharacterInfoAsync(userId);
-                if (characterInfo != null && characterInfo.Error == ErrorCode.None)
+                if (characterInfo != null && characterInfo.Result == ErrorCode.None)
                 {
-                    charName = characterInfo.CharacterInfo.CharName;
-                    exp = characterInfo.CharacterInfo.CharExp;
-                    level = characterInfo.CharacterInfo.CharLevel;
-                    win = characterInfo.CharacterInfo.CharWin;
-                    lose = characterInfo.CharacterInfo.CharLose;
-                    draw = characterInfo.CharacterInfo.CharDraw;
+                    charName = characterInfo.CharInfoDTO.CharName;
+                    exp = characterInfo.CharInfoDTO.Exp;
+                    level = characterInfo.CharInfoDTO.Level;
+                    win = characterInfo.CharInfoDTO.Win;
+                    lose = characterInfo.CharInfoDTO.Lose;
+                    draw = characterInfo.CharInfoDTO.Draw;
                 }
             }
         }
@@ -102,7 +102,7 @@ else
         if (!string.IsNullOrEmpty(newCharName))
         {
             var updateResponse = await CharacterService.UpdateCharacterNameAsync(userId, newCharName);
-            if (updateResponse != null && updateResponse.Error == ErrorCode.None)
+            if (updateResponse != null && updateResponse.Result == ErrorCode.None)
             {
                 charName = newCharName;
                 StateHasChanged();
