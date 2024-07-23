@@ -11,11 +11,13 @@ namespace GameServer.Services;
 public class GameService : IGameService
 {
     private readonly IMemoryDb _memoryDb;
+    private readonly IGameDb _gameDb;
     private readonly ILogger<GameService> _logger;
 
-    public GameService(IMemoryDb memoryDb, ILogger<GameService> logger)
+    public GameService(IMemoryDb memoryDb, IGameDb gameDb, ILogger<GameService> logger)
     {
         _memoryDb = memoryDb;
+        _gameDb = gameDb;
         _logger = logger;
     }
 
@@ -143,11 +145,16 @@ public class GameService : IGameService
                 return (ErrorCode.UpdateGameDataFailException, null);
             }
 
-            // 
+            // 오목 두고 승자 체크하기
             var winner = omokGameData.GetWinnerStone(); // TODO 체크 전 후로 다 하고 있음 이게 최선인가?
             if (winner != OmokStone.None)
             {
                 var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
+                var loserPlayerId = winner == OmokStone.Black ? omokGameData.GetWhitePlayerName() : omokGameData.GetBlackPlayerName();
+
+                // 오목 결과 GameDb에 업데이트
+                await _gameDb.UpdateGameResultAsync(winnerPlayerId, loserPlayerId); // 승자와 패자 업데이트
+
                 return (ErrorCode.None, new Winner { Stone = winner, PlayerId = winnerPlayerId });
             }
 

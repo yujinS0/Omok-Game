@@ -50,7 +50,7 @@ public class LoginService : ILoginService
 
     public async Task<ErrorCode> InitializeUserDataAsync(string playerId)
     {
-        var charInfo = await _gameDb.GetUserGameDataAsync(playerId);
+        var charInfo = await _gameDb.GetCharInfoDataAsync(playerId);
         if (charInfo == null)
         {
             _logger.LogInformation("First login detected, creating new char_info for hive_player_id: {PlayerId}", playerId);

@@ -25,6 +25,7 @@ builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory Ãß°¡
 
