@@ -123,6 +123,22 @@ public class GameService : BaseService
         };
     }
 
+    public async Task<WaitForTurnChangeResponse> TurnChangeAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GetGameInfo/turnchange", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<WaitForTurnChangeResponse>();
+            return result;
+        }
+        return new WaitForTurnChangeResponse
+        {
+            Result = ErrorCode.RequestFailed,
+            GameInfo = null
+        };
+    }
+
     public async Task<string> CheckTurnAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
