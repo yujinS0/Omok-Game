@@ -45,8 +45,7 @@
     private string currentTurn = string.Empty;
     private int remainingTime = 30;
     private bool isPollingActive = true;
-    private bool isTimerRunning = false;
-    // private CancellationTokenSource ctsTimer;
+    private Timer? timer;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,11 +66,8 @@
         _ = StartTurnPollingAsync(); // 턴 확인을 위한 폴링 시작
     }
 
-    // 자기 차례 X : 자신의 턴인지 체크하는 폴링
     private async Task StartTurnPollingAsync()
     {
-        // remainingTime = 30; // 남은 시간을 30초로 설정
-        // ctsTimer?.Cancel(); // 기존 타이머 작업 취소
         Console.WriteLine("== StartTurnPollingAsync ==");
         while (isPollingActive)
         {
@@ -82,7 +78,9 @@
                 continue;
             }
 
-            currentTurn = (currentTurnPlayerId == blackPlayer) ? "black" : "white"; // 
+            currentTurn = (currentTurnPlayerId == blackPlayer) ? "black" : "white"; // 가독성 높이기
+            // TODO 자기 차례이면 잘 보이게 표시하기
+
             Console.WriteLine($"Current turn: {currentTurn}");
             await InvokeAsync(StateHasChanged); // UI 갱신을 보장
 
@@ -94,7 +92,8 @@
                     ? "축하합니다! 당신이 이겼습니다!"
                     : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
                 await _message.Info(winnerMessage);
-                isPollingActive = false;
+                // isPollingActive = false;
+                await EndGame();
                 return;
             }
 
@@ -105,153 +104,88 @@
             {
                 Console.WriteLine("이제 내 차례!");
                 Console.WriteLine($"Your turn: {currentTurn}");
-                await InvokeAsync(StateHasChanged); // 자신의 차례가 되었을 때 UI를 갱신
-                // _ = StartLongPollingAsync(); // 그리고 long polling 시작
-                StartLongPolling();
                 StartTimer();
+                await InvokeAsync(StateHasChanged); // 자신의 차례가 되었을 때 UI를 갱신
+                await StartLongPolling(); // 동기적으로 동작하도록 await 추가
                 break;
             }
 
             await Task.Delay(1000); // 1초마다 턴 확인
         }
     }
+
     private void StartTimer()
     {
-        remainingTime = 30;
-        isTimerRunning = true;
-
-        Task.Run(async () =>
+        remainingTime = 30; // 초기화
+        timer = new Timer(async _ =>
         {
-            while (remainingTime > 0 && isTimerRunning)
+            if (remainingTime > 0)
             {
-                await Task.Delay(1000);
-                remainingTime = Math.Max(0, remainingTime - 1);
-                await InvokeAsync(StateHasChanged); // UI 갱신을 보장
+                remainingTime--;
+                await InvokeAsync(StateHasChanged);
             }
-
-            if (remainingTime == 0)
+            else
             {
-                isTimerRunning = false;
-                // TODO: 타임아웃 처리 로직 추가
+                StopTimer();
+                // 타이머가 0이 되면 턴 변경 로직을 추가
+                _ = StartTurnPollingAsync();
             }
-        });
+        }, null, 0, 1000);
     }
+
     private void StopTimer()
     {
-        isTimerRunning = false;
+        remainingTime = 30;
+        timer?.Dispose();
+        timer = null;
     }
 
-    // 자기 차례 O : 시간 체크하는 30초 롱 폴링
-    private void StartLongPolling()
+    private async Task StartLongPolling()
     {
-        remainingTime = 30; // 남은 시간을 30초로 설정
-        // ctsTimer?.Cancel(); // 기존 타이머 작업 취소
-        // ctsTimer = new CancellationTokenSource(); // 타이머를 취소용 CancellationTokenSource 생성
-
-        // 타이머 작업
-        Task.Run(async () =>
+        try
         {
-            while (remainingTime > 0 && isPollingActive) // remainingTime이 0보다 크고 isPollingActive가 true인 동안 반복
+            var response = await GameService.WaitForTurnChangeAsync(playerId); // 서버에 턴 변화를 확인하는 요청
+            if (response.Result == ErrorCode.None || response.Result == ErrorCode.TurnChangedByTimeout) // 응답이 성공적이거나 타임아웃인 경우
             {
-                await Task.Delay(1000); // 1초 대기
-                remainingTime--; // 남은 시간을 1초 감소
-                await InvokeAsync(StateHasChanged); // UI 갱신을 보장
-            }
-        }); // cts.Token을 전달하여 작업 취소 가능
-
-        // 롱 폴링 작업
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                var response = await GameService.WaitForTurnChangeAsync(playerId); // 서버에 턴 변화를 확인하는 요청
-                if (response.Result == ErrorCode.None || response.Result == ErrorCode.TurnChangedByTimeout) // 응답이 성공적이거나 타임아웃인 경우
+                StopTimer(); // 타이머 중지
+                if (response.GameInfo != null) // 응답에 게임 정보가 있는 경우
                 {
-                    if (response.GameInfo != null) // 응답에 게임 정보가 있는 경우
-                    {
-                        DecodeBoard(response.GameInfo.Board); // 게임 보드 상태를 디코드하여 업데이트
-                        currentTurn = response.GameInfo.CurrentTurn.ToString().ToLower(); // 현재 턴을 업데이트
-                        Console.WriteLine($"Turn changed: {currentTurn}");
-                        await InvokeAsync(StateHasChanged); // UI 갱신을 보장
+                    DecodeBoard(response.GameInfo.Board); // 게임 보드 상태를 디코드하여 업데이트
+                    currentTurn = response.GameInfo.CurrentTurn.ToString().ToLower(); // 현재 턴을 업데이트
+                    Console.WriteLine($"Turn changed: {currentTurn}");
+                    await InvokeAsync(StateHasChanged); // UI 갱신을 보장
 
-                        // 승자 확인
-                        var winnerResponse = await GameService.GetWinnerAsync(playerId); // 서버에 승자 확인 요청
-                        if (winnerResponse.Result == ErrorCode.None && winnerResponse.Winner != null) // 승자가 있는 경우
-                        {
-                            string winnerMessage = winnerResponse.Winner.PlayerId == playerId
-                                ? "축하합니다! 당신이 이겼습니다!"
-                                : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
-                            await _message.Info(winnerMessage); // 승자 메시지를 사용자에게 표시
-                            isPollingActive = false; // 폴링을 중지
-                            // ctsTimer.Cancel(); // 타이머 취소
-                            // remainingTime = 30;
-                            return; // 함수 종료
-                        }
+                    // 승자 확인
+                    var winnerResponse = await GameService.GetWinnerAsync(playerId); // 서버에 승자 확인 요청
+                    if (winnerResponse.Result == ErrorCode.None && winnerResponse.Winner != null) // 승자가 있는 경우
+                    {
+                        string winnerMessage = winnerResponse.Winner.PlayerId == playerId
+                            ? "축하합니다! 당신이 이겼습니다!"
+                            : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
+                        await _message.Info(winnerMessage); // 승자 메시지를 사용자에게 표시
+                        // isPollingActive = false; // 폴링을 중지
+                        await EndGame();
+                        return; // 함수 종료
                     }
-                    _ = StartTurnPollingAsync(); // long polling이 끝나면 다시 턴 확인 시작
                 }
+                await StartTurnPollingAsync(); // long polling이 끝나면 다시 턴 확인 시작
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in long polling: {ex.Message}"); // 예외 발생 시 콘솔에 로그 출력
-                await Task.Delay(1000); // 오류 발생 시 1초 대기 후 재시도
-                _ = StartTurnPollingAsync(); // 오류 발생 시 다시 턴 확인 시작
-            }
-        }); // cts.Token을 전달하여 작업 취소 가능
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in long polling: {ex.Message}"); // 예외 발생 시 콘솔에 로그 출력
+            await Task.Delay(1000); // 오류 발생 시 1초 대기 후 재시도
+            await StartTurnPollingAsync(); // 오류 발생 시 다시 턴 확인 시작
+        }
     }
 
-
-    // // 자기 차례 O : 시간 체크하는 30초 롱 폴링
-    // private async Task StartLongPollingAsync()
-    // {
-    //     try
-    //     {
-    //         remainingTime = 30;
-    //         cts = new CancellationTokenSource();
-    //         var timer = Task.Run(async () =>
-    //         {
-    //             while (remainingTime > 0 && isPollingActive)
-    //             {
-    //                 await Task.Delay(1000);
-    //                 remainingTime--;
-    //                 await InvokeAsync(StateHasChanged); // UI 갱신을 보장
-    //             }
-    //         });
-
-    //         var response = await GameService.WaitForTurnChangeAsync(playerId);
-    //         if (response.Result == ErrorCode.None || response.Result == ErrorCode.TurnChangedByTimeout)
-    //         {
-    //             if (response.GameInfo != null)
-    //             {
-    //                 DecodeBoard(response.GameInfo.Board);
-    //                 currentTurn = response.GameInfo.CurrentTurn.ToString().ToLower();
-    //                 Console.WriteLine($"Turn changed: {currentTurn}");
-    //                 await InvokeAsync(StateHasChanged); // UI 갱신을 보장
-
-    //                 // // Check for winner
-    //                 // var winnerResponse = await GameService.GetWinnerAsync(playerId);
-    //                 // if (winnerResponse.Result == ErrorCode.None && winnerResponse.Winner != null)
-    //                 // {
-    //                 //     string winnerMessage = winnerResponse.Winner.PlayerId == playerId
-    //                 //         ? "축하합니다! 당신이 이겼습니다!"
-    //                 //         : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
-    //                 //     await _message.Info(winnerMessage);
-    //                 //     isPollingActive = false;
-    //                 //     return;
-    //                 // }
-
-    //             }
-    //             _ = StartTurnPollingAsync(); // long polling이 끝나면 다시 턴 확인 시작
-    //         }
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Error in long polling: {ex.Message}");
-    //         await Task.Delay(1000); // 오류 발생 시 1초 대기 후 재시도
-    //         _ = StartTurnPollingAsync(); // 오류 발생 시 다시 턴 확인 시작
-    //     }
-    // }
-
+    private async Task EndGame()
+    {
+        isPollingActive = false;
+        StopTimer();
+        await Task.Delay(3000); // 3초 대기
+        Navigation.NavigateTo("/gamestart");
+    }
 
     private async Task LoadGameStateAsync() // 게임 화면 업데이트
     {
@@ -274,7 +208,6 @@
         }
     }
 
-
     private async Task PutStone(int row, int col)
     {
         Console.WriteLine("== PlaceStone ==");
@@ -296,24 +229,13 @@
             return;
         }
 
-        // var success = await GameService.PlaceStoneAsync(playerId, col, row);
-        // if (success)
-        // {
-        //     board[row, col] = playerId == blackPlayer ? OmokStone.Black : OmokStone.White;
-        //     // Navigation.NavigateTo(Navigation.Uri, forceLoad: true); // 임시 : 돌 두기 성공 시 페이지 새로고침
-        //                                                             // TODO long polling으로 체크해서 턴 바뀌면 새로고침하도록
-        //                                                             // await LoadGameStateAsync();
-        //     currentTurn = currentTurn == "black" ? "white" : "black";
-        //     Console.WriteLine($"Placed stone, next turn: {currentTurn}");
-        //     await InvokeAsync(StateHasChanged); // UI 갱신을 보장
-        //     _ = StartTurnPollingAsync(); // 돌을 둔 후, 턴 확인 시작
-        // }
         var response = await GameService.PutStoneAsync(playerId, col, row);
         if (response.Result == ErrorCode.None)
         {
             board[row, col] = playerId == blackPlayer ? OmokStone.Black : OmokStone.White;
             currentTurn = currentTurn == "black" ? "white" : "black";
             Console.WriteLine($"Placed stone, next turn: {currentTurn}");
+            StopTimer(); // 돌을 둔 후 타이머를 멈춤
             await InvokeAsync(StateHasChanged); // UI 갱신을 보장
 
             if (response.Winner != null)
@@ -322,14 +244,11 @@
                     ? "축하합니다! 당신이 이겼습니다!"
                     : $"아쉽네요... {response.Winner.PlayerId} 님이 이겼습니다.";
                 await _message.Info(winnerMessage);
-                isPollingActive = false;
-                // ctsTimer.Cancel(); // 타이머 취소
-                // remainingTime = 30;
-                StopTimer();
+                // isPollingActive = false;
+                await EndGame();
                 return;
             }
-            StopTimer();
-            _ = StartTurnPollingAsync(); // 돌을 둔 후, 턴 확인 시작
+            await StartTurnPollingAsync(); // 돌을 둔 후, 턴 확인 시작
         }
     }
 

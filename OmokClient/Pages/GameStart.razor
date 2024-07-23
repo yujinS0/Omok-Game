@@ -11,6 +11,7 @@
 @using OmokClient.Services
 @inject ISessionStorageService sessionStorage
 @inject MatchingService MatchingService
+@inject CharacterService CharacterService
 
 <PageTitle>Matching</PageTitle>
 
@@ -19,20 +20,53 @@
 <h4>안녕하세요! @userId !</h4>
 
 <p>오목 게임에 오신 것을 환영합니다!!</p>
-<p>매칭을 원하신다면 아래 매칭 버튼을 눌러주세요.</p>
 
-<Button Type="primary" Size="large" OnClick="StartMatching" disabled="@isMatching"> 매칭 시작 </Button>
-
-@if (isMatching)
+@if (isLoading)
 {
-    <Button type="primary" Size="large" loading>
-        매칭 상대 찾는 중 ...
-    </Button>
+    <p>Loading...</p>
+}
+else if (string.IsNullOrEmpty(charName))
+{
+    <h4>닉네임을 생성해주세요</h4>
+    <Input placeholder="닉네임 입력" @bind-Value="newCharName" />
+    <Button Type="primary" Size="large" OnClick="CreateNickname">닉네임 생성</Button>
+}
+else
+{
+    <h4>플레이어 정보</h4>
+    <div class="info-container">
+        <div class="info-item">닉네임: <span class="info-value">@charName</span></div>
+        <div class="info-item">경험치: <span class="info-value">@exp</span></div>
+        <div class="info-item">레벨: <span class="info-value">@level</span></div>
+
+        <p>전적</p>
+        <div class="info-item">승리: <span class="info-value">@win</span></div>
+        <div class="info-item">패배: <span class="info-value">@lose</span></div>
+        <div class="info-item">무승부: <span class="info-value">@draw</span></div>
+    </div>
+
+    <p>매칭을 원하신다면 아래 매칭 버튼을 눌러주세요.</p>
+    <Button Type="primary" Size="large" OnClick="StartMatching" disabled="@isMatching"> 매칭 시작 </Button>
+
+    @if (isMatching)
+    {
+        <Button type="primary" Size="large" loading>
+            매칭 상대 찾는 중 ...
+        </Button>
+    }
 }
 
 @code {
     private string userId = string.Empty;
+    private string charName = string.Empty;
+    private string newCharName = string.Empty;
+    private int exp;
+    private int level;
+    private int win;
+    private int lose;
+    private int draw;
     private bool isMatching = false;
+    private bool isLoading = true;
     private Timer? checkMatchTimer;
 
     protected override async Task OnInitializedAsync()
@@ -40,25 +74,46 @@
         Console.WriteLine("GameStart page initialized.");
 
         userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+        charName = await sessionStorage.GetItemAsync<string>("sessionCharName") ?? string.Empty;
 
-        // var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        // var user = authState.User;
-        // if (user.Identity.IsAuthenticated)
-        // {
-        //     username = user.Identity.Name;
-        //     Console.WriteLine($"User '{username}' is authenticated.");
-        // }
-        // else
-        // {
-        //     Logger.LogWarning("User is not authenticated. Redirecting to home page.");
-        //     Navigation.NavigateTo("/");
-        // }
+        if (!string.IsNullOrEmpty(userId))
+        {
+            charName = await CharacterService.GetCharacterNameAsync(userId);
+
+            if (!string.IsNullOrEmpty(charName))
+            {
+                var characterInfo = await CharacterService.GetCharacterInfoAsync(userId);
+                if (characterInfo != null && characterInfo.Error == ErrorCode.None)
+                {
+                    charName = characterInfo.CharacterInfo.CharName;
+                    exp = characterInfo.CharacterInfo.CharExp;
+                    level = characterInfo.CharacterInfo.CharLevel;
+                    win = characterInfo.CharacterInfo.CharWin;
+                    lose = characterInfo.CharacterInfo.CharLose;
+                    draw = characterInfo.CharacterInfo.CharDraw;
+                }
+            }
+        }
+        isLoading = false;
+    }
+
+    private async Task CreateNickname()
+    {
+        if (!string.IsNullOrEmpty(newCharName))
+        {
+            var updateResponse = await CharacterService.UpdateCharacterNameAsync(userId, newCharName);
+            if (updateResponse != null && updateResponse.Error == ErrorCode.None)
+            {
+                charName = newCharName;
+                StateHasChanged();
+            }
+        }
     }
 
     private async Task StartMatching()
     {
         Console.WriteLine("Start matching button clicked.");
-        isMatching = true; // 매칭 버튼 비활성화
+        isMatching = true;
 
         var matchResponse = await MatchingService.RequestMatchingAsync(userId);
         if (matchResponse != null && matchResponse.Result == ErrorCode.None)
@@ -70,7 +125,7 @@
         else
         {
             Console.WriteLine($"Matching request failed: {matchResponse?.Result}");
-            isMatching = false; // 매칭 실패 시 버튼 활성화
+            isMatching = false;
         }
 
         Console.WriteLine("Matching process completed.");
@@ -81,7 +136,7 @@
         checkMatchTimer = new Timer(async _ =>
         {
             await CheckMatching();
-        }, null, 1000, 1000); // 1초마다 CheckMatching 호출
+        }, null, 1000, 1000);
     }
 
     private async Task CheckMatching()
@@ -124,6 +179,4 @@
         line-height: 1.5;
         color: #7f8c8d;
     }
-
-
 </style>

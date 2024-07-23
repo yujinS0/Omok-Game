@@ -6,6 +6,7 @@ public enum ErrorCode : UInt16
     InvalidCredentials = 1,
     UserNotFound = 2,
     ServerError = 3,
+    InternalServerError = 4,
     RequestTurnTimeout = 2505,
     TurnChangedByTimeout = 2510,
     RequestFailed = 10000,

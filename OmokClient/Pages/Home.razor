@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 @inject OmokClient.Services.AuthService AuthService
+@inject OmokClient.Services.CharacterService CharacterService
 
 <PageTitle>Login</PageTitle>
 
@@ -70,6 +71,9 @@
                 CustomAuthProvider.NotifyUserLoggedIn(loginResponse.HivePlayerId);
 
                 await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
+
+                var charName = await CharacterService.GetCharacterNameAsync(loginEmail);
+                await sessionStorage.SetItemAsync("sessionCharName", charName);
 
                 Console.WriteLine("Navigating to /gamestart");
                 Navigation.NavigateTo("gamestart", true);
