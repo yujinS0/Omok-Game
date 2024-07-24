@@ -59,6 +59,7 @@ public class GameDb : IGameDb
 
         return newCharInfo;
     }
+
     public async Task<CharInfo> GetCharInfoDataAsync(string playerId)
     {
         try

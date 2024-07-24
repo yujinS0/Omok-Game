@@ -16,5 +16,4 @@ public interface IGameService
     Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request);
     Task<OmokStone> CheckTurnAsync(string playerId);
     Task<(ErrorCode, GameInfo)> TurnChangeAsync(string playerId);
-    Task AutoChangeTurn(string playerId);
 }

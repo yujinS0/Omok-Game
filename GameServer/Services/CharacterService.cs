@@ -23,17 +23,6 @@ public class CharacterService : ICharacterService
         _gameDb = gameDb;
     }
 
-    public async Task<(ErrorCode, CharSummary?)> GetCharInfoSummaryAsync(string playerId)
-    {
-        var charInfo = await _gameDb.GetCharInfoSummaryAsync(playerId);
-
-        if (charInfo == null)
-        {
-            return (ErrorCode.CharacterNotFound, null);
-        }
-        return (ErrorCode.None, charInfo);
-    }
-
     public async Task<ErrorCode> UpdateCharacterNameAsync(string playerId, string newCharName)
     {
         var result = await _gameDb.UpdateCharacterNameAsync(playerId, newCharName);
@@ -44,5 +33,15 @@ public class CharacterService : ICharacterService
         }
 
         return ErrorCode.None;
+    }
+    public async Task<(ErrorCode, CharSummary?)> GetCharInfoSummaryAsync(string playerId)
+    {
+        var charInfo = await _gameDb.GetCharInfoSummaryAsync(playerId);
+
+        if (charInfo == null)
+        {
+            return (ErrorCode.CharacterNotFound, null);
+        }
+        return (ErrorCode.None, charInfo);
     }
 }

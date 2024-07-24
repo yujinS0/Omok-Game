@@ -9,14 +9,14 @@ public class UpdateCharacterNameRequest
     public string CharName { get; set; }
 }
 
-public class CharacterSummaryRequest
-{
-    public string PlayerId { get; set; }
-}
-
 public class UpdateCharacterNameResponse
 {
     public ErrorCode Result { get; set; }
+}
+
+public class CharacterSummaryRequest
+{
+    public string PlayerId { get; set; }
 }
 
 public class CharacterSummaryResponse
