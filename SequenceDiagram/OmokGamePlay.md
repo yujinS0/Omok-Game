@@ -35,7 +35,7 @@ public class TurnChangeResponse
 
 ------------------------------
 
-## POST OmokGamePlay/current-turn-player
+## POST OmokGamePlay/turn-checking
 ### : 1초마다 호출되는, 현재 게임 턴 체크 (Polling)
 ```mermaid
 sequenceDiagram
