@@ -1,5 +1,6 @@
-# 시퀀스 다이어그램
-## 새로운 유저의 계정 생성
+# 시퀀스 다이어그램 (Register-Login)
+## Register 
+### : 계정 생성
 
 ```mermaid
 sequenceDiagram
@@ -13,7 +14,8 @@ sequenceDiagram
   	H ->> P: 계정 생성 성공 응답
 ```
 
-## 유저의 로그인
+## Login 
+### : 로그인
 ```mermaid
 sequenceDiagram
 	
