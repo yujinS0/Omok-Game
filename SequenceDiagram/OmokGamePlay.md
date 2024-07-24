@@ -1,8 +1,8 @@
 # 시퀀스 다이어그램
-## GetGameInfo
+## OmokGamePlay
 
 ## 오목 보드 가져오기 
-### POST GetGameInfo/board
+### POST OmokGamePlay/board
 ```mermaid
 sequenceDiagram
 	actor User
@@ -17,36 +17,27 @@ sequenceDiagram
 ```
 
 
-## 30초 턴 체크 (Long Polling)
-### POST GetGameInfo/WaitForTurnChange
+## 30초 지나면 호출되는, 턴 바꾸기 (Long Polling)
+### POST OmokGamePlay/turn-change
 ```mermaid
 sequenceDiagram
 	actor User
 	participant Game Server
   	participant Redis
 
-	User ->> Game Server : 게임 턴 체크 요청
+	User ->> Game Server : 게임 턴 변경 요청
 	Game Server ->> Redis : GetCurrentTurn 현재 턴 체크
   	Redis ->> Game Server : 
-  
-alt 30초 전에 돌 두었을 때
-  Game Server ->> Redis : 현재 턴 변경
-  Redis ->> Game Server : GetBoard
-  Game Server ->> User : Board와 CurrentTurn 정보
-end
-
-alt 30초 지나서 타임 아웃
-  Game Server ->> Game Server : AutoChangeTurn()
-  Game Server ->> Redis : 현재 턴 변경
-  Redis ->> Game Server : GetBoard
-  Game Server ->> User : Board와 CurrentTurn 정보
-end
+	  Game Server ->> Game Server : AutoChangeTurn()
+	  Game Server ->> Redis : 현재 턴 변경
+	  Redis ->> Game Server : GetBoard
+	  Game Server ->> User : Board와 CurrentTurn 정보
 
 ```
 
 
-## 현재 게임 턴 체크 (Polling)
-### POST GetGameInfo/turnplayer
+## 1초마다 호출되는, 현재 게임 턴 체크 (Polling)
+### POST OmokGamePlay/current-turn-player
 ```mermaid
 sequenceDiagram
 	actor User
@@ -61,7 +52,7 @@ sequenceDiagram
 ```
 
 ## 승자 정보 가져오기
-### POST GetGameInfo/winner
+### POST turn-change/winner
 ```mermaid
 sequenceDiagram
 	actor User
