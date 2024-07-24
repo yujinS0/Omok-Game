@@ -43,13 +43,16 @@ sequenceDiagram
 	participant GD as GameDB
   	participant R as Redis
 
-	P ->> G : 게임 턴 변경 요청
-	G ->> R : GetCurrentTurn 현재 턴 체크
-  	R ->> G : 
-	G ->> G : AutoChangeTurn()
-	G ->> R : 현재 턴 변경
-	R ->> G  : GetBoard
-	G ->> P : Board와 CurrentTurn 정보
+	P ->> G : 돌두기 포기 요청
+	G ->> G : 자기 턴 맞는지 확인
+	alt 내 차례 X
+		G-->>P: NotYourTurn 오류 응답
+	else 내 차례 o
+		G ->> G : 턴 변경
+		G ->> R : 돌 두기 정보 업데이트
+		R -->> G :  
+	  	G -->> P : 성공 + GameData 정보 응답
+	end
 
 ```
 
@@ -58,7 +61,7 @@ sequenceDiagram
 ------------------------------
 
 ## Turn Checking 
-### : 현재 턴 상태 요청 (차례 대기 플레이어)
+### : 현재 턴 상태 요청 (차례 대기 플레이어) 1초마다 요청
 
 ```mermaid
 sequenceDiagram
@@ -66,10 +69,10 @@ sequenceDiagram
 	participant G as Game Server
   	participant R as Redis
 
-	P ->> G : 현재 게임 턴 체크 요청
+	P ->> G : 현재 턴 체크 요청
 	G ->> R : GetCurrentTurn 현재 턴 체크
-  	R ->> G : 
-  	G ->> P : CurrentTurnPlayerId 정보
+  	R -->> G : 
+  	G -->> P : CurrentTurnPlayerId 정보 응답
 
 ```
 
@@ -82,15 +85,19 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-	actor Player
-	participant Game Server
-  	participant Redis
+	actor P as Player
+	participant G as Game Server
+  	participant R as Redis
 
-	Player ->> Game Server: 보드 정보 요청
-	Game Server ->> Game Server : GameRoomId (Key) 생성
-  Game Server ->> Redis : GetGameData
-  Game Server ->> Player : GameData byte[] 정보
-
+	P ->> G: 게임 데이터 정보 요청
+	G ->> G : GameRoomId (Key) 생성
+	G ->> R : GameData 가져오기
+	R-->>G: 
+	alt 데이터 존재 X
+		G-->>P: 오류 응답
+	else 데이터 존재 O
+		G -->> P : GameData 정보 응답
+	end
 ```
 
 
