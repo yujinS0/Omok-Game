@@ -24,4 +24,8 @@ public class KeyGenerator
     {
         return Guid.NewGuid().ToString(); // [TODO] Ulid 확인 후, 바꾸기
     }
+    public static string UserLockKey(string playerId)
+    {
+        return $"user_lock:{playerId}";
+    }
 }

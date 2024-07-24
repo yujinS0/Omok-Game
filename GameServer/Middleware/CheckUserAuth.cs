@@ -68,9 +68,8 @@ public class CheckUserAuth
             return;
         }
 
-        // TODO 미들웨어에 락 추가
         // 락 설정
-        var userLockKey = $"user_lock:{playerId}";
+        var userLockKey = KeyGenerator.UserLockKey(playerId);
         if (!await _memoryDb.SetUserReqLockAsync(userLockKey)) // TODO keyGen 사용하기
         {
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
