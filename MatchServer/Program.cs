@@ -20,7 +20,7 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); // DbConfig º≥¡§ ∑ŒµÂ
 
 builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
-builder.Services.AddScoped<IRequestMatchingService, RequestMatchingService>();
+builder.Services.AddSingleton<IRequestMatchingService, RequestMatchingService>();
 builder.Services.AddSingleton<MatchWorker>(); // MatchWorker ΩÃ±€≈Ê?
 
 builder.Services.AddHttpClient(); // HttpClientFactory √ﬂ∞°

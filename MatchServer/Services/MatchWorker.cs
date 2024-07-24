@@ -50,53 +50,24 @@ namespace MatchServer.Services
                         var matchResultA = new MatchResult { GameRoomId = gameRoomId, Opponent = playerB };
                         var matchResultB = new MatchResult { GameRoomId = gameRoomId, Opponent = playerA };
 
+                        // TODO 결과 없으면 바로 continue;로 빠져나가도록
+
+                        // TODO 로직 함수화 (매칭결과 저장 & 게임데이터 저장)
+
                         var keyA = KeyGenerator.MatchResult(playerA);
                         var keyB = KeyGenerator.MatchResult(playerB);
 
-                        _memoryDb.StoreMatchResultAsync(keyA, matchResultA, TimeSpan.FromMinutes(10)).Wait();
-                        _memoryDb.StoreMatchResultAsync(keyB, matchResultB, TimeSpan.FromMinutes(10)).Wait();
+                        _memoryDb.StoreMatchResultAsync(keyA, matchResultA, RedisExpireTime.MatchResult).Wait();
+                        _memoryDb.StoreMatchResultAsync(keyB, matchResultB, RedisExpireTime.MatchResult).Wait();
 
                         _logger.LogInformation("Matched {PlayerA} and {PlayerB} with RoomId: {RoomId}", playerA, playerB, gameRoomId);
 
-                        ///////////////////////////
-                        //// 게임 플레이 데이터 만드는 부분
+                        // 게임 플레이 데이터 만드는 부분
                         var omokGameData = new OmokGameData();
-
-                        //int rawDataSize = 328;
 
                         byte[] gameRawData = omokGameData.MakeRawData(playerA, playerB);
 
-                        _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, TimeSpan.FromHours(2)).Wait();
-
-
-
-
-                        ////////////////////////////////////////////////////////////////////
-                        //// RoomId를 key 값으로 해서 GameInfo 라는 클래스의 value 값 생성
-                        //// -> 내가 임의로 만들었던 게임 플레이 데이터인데, 이제 위와 같은 바이너리 데이터로 진행
-                        //// 이때 GameInfo 는 playerA, playerB, 룸 생성시간 포함
-                        //var gameInfo = new GameInfo
-                        //{
-                        //    PlayerA = playerA,
-                        //    PlayerB = playerB,
-                        //    CreatedAt = DateTime.UtcNow
-                        //};
-
-                        //_memoryDb.StoreGameInfoAsync(gameRoomId, gameInfo, TimeSpan.FromHours(2)).Wait();
-                        //_logger.LogInformation("Stored GameInfo for RoomId: {RoomId}", gameRoomId);
-
-
-
-                        ////////////////////////
-                        // ?? 여기서 하는 거 아닙니다 !
-                        // 현재 플레이중인 유저 정보 playingUserInfo 생성
-                        //var playingUserInfoA = new PlayingUserInfo { PlayerId = playerA, RoomId = roomId};
-                        //var playingUserInfoB = new PlayingUserInfo { PlayerId = playerB, RoomId = roomId };
-                        //var playingUserkeyA = KeyGenerator.GeneratePlayingUserKey(playerA);
-                        //var playingUserkeyB = KeyGenerator.GeneratePlayingUserKey(playerB);
-                        //_memoryDb.StorePlayingUserInfoAsync(playingUserkeyA, playingUserInfoA, TimeSpan.FromHours(2)).Wait();
-                        //_memoryDb.StorePlayingUserInfoAsync(playingUserkeyB, playingUserInfoB, TimeSpan.FromHours(2)).Wait();
-
+                        _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, RedisExpireTime.GameData).Wait();
                     }
                 }
                 catch (Exception ex)
@@ -105,12 +76,6 @@ namespace MatchServer.Services
                 }
             }
         }
-
-        //public async Task<MatchResult> GetMatchResultAsync(string playerId)
-        //{
-        //    var key = KeyGenerator.GenerateMatchResultKey(playerId);
-        //    return await _memoryDb.GetMatchResultAsync(key);
-        //}
 
         public void Dispose()
         {
