@@ -19,12 +19,6 @@ public class UpdateCharacterNameResponse
     public ErrorCode Result { get; set; }
 }
 
-public class CharacterInfoResponse
-{
-    public ErrorCode Result { get; set; }
-    public CharInfo CharInfo { get; set; }
-}
-
 public class CharacterInfoDTOResponse
 {
     public ErrorCode Result { get; set; }

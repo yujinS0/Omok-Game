@@ -169,47 +169,47 @@ public class GameService : IGameService
 
 
     // WaitForTurnChangeAsync : 30초 간격 long polling을 처리
-    public async Task<(ErrorCode, GameInfo)> WaitForTurnChangeAsync(string playerId, CancellationToken cancellationToken)
-    {
-        var initialTurn = await GetCurrentTurn(playerId);
-        var initialTurnTime = DateTime.UtcNow;
+    //public async Task<(ErrorCode, GameInfo)> WaitForTurnChangeAsync(string playerId, CancellationToken cancellationToken)
+    //{
+    //    var initialTurn = await GetCurrentTurn(playerId);
+    //    var initialTurnTime = DateTime.UtcNow;
 
-        try
-        {
-            while (!cancellationToken.IsCancellationRequested) // 취소 요청 있을 때까지 반복
-            {
-                var currentTurn = await GetCurrentTurn(playerId);
-                if (currentTurn != initialTurn)
-                {
-                    return (ErrorCode.None, new GameInfo
-                    {
-                        Board = await GetBoard(playerId),
-                        CurrentTurn = currentTurn,
-                    });
-                }
-                await Task.Delay(500, cancellationToken); // 0.5초 대기
-            }
-            // 정상적인 상황에서는 여기 X
-            // 타임아웃이 발생하지 않고 루프가 종료된 경우
-            return (ErrorCode.RequestTurnEnd, null);
-            //throw new InvalidOperationException("Loop terminated unexpectedly");
-        }
-        catch (OperationCanceledException)
-        {
-            // 30초 타임아웃이 발생
-            await AutoChangeTurn(playerId);
-            return (ErrorCode.TurnChangedByTimeout, new GameInfo
-            {
-                Board = await GetBoard(playerId),
-                CurrentTurn = await GetCurrentTurn(playerId),
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error in WaitForTurnChangeAsync.");
-            return (ErrorCode.InternalError, null);
-        }
-    }
+    //    try
+    //    {
+    //        while (!cancellationToken.IsCancellationRequested) // 취소 요청 있을 때까지 반복
+    //        {
+    //            var currentTurn = await GetCurrentTurn(playerId);
+    //            if (currentTurn != initialTurn)
+    //            {
+    //                return (ErrorCode.None, new GameInfo
+    //                {
+    //                    Board = await GetBoard(playerId),
+    //                    CurrentTurn = currentTurn,
+    //                });
+    //            }
+    //            await Task.Delay(500, cancellationToken); // 0.5초 대기
+    //        }
+    //        // 정상적인 상황에서는 여기 X
+    //        // 타임아웃이 발생하지 않고 루프가 종료된 경우
+    //        return (ErrorCode.RequestTurnEnd, null);
+    //        //throw new InvalidOperationException("Loop terminated unexpectedly");
+    //    }
+    //    catch (OperationCanceledException)
+    //    {
+    //        // 30초 타임아웃이 발생
+    //        await AutoChangeTurn(playerId);
+    //        return (ErrorCode.TurnChangedByTimeout, new GameInfo
+    //        {
+    //            Board = await GetBoard(playerId),
+    //            CurrentTurn = await GetCurrentTurn(playerId),
+    //        });
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        _logger.LogError(ex, "Unexpected error in WaitForTurnChangeAsync.");
+    //        return (ErrorCode.InternalError, null);
+    //    }
+    //}
 
     public async Task<(ErrorCode, GameInfo)> TurnChangeAsync(string playerId)
     {
