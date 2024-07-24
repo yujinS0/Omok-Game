@@ -6,7 +6,6 @@ using ServerShared;
 
 namespace GameServer.Middleware;
 
-// You may need to install the Microsoft.AspNetCore.Http.Abstractions package into your project
 public class CheckVersion
 {
     private readonly RequestDelegate _next;
@@ -33,7 +32,7 @@ public class CheckVersion
 
     private async Task<bool> VersionCompare(string appVersion, string dataVersion, HttpContext context)
     {
-        if (!appVersion.Equals("0.1.0")) // TODO 이게 맞나
+        if (!appVersion.Equals("0.1.0")) // TODO MasterDB에서 받아오도록
         {
             context.Response.StatusCode = StatusCodes.Status426UpgradeRequired;
             var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
@@ -63,12 +62,3 @@ public class CheckVersion
         public ErrorCode Result { get; set; }
     }
 }
-
-//// Extension method used to add the middleware to the HTTP request pipeline.
-//public static class CheckVersionExtensions
-//{
-//    public static IApplicationBuilder UseCheckVersion(this IApplicationBuilder builder)
-//    {
-//        return builder.UseMiddleware<CheckVersion>();
-//    }
-//}
