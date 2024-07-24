@@ -21,6 +21,62 @@ public class OmokGamePlayController : ControllerBase
         _gameService = gameService;
     }
 
+    [HttpPost("turn-change")]
+    public async Task<TurnChangeResponse> TurnChange([FromBody] PlayerRequest request)
+    {
+        var (result, gameInfo) = await _gameService.TurnChangeAsync(request.PlayerId);
+        return new TurnChangeResponse
+        {
+            Result = result,
+            GameInfo = gameInfo
+        };
+    }
+
+    [HttpPost("turn-checking")] // check-turn? turn-checking?
+    public async Task<PlayerResponse> GetCurrentTurnPlayer([FromBody] PlayerRequest request)
+    {
+        var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
+
+        if (currentTurn == OmokStone.None)
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnNotFound
+            };
+        }
+
+        string currentTurnPlayer;
+        if (currentTurn == OmokStone.Black)
+        {
+            currentTurnPlayer = await _gameService.GetBlackPlayer(request.PlayerId);
+        }
+        else if (currentTurn == OmokStone.White)
+        {
+            currentTurnPlayer = await _gameService.GetWhitePlayer(request.PlayerId);
+        }
+        else
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnPlayerNotFound
+            };
+        }
+
+        if (string.IsNullOrEmpty(currentTurnPlayer))
+        {
+            return new PlayerResponse
+            {
+                Result = ErrorCode.GameTurnPlayerNotFound
+            };
+        }
+
+        return new PlayerResponse
+        {
+            Result = ErrorCode.None,
+            PlayerId = currentTurnPlayer
+        };
+    }
+
     [HttpPost("board")]
     public async Task<BoardResponse> GetBoard([FromBody] PlayerRequest request)
     {
@@ -78,7 +134,7 @@ public class OmokGamePlayController : ControllerBase
         };
     }
 
-    [HttpPost("turn")]
+    [HttpPost("current-turn")]
     public async Task<CurrentTurnResponse> GetCurrentTurn([FromBody] PlayerRequest request)
     {
         var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
@@ -97,61 +153,7 @@ public class OmokGamePlayController : ControllerBase
         };
     }
 
-    [HttpPost("turn-change")]
-    public async Task<WaitForTurnChangeResponse> TurnChange([FromBody] PlayerRequest request)
-    {
-        var (result, gameInfo) = await _gameService.TurnChangeAsync(request.PlayerId);
-        return new WaitForTurnChangeResponse
-        {
-            Result = result,
-            GameInfo = gameInfo
-        };
-    }
-
-    [HttpPost("current-turn-player")]
-    public async Task<PlayerResponse> GetCurrentTurnPlayer([FromBody] PlayerRequest request)
-    {
-        var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
-
-        if (currentTurn == OmokStone.None)
-        {
-            return new PlayerResponse
-            {
-                Result = ErrorCode.GameTurnNotFound
-            };
-        }
-
-        string currentTurnPlayer;
-        if (currentTurn == OmokStone.Black)
-        {
-            currentTurnPlayer = await _gameService.GetBlackPlayer(request.PlayerId);
-        }
-        else if (currentTurn == OmokStone.White)
-        {
-            currentTurnPlayer = await _gameService.GetWhitePlayer(request.PlayerId);
-        }
-        else
-        {
-            return new PlayerResponse
-            {
-                Result = ErrorCode.GameTurnPlayerNotFound
-            };
-        }
-
-        if (string.IsNullOrEmpty(currentTurnPlayer))
-        {
-            return new PlayerResponse
-            {
-                Result = ErrorCode.GameTurnPlayerNotFound
-            };
-        }
-
-        return new PlayerResponse
-        {
-            Result = ErrorCode.None,
-            PlayerId = currentTurnPlayer
-        };
-    }
+    
 
 
     [HttpPost("winner")]

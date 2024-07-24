@@ -31,23 +31,23 @@ public class CharacterController : ControllerBase
     }
 
     [HttpPost("getinfo")]
-    public async Task<CharacterInfoDTOResponse> GetCharacterInfo([FromBody] CharacterInfoRequest request)
+    public async Task<CharacterSummaryResponse> GetCharacterInfoSummary([FromBody] CharacterSummaryRequest request)
     {
         var (error, charInfo) = await _characterService.GetCharInfoSummaryAsync(request.PlayerId);
 
         if (error != ErrorCode.None)
         {
-            return new CharacterInfoDTOResponse
+            return new CharacterSummaryResponse
             {
                 Result = error,
-                CharInfoDTO = null
+                CharSummary = null
             };
         }
 
-        return new CharacterInfoDTOResponse
+        return new CharacterSummaryResponse
         {
             Result = error,
-            CharInfoDTO = charInfo
+            CharSummary = charInfo
         };
     }
 

@@ -146,7 +146,7 @@ public class GameService : IGameService
             }
 
             // 오목 두고 승자 체크하기
-            var winner = omokGameData.GetWinnerStone(); // TODO 체크 전 후로 다 하고 있음 이게 최선인가?
+            var winner = omokGameData.GetWinnerStone();
             if (winner != OmokStone.None)
             {
                 var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();

@@ -20,7 +20,7 @@ public class LoginController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<LoginResponse> Login([FromBody] LoginRequest request)
+    public async Task<GameLoginResponse> Login([FromBody] GameLoginRequest request)
     {
         try
         {
@@ -36,7 +36,7 @@ public class LoginController : ControllerBase
             if (result != ErrorCode.None)
             {
                 _logger.LogWarning("Token validation failed with result: {Result}", result);
-                return new LoginResponse
+                return new GameLoginResponse
                 {
                     Result = result
                 };
@@ -52,7 +52,7 @@ public class LoginController : ControllerBase
             if (validationResult != 0)
             {
                 _logger.LogWarning("Token validation failed with result: {Result}", validationResult);
-                return new LoginResponse
+                return new GameLoginResponse
                 {
                     Result = (ErrorCode)validationResult
                 };
@@ -61,7 +61,7 @@ public class LoginController : ControllerBase
             var saveResult = await _loginService.SaveLoginInfoAsync(request);
             if (saveResult != ErrorCode.None)
             {
-                return new LoginResponse 
+                return new GameLoginResponse
                 { 
                     Result = saveResult 
                 };
@@ -70,7 +70,7 @@ public class LoginController : ControllerBase
             var initializeResult = await _loginService.InitializeUserDataAsync(request.PlayerId);
             if (initializeResult != ErrorCode.None)
             {
-                return new LoginResponse 
+                return new GameLoginResponse
                 { 
                     Result = initializeResult 
                 };
@@ -78,7 +78,7 @@ public class LoginController : ControllerBase
 
             _logger.LogInformation("Successfully authenticated user with token");
 
-            return new LoginResponse
+            return new GameLoginResponse
             {
                 Result = ErrorCode.None
             };
@@ -86,7 +86,7 @@ public class LoginController : ControllerBase
         catch (HttpRequestException e)
         {
             _logger.LogError(e, "HTTP request to token validation service failed.");
-            return new LoginResponse 
+            return new GameLoginResponse
             { 
                 Result = ErrorCode.ServerError 
             };
@@ -94,7 +94,7 @@ public class LoginController : ControllerBase
         catch (JsonException e)
         {
             _logger.LogError(e, "Error parsing JSON from token validation service.");
-            return new LoginResponse 
+            return new GameLoginResponse
             { 
                 Result = ErrorCode.JsonParsingError 
             };
@@ -102,7 +102,7 @@ public class LoginController : ControllerBase
         catch (Exception e)
         {
             _logger.LogError(e, "Unexpected error occurred during login.");
-            return new LoginResponse 
+            return new GameLoginResponse
             { 
                 Result = ErrorCode.InternalError 
             };

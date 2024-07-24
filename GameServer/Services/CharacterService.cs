@@ -23,7 +23,7 @@ public class CharacterService : ICharacterService
         _gameDb = gameDb;
     }
 
-    public async Task<(ErrorCode, CharInfoDTO?)> GetCharInfoSummaryAsync(string playerId)
+    public async Task<(ErrorCode, CharSummary?)> GetCharInfoSummaryAsync(string playerId)
     {
         var charInfo = await _gameDb.GetCharInfoSummaryAsync(playerId);
 

@@ -9,7 +9,7 @@ public class UpdateCharacterNameRequest
     public string CharName { get; set; }
 }
 
-public class CharacterInfoRequest
+public class CharacterSummaryRequest
 {
     public string PlayerId { get; set; }
 }
@@ -19,14 +19,14 @@ public class UpdateCharacterNameResponse
     public ErrorCode Result { get; set; }
 }
 
-public class CharacterInfoDTOResponse
+public class CharacterSummaryResponse
 {
     public ErrorCode Result { get; set; }
-    public CharInfoDTO CharInfoDTO { get; set; }
+    public CharSummary CharSummary { get; set; }
 }
 
 
-public class CharInfoDTO
+public class CharSummary
 {
     public string CharName { get; set; }
     public int Exp { get; set; }

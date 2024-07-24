@@ -96,54 +96,6 @@ public class GameDb : IGameDb
     }
 
 
-    ////  직전 이전 코드 : DTO 매핑에 오류 생겨서 수정
-    //public async Task<CharInfo> GetCharInfoDataAsync(string playerId) // 오류 있음
-    //{
-    //    var charInfo = await _queryFactory.Query("char_info")
-    //        .Where("hive_player_id", playerId)
-    //        .FirstOrDefaultAsync<CharInfo>(); // 이 부분에서 DTO 매핑 오류?
-    //    _logger.LogInformation("GetCharInfoDataAsync");
-    //    return charInfo;
-    //}
-
-
-    //public async Task<CharInfo> GetCharInfoDataAsync(string playerId)
-    //{
-    //    try
-    //    {
-    //        var result = await _queryFactory.Query("char_info")
-    //            .Where("hive_player_id", playerId)
-    //            .FirstOrDefaultAsync<IDictionary<string, object>>(); // Dictionary로 결과 가져오기
-
-    //        if (result == null)
-    //        {
-    //            _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
-    //            return null;
-    //        }
-
-    //        var charInfo = new CharInfo
-    //        {
-    //            HivePlayerId = (string)result["hive_player_id"],
-    //            CharName = (string)result["char_name"],
-    //            Exp = Convert.ToInt32(result["char_exp"]),
-    //            Level = Convert.ToInt32(result["char_level"]),
-    //            Win = Convert.ToInt32(result["char_win"]),
-    //            Lose = Convert.ToInt32(result["char_lose"]),
-    //            Draw = Convert.ToInt32(result["char_draw"])
-    //        };
-
-    //        _logger.LogInformation("GetCharInfoDataAsync succeeded for playerId: {PlayerId}", playerId);
-    //        return charInfo;
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "An error occurred while getting char info data for playerId: {PlayerId}", playerId);
-    //        throw;
-    //    }
-    //}
-
-
-
     public async Task UpdateCharNameAsync(string playerId, string newCharName)
     {
         await _queryFactory.Query("char_info")
@@ -194,45 +146,8 @@ public class GameDb : IGameDb
 
         return affectedRows > 0;
     }
-    // 새로운 함수 추가
-    //public async Task<CharInfoDTO> GetCharInfoSummaryAsync(string playerId)
-    //{
-    //    var query = "SELECT char_name, char_exp, char_level, char_win, char_lose, char_draw FROM char_info WHERE hive_player_id = @playerId";
 
-    //    try
-    //    {
-    //        using var command = new MySqlCommand(query, _connection);
-    //        command.Parameters.AddWithValue("@playerId", playerId);
-
-    //        using var reader = await command.ExecuteReaderAsync();
-    //        if (await reader.ReadAsync())
-    //        {
-    //            var charInfoSummary = new CharInfoDTO
-    //            {
-    //                CharName = reader.GetString("char_name"),
-    //                Exp = reader.GetInt32("char_exp"),
-    //                Level = reader.GetInt32("char_level"),
-    //                Win = reader.GetInt32("char_win"),
-    //                Lose = reader.GetInt32("char_lose"),
-    //                Draw = reader.GetInt32("char_draw")
-    //            };
-
-    //            return charInfoSummary;
-    //        }
-    //        else
-    //        {
-    //            _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
-    //            return null;
-    //        }
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "An error occurred while getting char info summary for playerId: {PlayerId}", playerId);
-    //        throw;
-    //    }
-    //}
-
-    public async Task<CharInfoDTO> GetCharInfoSummaryAsync(string playerId)
+    public async Task<CharSummary> GetCharInfoSummaryAsync(string playerId)
     {
         try
         {
@@ -247,7 +162,7 @@ public class GameDb : IGameDb
                 return null;
             }
 
-            var charInfoSummary = new CharInfoDTO
+            var charInfoSummary = new CharSummary
             {
                 CharName = result.char_name,
                 Exp = result.char_exp,

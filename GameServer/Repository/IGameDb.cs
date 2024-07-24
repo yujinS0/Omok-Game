@@ -10,5 +10,5 @@ public interface IGameDb : IDisposable
     Task UpdateCharNameAsync(string playerId, string newCharName);
     Task UpdateGameResultAsync(string winnerId, string loserId);
     Task<bool> UpdateCharacterNameAsync(string playerId, string newCharName);
-    Task<CharInfoDTO> GetCharInfoSummaryAsync(string playerId);
+    Task<CharSummary> GetCharInfoSummaryAsync(string playerId);
 }

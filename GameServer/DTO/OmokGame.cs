@@ -62,7 +62,7 @@ public class CheckTurnResponse
     public ErrorCode Result { get; set; }
 }
 
-public class WaitForTurnChangeResponse
+public class TurnChangeResponse
 {
     public ErrorCode Result { get; set; }
     public GameInfo GameInfo { get; set; }

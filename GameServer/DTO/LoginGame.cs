@@ -3,7 +3,7 @@ using ServerShared;
 
 namespace GameServer.DTO;
 
-public class LoginRequest
+public class GameLoginRequest
 {
     [Required]
     [EmailAddress]
@@ -15,11 +15,11 @@ public class LoginRequest
     public required string Token { get; set; }
 
     [Required]
-    public string AppVersion { get; set; } = "0.1.0"; // 앱 버전 0.1.0 사용합니다.
-    public string DataVersion { get; set; } = "0.1.0"; // 데이터 버전 0.1.0 사용합니다.
+    public string AppVersion { get; set; } = ""; // "0.1.0";
+    public string DataVersion { get; set; } = ""; // "0.1.0";
 }
 
-public class LoginResponse
+public class GameLoginResponse
 {
     [Required]
     public ErrorCode Result { get; set; } = ErrorCode.None;
