@@ -81,11 +81,12 @@ sequenceDiagram
 
 
 ## OmokGameData 
-### : 게임 데이터 가져오는 요청 (보드정보 + 플레이어 등등)
+### : 게임 데이터 가져오는 요청 (모든 플레이어)
+게임 데이터 : 오목 보드정보 + 참가 플레이어 등등
 
 ```mermaid
 sequenceDiagram
-	actor P as Player
+	actor P as 모든 Player
 	participant G as Game Server
   	participant R as Redis
 
