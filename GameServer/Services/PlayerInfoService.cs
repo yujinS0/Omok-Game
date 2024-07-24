@@ -10,13 +10,13 @@ using StackExchange.Redis;
 
 namespace GameServer.Services;
 
-public class CharacterService : ICharacterService
+public class PlayerInfoService : IPlayerInfoService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<CharacterService> _logger;
+    private readonly ILogger<PlayerInfoService> _logger;
     private readonly IGameDb _gameDb;
 
-    public CharacterService(IHttpClientFactory httpClientFactory, ILogger<CharacterService> logger, IGameDb gameDb)
+    public PlayerInfoService(IHttpClientFactory httpClientFactory, ILogger<PlayerInfoService> logger, IGameDb gameDb)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;

@@ -5,7 +5,7 @@ using ServerShared;
 
 namespace GameServer.Services.Interfaces;
 
-public interface ICharacterService
+public interface IPlayerInfoService
 {
     Task<(ErrorCode, CharSummary?)> GetCharInfoSummaryAsync(string playerId);
     Task<ErrorCode> UpdateCharacterNameAsync(string playerId, string newCharName);

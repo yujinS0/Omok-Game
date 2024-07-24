@@ -161,8 +161,8 @@ public class GameService : IGameService
 
     public async Task<(ErrorCode, GameInfo)> TurnChangeAsync(string playerId)
     {
-        var initialTurn = await GetCurrentTurn(playerId);
-        var initialTurnTime = DateTime.UtcNow;
+        var initialTurn = await GetCurrentTurn(playerId); // TODO 자기차례인지 확인
+        var initialTurnTime = DateTime.UtcNow; // TODO 확인하기 턴 변경 시각 적용하는 부분
 
         await AutoChangeTurn(playerId);
 
@@ -173,7 +173,7 @@ public class GameService : IGameService
         });
     }
 
-    private async Task AutoChangeTurn(string playerId)
+    private async Task AutoChangeTurn(string playerId) // TODO 이름 변경
     {
         _logger.LogInformation("AutoChangeTurn 함수 호출");
         var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);

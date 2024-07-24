@@ -8,29 +8,18 @@ namespace GameServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CharacterController : ControllerBase
+public class PlayerBasicDataController : ControllerBase
 {
-    private readonly ILogger<CharacterController> _logger;
-    private readonly ICharacterService _characterService;
+    private readonly ILogger<PlayerBasicDataController> _logger;
+    private readonly IPlayerInfoService _characterService;
 
-    public CharacterController(ILogger<CharacterController> logger, ICharacterService characterService)
+    public PlayerBasicDataController(ILogger<PlayerBasicDataController> logger, IPlayerInfoService characterService)
     {
         _logger = logger;
         _characterService = characterService;
     }
 
-    [HttpPost("updatename")]
-    public async Task<UpdateCharacterNameResponse> UpdateCharacterName([FromBody] UpdateCharacterNameRequest request)
-    {
-        var result = await _characterService.UpdateCharacterNameAsync(request.PlayerId, request.CharName);
-
-        return new UpdateCharacterNameResponse
-        {
-            Result = result
-        };
-    }
-
-    [HttpPost("getinfo")]
+    [HttpPost("basic-player-data")]
     public async Task<CharacterSummaryResponse> GetCharacterInfoSummary([FromBody] CharacterSummaryRequest request)
     {
         var (error, charInfo) = await _characterService.GetCharInfoSummaryAsync(request.PlayerId);
@@ -50,5 +39,18 @@ public class CharacterController : ControllerBase
             CharSummary = charInfo
         };
     }
+
+    [HttpPost("update-nickname")]
+    public async Task<UpdateCharacterNameResponse> UpdateCharacterName([FromBody] UpdateCharacterNameRequest request)
+    {
+        var result = await _characterService.UpdateCharacterNameAsync(request.PlayerId, request.CharName);
+
+        return new UpdateCharacterNameResponse
+        {
+            Result = result
+        };
+    }
+
+    
 
 }

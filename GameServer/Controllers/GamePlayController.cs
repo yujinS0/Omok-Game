@@ -10,18 +10,31 @@ namespace GameServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class OmokGamePlayController : ControllerBase
+public class GamePlayController : ControllerBase
 {
-    private readonly ILogger<OmokGamePlayController> _logger;
+    private readonly ILogger<GamePlayController> _logger;
     private readonly IGameService _gameService;
 
-    public OmokGamePlayController(ILogger<OmokGamePlayController> logger, IGameService gameService)
+    public GamePlayController(ILogger<GamePlayController> logger, IGameService gameService)
     {
         _logger = logger;
         _gameService = gameService;
     }
 
-    [HttpPost("turn-change")]
+    [HttpPost("put-omok")]
+    public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request)
+    {
+        var (result, winner) = await _gameService.PutOmokAsync(request);
+
+        if (result != ErrorCode.None)
+        {
+            _logger.LogError($"[PutOmok] PlayerId: {request.PlayerId}, ErrorCode: {result}");
+        }
+
+        return new PutOmokResponse { Result = result, Winner = winner };
+    }
+
+    [HttpPost("giveup-put-omok")]
     public async Task<TurnChangeResponse> TurnChange([FromBody] PlayerRequest request)
     {
         var (result, gameInfo) = await _gameService.TurnChangeAsync(request.PlayerId);
@@ -74,6 +87,26 @@ public class OmokGamePlayController : ControllerBase
         {
             Result = ErrorCode.None,
             PlayerId = currentTurnPlayer
+        };
+    }
+
+    // TODO : OmokGameData : 게임 데이터 가져오는 요청
+    [HttpPost("omok-game-data")]
+    public async Task<BoardResponse> GetOmokGameData([FromBody] PlayerRequest request)
+    {
+        // TODO 구현 수정해야 함
+        var rawData = await _gameService.GetBoard(request.PlayerId);
+        if (rawData == null)
+        {
+            return new BoardResponse
+            {
+                Result = ErrorCode.GameBoardNotFound
+            };
+        }
+        return new BoardResponse
+        {
+            Result = ErrorCode.None,
+            Board = rawData
         };
     }
 
