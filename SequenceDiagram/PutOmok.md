@@ -3,12 +3,12 @@
 ## 오목 돌 두기 POST PutOmok
 ```mermaid
 sequenceDiagram
-	actor User
+	actor Player
 	participant Game Server
 	participant GameDB
   	participant Redis
 
-	User ->> Game Server: 돌 두기 요청
+	Player ->> Game Server: 돌 두기 요청
 	Game Server ->> Game Server : playingUserKey 생성
  	Game Server ->> Redis : userGameData 가져오기
 	Redis ->> Game Server :  
@@ -26,7 +26,7 @@ sequenceDiagram
 	  GameDB ->> Game Server :   
 	end
 
-  	Game Server ->> User : 돌두기 성공 + 승자 정보
+  	Game Server ->> Player : 돌두기 성공 + 승자 정보
 
 ```
 
