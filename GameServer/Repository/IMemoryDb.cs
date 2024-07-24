@@ -13,4 +13,6 @@ public interface IMemoryDb : IDisposable
     Task<bool> UpdateGameDataAsync(string key, byte[] rawData);
     Task<UserGameData> GetPlayingUserInfoAsync(string key);
     Task<string> GetGameRoomIdAsync(string playerId);
+    Task<bool> SetUserReqLockAsync(string key);
+    Task DelUserReqLockAsync(string key);
 }
