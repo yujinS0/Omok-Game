@@ -34,6 +34,10 @@
         <div class="info-item">백돌: <span class="info-value">@whitePlayer</span></div>
         <div class="info-item">현재 차례: <span class="info-value red-text">@currentTurn</span></div>
         <div class="info-item">남은 시간: <span class="info-value">@remainingTime</span></div>
+        @if ((currentTurn == "black" && playerId == blackPlayer) || (currentTurn == "white" && playerId == whitePlayer))
+        {
+            <div class="your-turn-message">당신의 차례입니다!</div>
+        }
     </div>
 </div>
 
@@ -88,6 +92,9 @@
             var winnerResponse = await GameService.GetWinnerAsync(playerId);
             if (winnerResponse.Result == ErrorCode.None && winnerResponse.Winner != null)
             {
+                // Load the board state (오목판 업데이트)
+                await LoadGameStateAsync();
+
                 string winnerMessage = winnerResponse.Winner.PlayerId == playerId
                     ? "축하합니다! 당신이 이겼습니다!"
                     : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
@@ -342,6 +349,15 @@
     .red-text {
         color: red;
     }
+
+    .your-turn-message {
+        font-family: 'Verdana', sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        color: #FF0000;
+        margin-top: 10px;
+    }
+
 
     .omok-container {
         background-color: #F5DEB3;
