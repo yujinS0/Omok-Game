@@ -34,9 +34,9 @@ public class GameService : BaseService
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        Console.WriteLine($"Sending request to GetGameInfo/board for PlayerId: {playerId}");
+        Console.WriteLine($"Sending request to OmokGamePlay/board for PlayerId: {playerId}");
 
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/board", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/board", new { PlayerId = playerId });
         Console.WriteLine($"Response status code: {response.StatusCode}");
 
         if (response.IsSuccessStatusCode)
@@ -71,7 +71,7 @@ public class GameService : BaseService
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/black", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/black-player", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
@@ -84,7 +84,7 @@ public class GameService : BaseService
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/white", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/white-player", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
@@ -97,7 +97,7 @@ public class GameService : BaseService
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/turn", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/turn", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<CurrentTurnResponse>();
@@ -107,26 +107,26 @@ public class GameService : BaseService
     }
 
     // Long Polling
-    public async Task<WaitForTurnChangeResponse> WaitForTurnChangeAsync(string playerId)
-    {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/WaitForTurnChange", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<WaitForTurnChangeResponse>();
-            return result;
-        }
-        return new WaitForTurnChangeResponse
-        {
-            Result = ErrorCode.RequestFailed,
-            GameInfo = null
-        };
-    }
+    //public async Task<WaitForTurnChangeResponse> WaitForTurnChangeAsync(string playerId)
+    //{
+    //    var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+    //    var response = await gameClient.PostAsJsonAsync("GetGameInfo/WaitForTurnChange", new { PlayerId = playerId });
+    //    if (response.IsSuccessStatusCode)
+    //    {
+    //        var result = await response.Content.ReadFromJsonAsync<WaitForTurnChangeResponse>();
+    //        return result;
+    //    }
+    //    return new WaitForTurnChangeResponse
+    //    {
+    //        Result = ErrorCode.RequestFailed,
+    //        GameInfo = null
+    //    };
+    //}
 
     public async Task<WaitForTurnChangeResponse> TurnChangeAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/turnchange", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/turn-change", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<WaitForTurnChangeResponse>();
@@ -142,7 +142,7 @@ public class GameService : BaseService
     public async Task<string> CheckTurnAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/turnplayer", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/current-turn-player", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
@@ -154,7 +154,7 @@ public class GameService : BaseService
     public async Task<WinnerResponse> GetWinnerAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GetGameInfo/winner", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("OmokGamePlay/winner", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<WinnerResponse>();

@@ -10,12 +10,12 @@ namespace GameServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class GetGameInfoController : ControllerBase
+public class OmokGamePlayController : ControllerBase
 {
-    private readonly ILogger<GetGameInfoController> _logger;
+    private readonly ILogger<OmokGamePlayController> _logger;
     private readonly IGameService _gameService;
 
-    public GetGameInfoController(ILogger<GetGameInfoController> logger, IGameService gameService)
+    public OmokGamePlayController(ILogger<OmokGamePlayController> logger, IGameService gameService)
     {
         _logger = logger;
         _gameService = gameService;
@@ -40,7 +40,7 @@ public class GetGameInfoController : ControllerBase
     }
 
 
-    [HttpPost("black")]
+    [HttpPost("black-player")]
     public async Task<PlayerResponse> GetBlackPlayer([FromBody] PlayerRequest request)
     {
         var blackPlayer = await _gameService.GetBlackPlayer(request.PlayerId);
@@ -59,7 +59,7 @@ public class GetGameInfoController : ControllerBase
         };
     }
 
-    [HttpPost("white")]
+    [HttpPost("white-player")]
     public async Task<PlayerResponse> GetWhitePlayer([FromBody] PlayerRequest request)
     {
         var whitePlayer = await _gameService.GetWhitePlayer(request.PlayerId);
@@ -97,7 +97,7 @@ public class GetGameInfoController : ControllerBase
         };
     }
 
-    [HttpPost("turnchange")]
+    [HttpPost("turn-change")]
     public async Task<WaitForTurnChangeResponse> TurnChange([FromBody] PlayerRequest request)
     {
         var (result, gameInfo) = await _gameService.TurnChangeAsync(request.PlayerId);
@@ -108,19 +108,19 @@ public class GetGameInfoController : ControllerBase
         };
     }
 
-    [HttpPost("WaitForTurnChange")]
-    public async Task<WaitForTurnChangeResponse> WaitForTurnChange([FromBody] PlayerRequest request, int timeoutSeconds = 30)
-    {
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
-        var (result, gameInfo) = await _gameService.WaitForTurnChangeAsync(request.PlayerId, cts.Token);
-        return new WaitForTurnChangeResponse
-        {
-            Result = result,
-            GameInfo = gameInfo
-        };
-    }
+    //[HttpPost("WaitForTurnChange")]
+    //public async Task<WaitForTurnChangeResponse> WaitForTurnChange([FromBody] PlayerRequest request, int timeoutSeconds = 30)
+    //{
+    //    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+    //    var (result, gameInfo) = await _gameService.WaitForTurnChangeAsync(request.PlayerId, cts.Token);
+    //    return new WaitForTurnChangeResponse
+    //    {
+    //        Result = result,
+    //        GameInfo = gameInfo
+    //    };
+    //}
 
-    [HttpPost("turnplayer")]
+    [HttpPost("current-turn-player")]
     public async Task<PlayerResponse> GetCurrentTurnPlayer([FromBody] PlayerRequest request)
     {
         var currentTurn = await _gameService.GetCurrentTurn(request.PlayerId);
