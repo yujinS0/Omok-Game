@@ -26,7 +26,7 @@ sequenceDiagram
 ------------------------------
 
 ## Check Matching 
-### : 매칭 완료 여부 체크
+### : 매칭 완료 여부 체크 (매칭 될 때까지 1초마다 요청)
 ```mermaid
 sequenceDiagram
 	actor P as Player
@@ -54,19 +54,13 @@ sequenceDiagram
 		G->>R: OmokGameData 시작 상태로 바꿔주기
 		R-->>G:  
 
-		G-->>P: 매칭 완료 응답 (GameRoomId)
+		G-->>P: 매칭 완료 응답
 	
 	else 매칭 결과 존재 X
 		G-->>P: 매칭 미완료 응답
 	end
 
-		
-
-	
-
 ```
-
-
 
 ------------------------------
 
