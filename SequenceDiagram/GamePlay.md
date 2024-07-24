@@ -10,25 +10,26 @@ sequenceDiagram
   	participant R as Redis
 
 	P ->> G: 돌 두기 요청
-	G ->> G : playingUserKey 생성
- 	G ->> R : userGameData 가져오기
-	R ->> G :  
-  	G ->> R : GameRoomId로 gameData 가져오기
-  	R ->> G: 
+	G ->> R : playingUserKey 생성 후 userGameData 가져오기
+	R -->> G :  
+  	G ->> R : GameRoomId로 GameData 가져오기
+  	R -->> G: 
 
 	G ->> G : 자기 턴 맞는지 확인
-
-	G ->> R : 돌 두기
-	R ->> G :  
-
-	G ->> G : 승자 체크 요청
-	alt 승자 존재
-	  G ->> GD : 게임 결과 (승/패) 업데이트
-	  GD ->> G :   
+	alt 내 차례 X
+		G-->>P: NotYourTurn 오류 응답
+	else 내 차례 o
+		G ->> R : 돌 두기 정보 업데이트
+		R ->> G :  
+	
+		G ->> G : 승자 체크 요청
+		alt 승자 존재
+		  G ->> GD : 게임 결과 (승/패) 업데이트
+		  GD -->> G :   
+		end
+	
+	  	G -->> P : 성공 + GameData 정보 응답
 	end
-
-  	G ->> P : 돌두기 성공 + 승자 정보
-
 ```
 
 ------------------------------
