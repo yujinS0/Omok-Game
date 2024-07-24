@@ -31,3 +31,21 @@ sequenceDiagram
   	Game Server ->> User : 돌두기 성공 + 승자 정보
 
 ```
+
+
+```css
+public class PutOmokRequest
+{
+    [Required] public string PlayerId { get; set; }
+    [Required] public int X { get; set; }
+    [Required] public int Y { get; set; }
+}
+```
+
+```css
+public class PutOmokResponse
+{
+    [Required] public ErrorCode Result { get; set; } = ErrorCode.None;
+    public Winner Winner { get; set; }
+}
+```
