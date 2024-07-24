@@ -179,9 +179,48 @@ namespace GameServer.Repository
             }
         }
 
+        public async Task<bool> SetUserReqLockAsync(string key)
+        {
+            try
+            {
+                var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime); // 30초 동안 락 설정
+                var result = await redisString.SetAsync(key);
+                if (result)
+                {
+                    _logger.LogInformation("Successfully set lock for Key={Key}", key);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to set lock for Key={Key}", key);
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error setting lock for Key={Key}", key);
+                return false;
+            }
+        }
+
+        public async Task DelUserReqLockAsync(string key)
+        {
+            try
+            {
+                var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime);
+                await redisString.DeleteAsync();
+                _logger.LogInformation("Successfully deleted lock for Key={Key}", key);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting lock for Key={Key}", key);
+            }
+        }
+
+
         public void Dispose()
         {
             // _redisConn?.Dispose(); // Redis 연결 해제
         }
+
     }
 }

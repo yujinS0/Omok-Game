@@ -68,6 +68,24 @@ public class CheckUserAuth
             return;
         }
 
+        // TODO 미들웨어에 락 추가
+        // 락 설정
+        var userLockKey = $"user_lock:{playerId}";
+        if (!await _memoryDb.SetUserReqLockAsync(userLockKey)) // TODO keyGen 사용하기
+        {
+            context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
+            {
+                Result = ErrorCode.AuthTokenFailSetNx
+            });
+            await context.Response.WriteAsync(errorJsonResponse);
+            return;
+        }
+
+        // 락 해제
+        await _memoryDb.DelUserReqLockAsync(userLockKey);
+
+
         // Call the next delegate/middleware in the pipeline
         await _next(context);
     }
