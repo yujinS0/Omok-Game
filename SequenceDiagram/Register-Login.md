@@ -24,8 +24,8 @@ sequenceDiagram
 sequenceDiagram
 	actor P as Player
 	participant H as Hive Server
-	participant HD as HiveDB
 	participant G as Game Server
+	participant HD as HiveDB
 	participant GD as GameDB
 	participant R as Redis
 	
