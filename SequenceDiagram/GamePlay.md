@@ -4,11 +4,30 @@
 ### : 돌두기 (자기 차례 플레이어)
 ```mermaid
 sequenceDiagram
-	actor Player(턴 받은)
+	actor Player
 	participant Game Server
+	participant GameDB
   	participant Redis
 
-	
+	Player ->> Game Server: 돌 두기 요청
+	Game Server ->> Game Server : playingUserKey 생성
+ 	Game Server ->> Redis : userGameData 가져오기
+	Redis ->> Game Server :  
+	  Game Server ->> Redis : GameRoomId로 gameData 가져오기
+	  Redis ->> Game Server: 
+
+	Game Server ->> Game Server : 자기 턴 맞는지 확인
+
+	Game Server ->> Redis : 돌 두기
+	Redis ->> Game Server :  
+
+	Game Server ->> Game Server : 승자 체크 요청
+	alt 승자 존재
+	  Game Server ->> GameDB : 게임 결과 (승/패) 업데이트
+	  GameDB ->> Game Server :   
+	end
+
+  	Game Server ->> Player : 돌두기 성공 + 승자 정보
 
 ```
 
