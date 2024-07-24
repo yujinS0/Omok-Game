@@ -23,9 +23,9 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
 	actor P as Player
+	participant HD as HiveDB
 	participant H as Hive Server
 	participant G as Game Server
-	participant HD as HiveDB
 	participant GD as GameDB
 	participant R as Redis
 	
