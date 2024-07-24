@@ -26,7 +26,6 @@ namespace GameServer.Repository
             var key = KeyGenerator.UserLogin(playerId);
             var playerLoginInfo = new PlayerLoginInfo
             {
-                PlayerId = playerId,
                 Token = token,
                 AppVersion = appVersion,
                 DataVersion = dataVersion
