@@ -108,18 +108,6 @@ public class OmokGamePlayController : ControllerBase
         };
     }
 
-    //[HttpPost("WaitForTurnChange")]
-    //public async Task<WaitForTurnChangeResponse> WaitForTurnChange([FromBody] PlayerRequest request, int timeoutSeconds = 30)
-    //{
-    //    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
-    //    var (result, gameInfo) = await _gameService.WaitForTurnChangeAsync(request.PlayerId, cts.Token);
-    //    return new WaitForTurnChangeResponse
-    //    {
-    //        Result = result,
-    //        GameInfo = gameInfo
-    //    };
-    //}
-
     [HttpPost("current-turn-player")]
     public async Task<PlayerResponse> GetCurrentTurnPlayer([FromBody] PlayerRequest request)
     {
