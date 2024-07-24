@@ -51,8 +51,6 @@ sequenceDiagram
 	alt 매칭 결과 존재 O
 		G->>R: PlayingUserData 생성 후 저장
 		R-->>G:  
-		G->>R: OmokGameData 시작 상태로 바꿔주기
-		R-->>G:  
 
 		G-->>P: 매칭 완료 응답
 	
