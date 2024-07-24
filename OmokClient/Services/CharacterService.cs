@@ -30,7 +30,7 @@ public class CharacterService : BaseService
     public async Task<CharacterSummaryResponse> GetCharacterInfoAsync(string playerId)
     {
         var client = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await client.PostAsJsonAsync("Character/getinfo", new CharacterSummaryRequest { PlayerId = playerId });
+        var response = await client.PostAsJsonAsync("PlayerInfo/basic-player-data", new CharacterSummaryRequest { PlayerId = playerId });
 
         if (response.IsSuccessStatusCode)
         {
@@ -45,7 +45,7 @@ public class CharacterService : BaseService
     public async Task<UpdateCharacterNameResponse> UpdateCharacterNameAsync(string playerId, string newCharName)
     {
         var client = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await client.PostAsJsonAsync("Character/updatename", new UpdateCharacterNameRequest { PlayerId = playerId, CharName = newCharName });
+        var response = await client.PostAsJsonAsync("PlayerInfo/update-nickname", new UpdateCharacterNameRequest { PlayerId = playerId, CharName = newCharName });
 
         if (response.IsSuccessStatusCode)
         {
