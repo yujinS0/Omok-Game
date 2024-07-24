@@ -1,8 +1,6 @@
-# 시퀀스 다이어그램
-## PutOmok
+# 시퀀스 다이어그램 (PutOmok)
 
-## 오목 돌 두기
-### POST PutOmok
+## 오목 돌 두기 POST PutOmok
 ```mermaid
 sequenceDiagram
 	actor User
