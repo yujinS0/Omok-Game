@@ -42,7 +42,7 @@ sequenceDiagram
 	alt 첫 로그인이면
 	Game Server ->> Game Mysql : 유저 게임 데이터 생성
 	end
-	Game Mysql -->> Game Server : 유저 데이터 로드
+	Game Mysql -->> Game Server :  
 
 	Game Server ->> User : 로그인 성공 응답 
 	
