@@ -87,12 +87,12 @@ else
                 var characterInfo = await CharacterService.GetCharacterInfoAsync(userId);
                 if (characterInfo != null && characterInfo.Result == ErrorCode.None)
                 {
-                    charName = characterInfo.CharInfoDTO.CharName;
-                    exp = characterInfo.CharInfoDTO.Exp;
-                    level = characterInfo.CharInfoDTO.Level;
-                    win = characterInfo.CharInfoDTO.Win;
-                    lose = characterInfo.CharInfoDTO.Lose;
-                    draw = characterInfo.CharInfoDTO.Draw;
+                    charName = characterInfo.CharSummary.CharName;
+                    exp = characterInfo.CharSummary.Exp;
+                    level = characterInfo.CharSummary.Level;
+                    win = characterInfo.CharSummary.Win;
+                    lose = characterInfo.CharSummary.Lose;
+                    draw = characterInfo.CharSummary.Draw;
                 }
             }
         }

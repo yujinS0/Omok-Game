@@ -22,23 +22,23 @@ public class CharacterService : BaseService
         var response = await GetCharacterInfoAsync(playerId);
         if (response != null && response.Result == ErrorCode.None)
         {
-            return response.CharInfoDTO.CharName;
+            return response.CharSummary.CharName;
         }
         return null;
     }
 
-    public async Task<CharacterInfoDTOResponse> GetCharacterInfoAsync(string playerId)
+    public async Task<CharacterSummaryResponse> GetCharacterInfoAsync(string playerId)
     {
         var client = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await client.PostAsJsonAsync("Character/getinfo", new CharacterInfoRequest { PlayerId = playerId });
+        var response = await client.PostAsJsonAsync("Character/getinfo", new CharacterSummaryRequest { PlayerId = playerId });
 
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadFromJsonAsync<CharacterInfoDTOResponse>();
+            return await response.Content.ReadFromJsonAsync<CharacterSummaryResponse>();
         }
         else
         {
-            return new CharacterInfoDTOResponse { Result = ErrorCode.InternalServerError };
+            return new CharacterSummaryResponse { Result = ErrorCode.InternalServerError };
         }
     }
 
@@ -59,13 +59,14 @@ public class CharacterService : BaseService
 }
 
 
+// Character DTO
 public class UpdateCharacterNameRequest
 {
     public string PlayerId { get; set; }
     public string CharName { get; set; }
 }
 
-public class CharacterInfoRequest
+public class CharacterSummaryRequest
 {
     public string PlayerId { get; set; }
 }
@@ -75,15 +76,14 @@ public class UpdateCharacterNameResponse
     public ErrorCode Result { get; set; }
 }
 
-
-public class CharacterInfoDTOResponse
+public class CharacterSummaryResponse
 {
     public ErrorCode Result { get; set; }
-    public CharInfoDTO CharInfoDTO { get; set; }
+    public CharSummary CharSummary { get; set; }
 }
 
 
-public class CharInfoDTO
+public class CharSummary
 {
     public string CharName { get; set; }
     public int Exp { get; set; }

@@ -39,6 +39,7 @@ public class MatchingService : BaseService
     }
 }
 
+// Match DTO
 public class MatchRequest
 {
     public string PlayerID { get; set; }

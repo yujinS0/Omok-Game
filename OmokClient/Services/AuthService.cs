@@ -78,7 +78,7 @@ public class AuthService
     }
 }
 
-// DTO 
+// Login Register Auth DTO 
 public class AccountRequest
 {
     public required string HivePlayerId { get; set; }
