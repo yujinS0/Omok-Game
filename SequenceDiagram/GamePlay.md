@@ -84,6 +84,10 @@ sequenceDiagram
 ### : 게임 데이터 가져오는 요청 (모든 플레이어)
 게임 데이터 : 오목 보드정보 + 참가 플레이어 등등
 
+어떤 상태의 플레이어가 요청하는지? (수정중)
+* 게임 시작 시 요청
+* 턴 바뀌어서 자기 차례가 되었을 때 요청
+
 ```mermaid
 sequenceDiagram
 	actor P as 모든 Player
@@ -91,7 +95,6 @@ sequenceDiagram
   	participant R as Redis
 
 	P ->> G: 게임 데이터 정보 요청
-	G ->> G : GameRoomId (Key) 생성
 	G ->> R : GameData 가져오기
 	R-->>G: 
 	alt 데이터 존재 X
