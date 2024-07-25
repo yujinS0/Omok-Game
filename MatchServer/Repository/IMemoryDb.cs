@@ -1,4 +1,3 @@
-using MatchServer.DTO;
 using MatchServer.Models;
 
 namespace MatchServer.Repository;

@@ -22,7 +22,7 @@ public enum ErrorCode : UInt16
     InvalidResponseFormat = 1013,
     ServerError = 1014,
     JsonParsingError = 1015,
-    InternalError = 1020, // HttpRequestException 및 JsonException 이외의 모든 예기치 않은 오류?
+    InternalError = 1020, // HttpRequestException 및 JsonException 이외의 모든 예기치 않은 오류
     InternalServerError = 1021, 
     InvalidRequest = 1030,
     MissingHeader = 1040,

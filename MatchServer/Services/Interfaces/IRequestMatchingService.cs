@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using MatchServer.DTO;
-using ServerShared;
+﻿using ServerShared;
 
 namespace MatchServer.Services.Interfaces;
 

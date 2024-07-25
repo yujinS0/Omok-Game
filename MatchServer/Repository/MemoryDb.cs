@@ -1,8 +1,6 @@
-using Microsoft.Extensions.Logging;
 using CloudStructures.Structures;
 using CloudStructures;
 using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
 using MatchServer.Models;
 
 namespace MatchServer.Repository;
@@ -25,7 +23,7 @@ public class MemoryDb : IMemoryDb
         {
             var redisString = new RedisString<MatchResult>(_redisConn, key, expiry); 
             _logger.LogInformation("Attempting to store match result: Key={Key}, MatchResult={MatchResult}", key, matchResult);
-            await redisString.SetAsync(matchResult); // 결과 저장
+            await redisString.SetAsync(matchResult);
             _logger.LogInformation("Stored match result: Key={Key}, MatchResult={MatchResult}", key, matchResult);
         }
         catch (Exception ex)
@@ -38,9 +36,9 @@ public class MemoryDb : IMemoryDb
     {
         try
         {
-            var redisString = new RedisString<byte[]>(_redisConn, key, expiry); // byte[]? OmokGameData?
+            var redisString = new RedisString<byte[]>(_redisConn, key, expiry);
             _logger.LogInformation("Attempting to store game info: Key={Key}, GamerawData={rawData}", key, rawData);
-            await redisString.SetAsync(rawData); // 결과 저장
+            await redisString.SetAsync(rawData);
             _logger.LogInformation("Stored game info: Key={Key}, GamerawData={rawData}", key, rawData);
         }
         catch (Exception ex)
@@ -55,7 +53,7 @@ public class MemoryDb : IMemoryDb
         {
             var redisString = new RedisString<PlayingUserInfo>(_redisConn, key, expiry);
             _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
-            await redisString.SetAsync(playingUserInfo); // 결과 저장
+            await redisString.SetAsync(playingUserInfo);
             _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
         }
         catch (Exception ex)
@@ -69,14 +67,14 @@ public class MemoryDb : IMemoryDb
     {
         try
         {
-            var redisString = new RedisString<MatchResult>(_redisConn, key, null); // 조회 결과 저장할 객체 초기화
+            var redisString = new RedisString<MatchResult>(_redisConn, key, null);
             _logger.LogInformation("Attempting to retrieve match result for Key={Key}", key);
-            var matchResult = await redisString.GetAsync(); // GET
+            var matchResult = await redisString.GetAsync();
 
             if (matchResult.HasValue)
             {
                 _logger.LogInformation("Retrieved match result for Key={Key}: MatchResult={MatchResult}", key, matchResult.Value);
-                await redisString.DeleteAsync(); // 조회 후 삭제
+                await redisString.DeleteAsync();
                 _logger.LogInformation("Deleted match result for Key={Key} from Redis", key);
                 return matchResult.Value;
             }
