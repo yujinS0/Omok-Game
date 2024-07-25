@@ -65,8 +65,7 @@ public class GamePlayController : ControllerBase
         };
     }
 
-    // TODO : OmokGameData : 게임 데이터 가져오는 요청
-    [HttpPost("omok-game-data")]
+    [HttpPost("omok-game-data")] // 게임 전체 데이터 가져오는 요청
     public async Task<BoardResponse> GetOmokGameData([FromBody] PlayerRequest request)
     {
         var (errorCode, gameData) = await _gameService.GetGameRawDataAsync(request.PlayerId);

@@ -44,9 +44,3 @@ public class CheckMatchingController : ControllerBase
         };
     }
 }
-// Redis에서 Player의 매칭 결과 확인
-// 없으면 아직 매칭 중이라고 클라이언트에게 통보
-
-// 있으면
-// 매칭 데이터를 가져와서 이 사람의 게임 데이터를 레디스에 만들어주기
-// 게임 데이터는 매칭 당시 시간과 GameRoomId
