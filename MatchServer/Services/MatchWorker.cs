@@ -28,7 +28,7 @@ namespace MatchServer.Services
 
         public void AddMatchRequest(string playerId)
         {
-            _reqQueue.Enqueue(playerId); // 요청 큐에 플레이어 넣기
+            _reqQueue.Enqueue(playerId);
         }
 
         private void RunMatching()
@@ -50,30 +50,83 @@ namespace MatchServer.Services
                         var matchResultA = new MatchResult { GameRoomId = gameRoomId, Opponent = playerB };
                         var matchResultB = new MatchResult { GameRoomId = gameRoomId, Opponent = playerA };
 
-                        // TODO 결과 없으면 바로 continue;로 빠져나가도록
+                        // 매칭 결과 저장
+                        if (!StoreMatchResults(playerA, playerB, matchResultA, matchResultB).Result)
+                        {
+                            continue;
+                        }
 
-                        // TODO 로직 함수화 (매칭결과 저장 & 게임데이터 저장)
-
-                        var keyA = KeyGenerator.MatchResult(playerA);
-                        var keyB = KeyGenerator.MatchResult(playerB);
-
-                        _memoryDb.StoreMatchResultAsync(keyA, matchResultA, RedisExpireTime.MatchResult).Wait();
-                        _memoryDb.StoreMatchResultAsync(keyB, matchResultB, RedisExpireTime.MatchResult).Wait();
+                        // 게임 데이터 저장
+                        if (!StoreGameData(gameRoomId, playerA, playerB).Result)
+                        {
+                            RollbackMatchResults(playerA, playerB).Wait();
+                            continue;
+                        }
 
                         _logger.LogInformation("Matched {PlayerA} and {PlayerB} with RoomId: {RoomId}", playerA, playerB, gameRoomId);
-
-                        // 게임 플레이 데이터 만드는 부분
-                        var omokGameData = new OmokGameData();
-
-                        byte[] gameRawData = omokGameData.MakeRawData(playerA, playerB);
-
-                        _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, RedisExpireTime.GameData).Wait();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred while running matching.");
                 }
+            }
+        }
+
+        private async Task<bool> StoreMatchResults(string playerA, string playerB, MatchResult matchResultA, MatchResult matchResultB)
+        {
+            try
+            {
+                var keyA = KeyGenerator.MatchResult(playerA);
+                var keyB = KeyGenerator.MatchResult(playerB);
+
+                var taskA = _memoryDb.StoreMatchResultAsync(keyA, matchResultA, RedisExpireTime.MatchResult);
+                var taskB = _memoryDb.StoreMatchResultAsync(keyB, matchResultB, RedisExpireTime.MatchResult);
+
+                await Task.WhenAll(taskA, taskB);
+                return taskA.IsCompletedSuccessfully && taskB.IsCompletedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while storing match results for {PlayerA} and {PlayerB}", playerA, playerB);
+                return false;
+            }
+        }
+
+        private async Task<bool> StoreGameData(string gameRoomId, string playerA, string playerB)
+        {
+            try
+            {
+                var omokGameData = new OmokGameData();
+                byte[] gameRawData = omokGameData.MakeRawData(playerA, playerB);
+
+                var task = _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, RedisExpireTime.GameData);
+                await task;
+                return task.IsCompletedSuccessfully;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while storing game data for RoomId: {RoomId}", gameRoomId);
+                return false;
+            }
+        }
+
+        private async Task RollbackMatchResults(string playerA, string playerB)
+        {
+            try
+            {
+                var keyA = KeyGenerator.MatchResult(playerA);
+                var keyB = KeyGenerator.MatchResult(playerB);
+
+                var taskA = _memoryDb.DeleteMatchResultAsync(keyA);
+                var taskB = _memoryDb.DeleteMatchResultAsync(keyB);
+
+                await Task.WhenAll(taskA, taskB);
+                _logger.LogInformation("Rolled back match results for {PlayerA} and {PlayerB}", playerA, playerB);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while rolling back match results for {PlayerA} and {PlayerB}", playerA, playerB);
             }
         }
 
