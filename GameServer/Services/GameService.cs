@@ -21,7 +21,7 @@ public class GameService : IGameService
         _logger = logger;
     }
 
-    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request)
+    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request) // TODO 함수 분리하기
     {
         string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);
@@ -82,6 +82,18 @@ public class GameService : IGameService
             _logger.LogError(ex, "Failed to set stone at ({X}, {Y}) for PlayerId: {PlayerId}", request.X, request.Y, request.PlayerId);
             return (ErrorCode.SetStoneFailException, null);
         }
+    }
+
+    private Winner CheckForWinner(OmokGameData omokGameData)
+    {
+        var winnerStone = omokGameData.GetWinnerStone();
+        if (winnerStone == OmokStone.None)
+        {
+            return null;
+        }
+
+        var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
+        return new Winner { Stone = winnerStone, PlayerId = winnerPlayerId };
     }
 
 
