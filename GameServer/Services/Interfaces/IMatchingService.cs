@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
 using GameServer.DTO;
 using GameServer.Models;
+using ServerShared;
 
 namespace GameServer.Services.Interfaces;
 
 public interface IMatchingService
 {
-    Task<MatchResponse> RequestMatchingAsync(MatchRequest request);
-    Task<MatchResult> CheckAndInitializeMatch(string playerId);
+    Task<ErrorCode> RequestMatchingAsync(MatchRequest request);
+    Task<(ErrorCode, MatchResult)> CheckAndInitializeMatchAsync(string playerId);
 }

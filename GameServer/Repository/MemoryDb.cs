@@ -138,18 +138,20 @@ namespace GameServer.Repository
         }
 
         // 매칭 완료 후 게임중인 유저 게임 데이터 저장하는
-        public async Task StorePlayingUserInfoAsync(string key, UserGameData playingUserInfo) // key로 PlayingUserInfo 저장
+        public async Task<bool> StorePlayingUserInfoAsync(string key, UserGameData playingUserInfo) // key로 PlayingUserInfo 저장
         {
             try
             {
                 var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
                 _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
-                await redisString.SetAsync(playingUserInfo); // 결과 저장
+                await redisString.SetAsync(playingUserInfo);
                 _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to store playing user info: Key={Key}", key);
+                return false;
             }
         }
         public async Task<UserGameData> GetPlayingUserInfoAsync(string key)

@@ -24,35 +24,11 @@ public class RequestMatchingController : ControllerBase
     [HttpPost]
     public async Task<MatchResponse> RequestMatching([FromBody] MatchRequest request)
     {
-        try
+        var errorCode = await _matchingService.RequestMatchingAsync(request);
+
+        return new MatchResponse
         {
-            var matchResponse = await _matchingService.RequestMatchingAsync(request);
-            _logger.LogInformation($"[RequestMatching] PlayerId: {request.PlayerId}, Result: {matchResponse.Result}");
-            return matchResponse;
-        }
-        catch (HttpRequestException e)
-        {
-            _logger.LogError(e, "Error while calling match server");
-            return new MatchResponse 
-            { 
-                Result = ErrorCode.ServerError 
-            };
-        }
-        catch (JsonException e)
-        {
-            _logger.LogError(e, "Error parsing JSON from match server");
-            return new MatchResponse 
-            { 
-                Result = ErrorCode.JsonParsingError 
-            };
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Unexpected error occurred");
-            return new MatchResponse 
-            { 
-                Result = ErrorCode.InternalError 
-            };
-        }
+            Result = errorCode
+        };
     }
 }

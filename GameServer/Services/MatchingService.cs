@@ -24,57 +24,57 @@ public class MatchingService : IMatchingService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<MatchResponse> RequestMatchingAsync(MatchRequest request)
+    public async Task<ErrorCode> RequestMatchingAsync(MatchRequest request)
     {
         var client = _httpClientFactory.CreateClient();
         var matchRequestJson = JsonSerializer.Serialize(request);
         var content = new StringContent(matchRequestJson, Encoding.UTF8, "application/json");
 
         var response = await client.PostAsync("http://localhost:5259/RequestMatching", content);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            return ErrorCode.InternalError;
+        }
 
         var responseBody = await response.Content.ReadAsStringAsync();
         var matchResponse = JsonSerializer.Deserialize<MatchResponse>(responseBody);
 
-        return matchResponse ?? new MatchResponse { Result = ErrorCode.InternalError };
+        return matchResponse?.Result ?? ErrorCode.InternalError;
     }
 
-    public async Task<MatchResult> CheckAndInitializeMatch(string playerId)
-    {
-        var matchResultkey = KeyGenerator.MatchResult(playerId);
-        var result = await _memoryDb.GetMatchResultAsync(matchResultkey);
 
-        if (result == null)
+    public async Task<(ErrorCode, MatchResult)> CheckAndInitializeMatchAsync(string playerId)
+    {
+        var (errorCode, matchResult) = await GetMatchResultAsync(playerId);
+
+        if (errorCode == ErrorCode.None && matchResult != null)
         {
-            return null;
+            await InitializePlayingUserAsync(playerId, matchResult.GameRoomId);
         }
 
-        // 매칭 성공 확인 시
-        var userGameDatakey = KeyGenerator.PlayingUser(playerId);
+        return (errorCode, matchResult);
+    }
+
+    private async Task<(ErrorCode, MatchResult)> GetMatchResultAsync(string playerId)
+    {
+        var matchResultKey = KeyGenerator.MatchResult(playerId);
+        var matchResult = await _memoryDb.GetMatchResultAsync(matchResultKey);
+
+        return matchResult != null ? (ErrorCode.None, matchResult) : (ErrorCode.None, null);
+    }
+
+    private async Task<ErrorCode> InitializePlayingUserAsync(string playerId, string gameRoomId)
+    {
+        var userGameDataKey = KeyGenerator.PlayingUser(playerId);
 
         var userGameData = new UserGameData
         {
-            GameRoomId = result.GameRoomId
+            GameRoomId = gameRoomId
             // CreatedAt Redis에 넣을 때 생성
         };
 
-        await _memoryDb.StorePlayingUserInfoAsync(userGameDatakey, userGameData);
-
-        // 매칭 성공 했으니 게임 시작 상태로 바꿔주기
-        byte[] getGameRawData = await _memoryDb.GetGameDataAsync(result.GameRoomId);
-
-        var omokGameData = new OmokGameData();
-        byte[] gameRawData = omokGameData.StartGame(getGameRawData);
-
-        var gameStartResult = await _memoryDb.UpdateGameDataAsync(result.GameRoomId, gameRawData);
-
-        if (!gameStartResult)
-        {
-            _logger.LogError("Failed to update game info for RoomId: {RoomId}", result.GameRoomId);
-            return null;
-        }
-
-        return result;
+        var success = await _memoryDb.StorePlayingUserInfoAsync(userGameDataKey, userGameData);
+        return success ? ErrorCode.None : ErrorCode.InternalError;
     }
 
 }

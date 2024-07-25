@@ -26,21 +26,12 @@ public class CheckMatchingController : ControllerBase
     [HttpPost]
     public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request)
     {
-        var result = await _matchingService.CheckAndInitializeMatch(request.PlayerId);
-
-        if (result == null)
-        {
-            return new MatchCompleteResponse
-            {
-                Result = ErrorCode.None,
-                Success = 0
-            };
-        }
+        var (result, matchResult) = await _matchingService.CheckAndInitializeMatchAsync(request.PlayerId);
 
         return new MatchCompleteResponse
         {
-            Result = ErrorCode.None,
-            Success = 1
+            Result = result,
+            Success = matchResult != null ? 1 : 0
         };
     }
 }
