@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using AntDesign;
 using Blazored.SessionStorage;
 using System.Reflection;
+using AntDesign.TableModels;
+using OneOf.Types;
 
 namespace OmokClient.Services;
 
@@ -30,15 +32,41 @@ public class GameService : BaseService
         return new PutOmokResponse { Result = ErrorCode.RequestFailed };
     }
 
-    // TODO 수정된 서버측 api에 맞게 로직 수정
+    public async Task<TurnChangeResponse> TurnChangeAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GamePlay/giveup-put-omok", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<TurnChangeResponse>();
+            return result;
+        }
+        return new TurnChangeResponse
+        {
+            Result = ErrorCode.RequestFailed,
+            GameInfo = null
+        };
+    }
 
-    public async Task<byte[]> GetBoardAsync(string playerId)
+    public async Task<string> CheckTurnAsync(string playerId)
+    {
+        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await gameClient.PostAsJsonAsync("GamePlay/turn-checking", new { PlayerId = playerId });
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
+            return result.PlayerId;
+        }
+        return null;
+    }
+
+    public async Task<byte[]> GetRawOmokGameData(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
         Console.WriteLine($"Sending request to OmokGamePlay/board for PlayerId: {playerId}");
 
-        var response = await gameClient.PostAsJsonAsync("GamePlay/board", new { PlayerId = playerId });
+        var response = await gameClient.PostAsJsonAsync("GamePlay/omok-game-data", new { PlayerId = playerId });
         Console.WriteLine($"Response status code: {response.StatusCode}");
 
         if (response.IsSuccessStatusCode)
@@ -69,90 +97,80 @@ public class GameService : BaseService
         return null;
     }
 
-    public async Task<string> GetBlackPlayerAsync(string playerId)
+    public async Task<OmokGameData> GetOmokGameDataAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("GamePlay/black-player", new { PlayerId = playerId });
+        Console.WriteLine($"Sending request to OmokGamePlay/board for PlayerId: {playerId}");
+
+        var response = await gameClient.PostAsJsonAsync("GamePlay/omok-game-data", new { PlayerId = playerId });
+        Console.WriteLine($"Response status code: {response.StatusCode}");
+
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-            return result?.PlayerId ?? string.Empty;
+            var result = await response.Content.ReadFromJsonAsync<BoardResponse>();
+            if (result != null)
+            {
+                Console.WriteLine($"Received board data. Result: {result.Result}, RawData Length: {result.Board?.Length}");
+            }
+            else
+            {
+                Console.WriteLine("Received null result.");
+            }
+
+            if (result?.Board != null)
+            {
+                var decodedData = Convert.FromBase64String(result.Board);
+                Console.WriteLine($"Decoded raw data length: {decodedData.Length}");
+                Console.WriteLine($"Decoded raw data: {BitConverter.ToString(decodedData)}");
+
+                var omokGameData = new OmokGameData();
+                omokGameData.Decoding(decodedData);
+                return omokGameData;
+            }
         }
-        return string.Empty;
+        else
+        {
+            Console.WriteLine("Failed to get board data.");
+        }
+
+        return null;
+    }
+
+    public async Task<string> GetBlackPlayerAsync(string playerId)
+    {
+        var omokGameData = await GetOmokGameDataAsync(playerId);
+
+        return omokGameData?.GetBlackPlayerName();
     }
 
     public async Task<string> GetWhitePlayerAsync(string playerId)
     {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var omokGameData = await GetOmokGameDataAsync(playerId);
 
-        var response = await gameClient.PostAsJsonAsync("GamePlay/white-player", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-            return result?.PlayerId ?? string.Empty;
-        }
-        return string.Empty;
+        return omokGameData?.GetWhitePlayerName();
     }
 
     public async Task<string> GetCurrentTurnAsync(string playerId)
     {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
+        var omokGameData = await GetOmokGameDataAsync(playerId);
 
-        var response = await gameClient.PostAsJsonAsync("GamePlay/current-turn", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<CurrentTurnResponse>();
-            return result?.CurrentTurn.ToString().ToLower() ?? "none";
-        }
-        return "none";
+        return omokGameData?.GetCurrentTurn().ToString().ToLower() ?? "none";
     }
 
-    public async Task<TurnChangeResponse> TurnChangeAsync(string playerId) 
+    public async Task<Winner> GetWinnerAsync(string playerId)
     {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GamePlay/giveup-put-omok", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
+        var omokGameData = await GetOmokGameDataAsync(playerId);
+
+        var winner = omokGameData.GetWinnerStone();
+        if (winner == OmokStone.None)
         {
-            var result = await response.Content.ReadFromJsonAsync<TurnChangeResponse>();
-            return result;
+            return null;
         }
-        return new TurnChangeResponse
-        {
-            Result = ErrorCode.RequestFailed,
-            GameInfo = null
-        };
+
+        var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
+        return new Winner { Stone = winner, PlayerId = winnerPlayerId };
     }
-
-    public async Task<string> CheckTurnAsync(string playerId)
-    {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GamePlay/turn-checking", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-            return result.PlayerId;
-        }
-        return null;
-    }
-
-    public async Task<WinnerResponse> GetWinnerAsync(string playerId)
-    {
-        var gameClient = await CreateClientWithHeadersAsync("GameAPI");
-        var response = await gameClient.PostAsJsonAsync("GamePlay/winner", new { PlayerId = playerId });
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<WinnerResponse>();
-            return result;
-        }
-        return new WinnerResponse
-        {
-            Result = ErrorCode.RequestFailed,
-            Winner = null
-        };
-    }
-
-
 }
 
 
@@ -164,6 +182,21 @@ public class GameInfo
     public OmokStone CurrentTurn { get; set; }
 }
 
+//public class BoardResponse
+//{
+//    public ErrorCode Result { get; set; }
+//    public GameData GameData { get; set; }
+//}
+
+//public class GameData
+//{
+//    public byte[] Board { get; set; }
+//    public string BlackPlayer { get; set; }
+//    public string WhitePlayer { get; set; }
+//    public OmokStone CurrentTurn { get; set; }
+//    public string WinnerPlayerId { get; set; }
+//    public OmokStone WinnerStone { get; set; }
+//}
 
 public class BoardResponse
 {

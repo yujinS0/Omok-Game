@@ -90,14 +90,14 @@
 
             // Check for winner
             var winnerResponse = await GameService.GetWinnerAsync(playerId);
-            if (winnerResponse.Result == ErrorCode.None && winnerResponse.Winner != null)
+            if (winnerResponse != null)
             {
                 // Load the board state (오목판 업데이트)
                 await LoadGameStateAsync();
 
-                string winnerMessage = winnerResponse.Winner.PlayerId == playerId
+                string winnerMessage = winnerResponse.PlayerId == playerId
                     ? "축하합니다! 당신이 이겼습니다!"
-                    : $"아쉽네요... {winnerResponse.Winner.PlayerId} 님이 이겼습니다.";
+                    : $"아쉽네요... {winnerResponse.PlayerId} 님이 이겼습니다.";
                 await _message.Info(winnerMessage);
                 await EndGame();
                 return;
@@ -174,7 +174,7 @@
         {
             Console.WriteLine("== LoadGameStateAsync ==");
 
-            var rawData = await GameService.GetBoardAsync(playerId);
+            var rawData = await GameService.GetRawOmokGameData(playerId);
             if (rawData != null)
             {
                 DecodeBoard(rawData);
