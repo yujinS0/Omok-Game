@@ -84,11 +84,9 @@ public class GameService : IGameService
         }
     }
 
+
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmokAsync(string playerId)
     {
-        var initialTurn = await GetCurrentTurn(playerId); // TODO 자기차례인지 확인
-        var initialTurnTime = DateTime.UtcNow; // TODO 확인하기 턴 변경 시각 적용하는 부분
-
         var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
         var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
 
@@ -201,26 +199,4 @@ public class GameService : IGameService
         var omokGameData = await GetGameData(playerId);
         return omokGameData?.GetCurrentTurn() ?? OmokStone.None;
     }
-
-    //private async Task<(ErrorCode, OmokGameData)> GetGameDataAsync(string playerId)
-    //{
-    //    var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
-    //    if (gameRoomId == null)
-    //    {
-    //        _logger.LogWarning("Game room not found for player: {PlayerId}", playerId);
-    //        return (ErrorCode.GameRoomNotFound, null);
-    //    }
-
-    //    var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
-    //    if (rawData == null)
-    //    {
-    //        _logger.LogWarning("Game data not found for game room: {GameRoomId}", gameRoomId);
-    //        return (ErrorCode.GameBoardNotFound, null);
-    //    }
-
-    //    var omokGameData = new OmokGameData();
-    //    omokGameData.Decoding(rawData);
-
-    //    return (ErrorCode.None, omokGameData);
-    //}
 }
