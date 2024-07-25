@@ -110,11 +110,6 @@ public class OmokGameData
         return (OmokStone)_rawData[index];
     }
 
-    // TODO 현재 턴인 PlayerId 가져오는 함수 추가하기 
-    // : GetCurrentTurn() 활용해서 만들기
-    // GetCurrentTurnPlayerId() 
-
-
     public OmokStone GetCurrentTurn() // 현재 턴 정보 반환
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length;
@@ -187,7 +182,7 @@ public class OmokGameData
         return rawData;
     }
 
-    public byte[] SetStone(byte[] rawData, string playerId, int x, int y) // TODO 가독성/코드 유지보수를 위해 isBlack을 받는 게 아니라. PlayerId 받기
+    public byte[] SetStone(byte[] rawData, string playerId, int x, int y)
     {
         Decoding(rawData);
 
@@ -298,7 +293,6 @@ public class OmokGameData
 
         return rawData;
     }
-
 
     void DecodingUserName()
     {
