@@ -93,6 +93,22 @@ public class MemoryDb : IMemoryDb
         }
     }
 
+    public async Task<bool> DeleteMatchResultAsync(string key)
+    {
+        try
+        {
+            var redisString = new RedisString<MatchResult>(_redisConn, key, null);
+            await redisString.DeleteAsync();
+            _logger.LogInformation("Deleted match result: Key={Key}", key);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete match result: Key={Key}", key);
+            return false;
+        }
+    }
+
 
 
     public void Dispose()

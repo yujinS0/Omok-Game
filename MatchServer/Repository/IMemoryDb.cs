@@ -9,4 +9,5 @@ public interface IMemoryDb : IDisposable
     Task<MatchResult> GetMatchResultAsync(string key);
     Task StoreGameDataAsync(string key, byte[] rawData, TimeSpan expiry);
     Task StorePlayingUserInfoAsync(string key, PlayingUserInfo playingUserInfo, TimeSpan expiry);
+    Task<bool> DeleteMatchResultAsync(string key);
 }
