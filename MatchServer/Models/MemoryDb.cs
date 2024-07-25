@@ -1,10 +1,9 @@
 ﻿namespace MatchServer.Models;
 
-public class GameInfo
+public class MatchResult
 {
-    public string PlayerA { get; set; }
-    public string PlayerB { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public string GameRoomId { get; set; }
+    public string Opponent { get; set; }
 }
 
 public class PlayingUserInfo
