@@ -6,7 +6,5 @@ namespace GameServer.Services.Interfaces;
 
 public interface ILoginService
 {
-    Task<(ErrorCode Result, string ResponseBody)> VerifyTokenAsync(VerifyTokenRequest verifyTokenRequest);
-    Task<ErrorCode> SaveLoginInfoAsync(GameLoginRequest request);
-    Task<ErrorCode> InitializeUserDataAsync(string playerId);
+    Task<ErrorCode> VerifyTokenAndInitializePlayerDataAsync(VerifyTokenRequest verifyTokenRequest, GameLoginRequest request);
 }

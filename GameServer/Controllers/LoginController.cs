@@ -24,92 +24,30 @@ public class LoginController : ControllerBase
     {
         try
         {
+            // Verify Token
             var verifyTokenRequest = new VerifyTokenRequest
             {
                 HivePlayerId = request.PlayerId,
                 HiveToken = request.Token
             };
 
-            var (result, responseBody) = await _loginService.VerifyTokenAsync(verifyTokenRequest);
-            _logger.LogInformation("Received response with status {Result}: {ResponseBody}", result, responseBody);
-
-            if (result != ErrorCode.None)
-            {
-                _logger.LogWarning("Token validation failed with result: {Result}", result);
-                return new GameLoginResponse
-                {
-                    Result = result
-                };
-            }
-
-            int validationResult;
-            using (JsonDocument doc = JsonDocument.Parse(responseBody))
-            {
-                JsonElement root = doc.RootElement;
-                validationResult = root.GetProperty("result").GetInt32();
-            }
-
-            if (validationResult != 0)
-            {
-                _logger.LogWarning("Token validation failed with result: {Result}", validationResult);
-                return new GameLoginResponse
-                {
-                    Result = (ErrorCode)validationResult
-                };
-            }
-
-            var saveResult = await _loginService.SaveLoginInfoAsync(request);
-            if (saveResult != ErrorCode.None)
-            {
-                return new GameLoginResponse
-                { 
-                    Result = saveResult 
-                };
-            }
-
-            var initializeResult = await _loginService.InitializeUserDataAsync(request.PlayerId);
-            if (initializeResult != ErrorCode.None)
-            {
-                return new GameLoginResponse
-                { 
-                    Result = initializeResult 
-                };
-            }
-
-            _logger.LogInformation("Successfully authenticated user with token");
-
-            return new GameLoginResponse
-            {
-                Result = ErrorCode.None
-            };
+            var result = await _loginService.VerifyTokenAndInitializePlayerDataAsync(verifyTokenRequest, request);
+            return new GameLoginResponse { Result = result };
         }
         catch (HttpRequestException e)
         {
             _logger.LogError(e, "HTTP request to token validation service failed.");
-            return new GameLoginResponse
-            { 
-                Result = ErrorCode.ServerError 
-            };
+            return new GameLoginResponse { Result = ErrorCode.ServerError };
         }
         catch (JsonException e)
         {
             _logger.LogError(e, "Error parsing JSON from token validation service.");
-            return new GameLoginResponse
-            { 
-                Result = ErrorCode.JsonParsingError 
-            };
+            return new GameLoginResponse { Result = ErrorCode.JsonParsingError };
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Unexpected error occurred during login.");
-            return new GameLoginResponse
-            { 
-                Result = ErrorCode.InternalError 
-            };
+            return new GameLoginResponse { Result = ErrorCode.InternalError };
         }
-
-        //var response = await _loginService.Login(request);
-        //_logger.LogInformation($"[Login] PlayerId: {request.PlayerId}, Result: {response.Result}");
-        //return response;
     }
 }

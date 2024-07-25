@@ -109,7 +109,6 @@ namespace GameServer.Repository
             }
         }
 
-
         public async Task<MatchResult> GetMatchResultAsync(string key) // 매칭 결과 조회
         {
             try
@@ -214,7 +213,6 @@ namespace GameServer.Repository
                 _logger.LogError(ex, "Error deleting lock for Key={Key}", key);
             }
         }
-
 
         public void Dispose()
         {

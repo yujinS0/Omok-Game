@@ -25,7 +25,47 @@ public class LoginService : ILoginService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode Result, string ResponseBody)> VerifyTokenAsync(VerifyTokenRequest verifyTokenRequest)
+    public async Task<ErrorCode> VerifyTokenAndInitializePlayerDataAsync(VerifyTokenRequest verifyTokenRequest, GameLoginRequest request)
+    {
+        var (result, responseBody) = await VerifyTokenAsync(verifyTokenRequest);
+
+        if (result != ErrorCode.None)
+        {
+            _logger.LogWarning("Token validation failed with result: {Result}", result);
+            return result;
+        }
+
+        int validationResult;
+        using (JsonDocument doc = JsonDocument.Parse(responseBody))
+        {
+            JsonElement root = doc.RootElement;
+            validationResult = root.GetProperty("result").GetInt32();
+        }
+
+        if (validationResult != 0)
+        {
+            _logger.LogWarning("Token validation failed with result: {Result}", validationResult);
+            return (ErrorCode)validationResult;
+        }
+
+        var saveResult = await SaveLoginInfoAsync(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
+        if (saveResult != ErrorCode.None)
+        {
+            return saveResult;
+        }
+
+        var initializeResult = await InitializeUserDataAsync(request.PlayerId);
+        if (initializeResult != ErrorCode.None)
+        {
+            return initializeResult;
+        }
+
+        _logger.LogInformation("Successfully authenticated user with token");
+
+        return ErrorCode.None;
+    }
+
+    private async Task<(ErrorCode, string)> VerifyTokenAsync(VerifyTokenRequest verifyTokenRequest)
     {
         var client = _httpClientFactory.CreateClient();
         var content = new StringContent(JsonSerializer.Serialize(verifyTokenRequest), Encoding.UTF8, "application/json");
@@ -37,18 +77,18 @@ public class LoginService : ILoginService
         return (ErrorCode.None, responseBody);
     }
 
-    public async Task<ErrorCode> SaveLoginInfoAsync(GameLoginRequest request)
+    private async Task<ErrorCode> SaveLoginInfoAsync(string playerId, string token, string appVersion, string dataVersion)
     {
-        var saveResult = await _memoryDb.SaveUserLoginInfo(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
+        var saveResult = await _memoryDb.SaveUserLoginInfo(playerId, token, appVersion, dataVersion);
         if (!saveResult)
         {
-            _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", request.PlayerId);
+            _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", playerId);
             return ErrorCode.InternalError;
         }
         return ErrorCode.None;
     }
 
-    public async Task<ErrorCode> InitializeUserDataAsync(string playerId)
+    private async Task<ErrorCode> InitializeUserDataAsync(string playerId)
     {
         var charInfo = await _gameDb.GetCharInfoDataAsync(playerId);
         if (charInfo == null)
@@ -58,5 +98,6 @@ public class LoginService : ILoginService
         }
         return ErrorCode.None;
     }
+
 }
 
