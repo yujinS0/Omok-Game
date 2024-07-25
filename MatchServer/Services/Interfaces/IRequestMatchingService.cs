@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using MatchServer.DTO;
+using ServerShared;
 
 namespace MatchServer.Services.Interfaces;
 
 public interface IRequestMatchingService
 {
-    MatchResponse Matching(MatchRequest request);
+    ErrorCode Matching(string playerId);
 }

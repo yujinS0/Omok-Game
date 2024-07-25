@@ -18,20 +18,19 @@ public class RequestMatchingService : IRequestMatchingService
         _matchWorker = matchWorker;
     }
 
-    public MatchResponse Matching(MatchRequest request)
+    public ErrorCode Matching(string playerId)
     {
-        if (request == null || string.IsNullOrEmpty(request.PlayerId)) 
+        try
         {
-            _logger.LogError("Invalid match request data.");
-            return new MatchResponse { Result = ErrorCode.InvalidRequest };
+            _logger.LogInformation($"POST RequestMatching: {playerId}");
+            _matchWorker.AddMatchRequest(playerId);
+            _logger.LogInformation("Added {PlayerId} to match request queue.", playerId);
+            return ErrorCode.None;
         }
-
-        _logger.LogInformation($"POST RequestMatching: {request.PlayerId}");
-
-        _matchWorker.AddMatchRequest(request.PlayerId);
-
-        _logger.LogInformation("Added {PlayerId} to match request queue.", request.PlayerId);
-
-        return new MatchResponse { Result = ErrorCode.None };
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while adding match request for {PlayerId}", playerId);
+            return ErrorCode.InternalServerError;
+        }
     }
 }

@@ -21,11 +21,11 @@ public class RequestMatchingController : ControllerBase
     [HttpPost]
     public MatchResponse Match([FromBody] MatchRequest request)
     {
-        var response = _matchService.Matching(request);
-        if (response.Result == ErrorCode.InvalidRequest)
+        if (request == null || string.IsNullOrEmpty(request.PlayerId))
         {
-            return response;
+            return new MatchResponse { Result = ErrorCode.InvalidRequest };
         }
-        return response;
+        var result = _matchService.Matching(request.PlayerId);
+        return new MatchResponse { Result = result };
     }
 }
