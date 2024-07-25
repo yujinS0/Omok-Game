@@ -156,6 +156,13 @@ public class OmokGameData
         return (OmokStone)_rawData[index];
     }
 
+    public string GetWinnerPlayerId()
+    {
+        var winner = GetWinnerStone();
+        if (winner == OmokStone.None)
+            return null;
+        return winner == OmokStone.Black ? GetBlackPlayerName() : GetWhitePlayerName();
+    }
 
     public void Decoding(byte[] rawData)
     {
