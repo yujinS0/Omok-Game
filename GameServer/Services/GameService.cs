@@ -21,81 +21,6 @@ public class GameService : IGameService
         _logger = logger;
     }
 
-
-    public async Task<OmokGameData> GetGameData(string playerId)
-    {
-        var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
-        if (gameRoomId == null)
-        {
-            return null;
-        }
-
-        var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
-        if (rawData == null)
-        {
-            return null;
-        }
-
-        var omokGameData = new OmokGameData();
-        omokGameData.Decoding(rawData);
-
-        return omokGameData;
-    }
-
-    public async Task<byte[]> GetBoard(string playerId)
-    {
-        var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
-        if (gameRoomId == null)
-        {
-            return null;
-        }
-
-        var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
-        if (rawData == null)
-        {
-            return null;
-        }
-        //Console.WriteLine($"rawData: {BitConverter.ToString(rawData)}");
-
-        return rawData;
-    }
-
-    public async Task<string> GetBlackPlayer(string playerId)
-    {
-        var omokGameData = await GetGameData(playerId);
-        return omokGameData?.GetBlackPlayerName();
-    }
-
-    public async Task<string> GetWhitePlayer(string playerId)
-    {
-        var omokGameData = await GetGameData(playerId);
-        return omokGameData?.GetWhitePlayerName();
-    }
-
-    public async Task<OmokStone> GetCurrentTurn(string playerId)
-    {
-        var omokGameData = await GetGameData(playerId);
-        return omokGameData?.GetCurrentTurn() ?? OmokStone.None;
-    }
-
-    public async Task<(ErrorCode, Winner)> GetWinnerAsync(string playerId)
-    {
-        var omokGameData = await GetGameData(playerId);
-        if (omokGameData == null)
-        {
-            return (ErrorCode.GameDataNotFound, null);
-        }
-
-        var winner = omokGameData.GetWinnerStone();
-        if (winner == OmokStone.None)
-        {
-            return (ErrorCode.None, null);
-        }
-
-        var winnerPlayerId = winner == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
-        return (ErrorCode.None, new Winner { Stone = winner, PlayerId = winnerPlayerId });
-    }
-
     public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request)
     {
         string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
@@ -159,23 +84,11 @@ public class GameService : IGameService
         }
     }
 
-    public async Task<(ErrorCode, GameInfo)> TurnChangeAsync(string playerId)
+    public async Task<(ErrorCode, GameInfo)> GiveUpPutOmokAsync(string playerId)
     {
         var initialTurn = await GetCurrentTurn(playerId); // TODO 자기차례인지 확인
         var initialTurnTime = DateTime.UtcNow; // TODO 확인하기 턴 변경 시각 적용하는 부분
 
-        await AutoChangeTurn(playerId);
-
-        return (ErrorCode.None, new GameInfo
-        {
-            Board = await GetBoard(playerId),
-            CurrentTurn = await GetCurrentTurn(playerId)
-        });
-    }
-
-    private async Task AutoChangeTurn(string playerId) // TODO 이름 변경
-    {
-        _logger.LogInformation("AutoChangeTurn 함수 호출");
         var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
         var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
 
@@ -191,13 +104,123 @@ public class GameService : IGameService
         {
             _logger.LogError(ex, "Failed to change turn for player {PlayerId}", playerId);
         }
+
+        var (errorCode, gameData) = await GetGameRawDataAsync(playerId);
+
+        return (ErrorCode.None, new GameInfo
+        {
+            Board = gameData,
+            CurrentTurn = await GetCurrentTurn(playerId)
+        });
     }
 
-    // CheckTurnAsync : 현재 턴 확인
-    public async Task<OmokStone> CheckTurnAsync(string playerId) 
+    public async Task<(ErrorCode, string)> TurnCheckingAsync(string playerId)
     {
-        return await GetCurrentTurn(playerId);
+        var currentTurn = await GetCurrentTurn(playerId);
+
+        if (currentTurn == OmokStone.None)
+        {
+            return (ErrorCode.GameTurnNotFound, null);
+        }
+
+        string currentTurnPlayer;
+        if (currentTurn == OmokStone.Black)
+        {
+            currentTurnPlayer = await GetBlackPlayer(playerId);
+        }
+        else if (currentTurn == OmokStone.White)
+        {
+            currentTurnPlayer = await GetWhitePlayer(playerId);
+        }
+        else
+        {
+            return (ErrorCode.GameTurnPlayerNotFound, null);
+        }
+
+        if (string.IsNullOrEmpty(currentTurnPlayer))
+        {
+            return (ErrorCode.GameTurnPlayerNotFound, null);
+        }
+
+        return (ErrorCode.None, currentTurnPlayer);
     }
 
-    
+    public async Task<(ErrorCode, byte[]?)> GetGameRawDataAsync(string playerId)
+    {
+        var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
+        if (gameRoomId == null)
+        {
+            _logger.LogWarning("Game room not found for player: {PlayerId}", playerId);
+            return (ErrorCode.GameRoomNotFound, null);
+        }
+
+        var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
+        if (rawData == null)
+        {
+            _logger.LogWarning("Game data not found for game room: {GameRoomId}", gameRoomId);
+            return (ErrorCode.GameBoardNotFound, null);
+        }
+
+        return (ErrorCode.None, rawData);
+    }
+
+    private async Task<OmokGameData> GetGameData(string playerId)
+    {
+        var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
+        if (gameRoomId == null)
+        {
+            return null;
+        }
+
+        var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
+        if (rawData == null)
+        {
+            return null;
+        }
+
+        var omokGameData = new OmokGameData();
+        omokGameData.Decoding(rawData);
+
+        return omokGameData;
+    }
+
+    private async Task<string> GetBlackPlayer(string playerId)
+    {
+        var omokGameData = await GetGameData(playerId);
+        return omokGameData?.GetBlackPlayerName();
+    }
+
+    private async Task<string> GetWhitePlayer(string playerId)
+    {
+        var omokGameData = await GetGameData(playerId);
+        return omokGameData?.GetWhitePlayerName();
+    }
+
+    private async Task<OmokStone> GetCurrentTurn(string playerId)
+    {
+        var omokGameData = await GetGameData(playerId);
+        return omokGameData?.GetCurrentTurn() ?? OmokStone.None;
+    }
+
+    //private async Task<(ErrorCode, OmokGameData)> GetGameDataAsync(string playerId)
+    //{
+    //    var gameRoomId = await _memoryDb.GetGameRoomIdAsync(playerId);
+    //    if (gameRoomId == null)
+    //    {
+    //        _logger.LogWarning("Game room not found for player: {PlayerId}", playerId);
+    //        return (ErrorCode.GameRoomNotFound, null);
+    //    }
+
+    //    var rawData = await _memoryDb.GetGameDataAsync(gameRoomId);
+    //    if (rawData == null)
+    //    {
+    //        _logger.LogWarning("Game data not found for game room: {GameRoomId}", gameRoomId);
+    //        return (ErrorCode.GameBoardNotFound, null);
+    //    }
+
+    //    var omokGameData = new OmokGameData();
+    //    omokGameData.Decoding(rawData);
+
+    //    return (ErrorCode.None, omokGameData);
+    //}
 }

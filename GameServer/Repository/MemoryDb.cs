@@ -73,7 +73,7 @@ namespace GameServer.Repository
         {
             try
             {
-                var redisString = new RedisString<byte[]>(_redisConn, key, RedisExpireTime.GameData); // TODO : Magic number 사용 금지! ServerShared에 상수 정의해서 사용하도록
+                var redisString = new RedisString<byte[]>(_redisConn, key, RedisExpireTime.GameData);
                 var result = await redisString.GetAsync();
 
                 if (result.HasValue)

@@ -21,6 +21,22 @@ public class PlayerRequest
     public string PlayerId { get; set; }
 }
 
+//public class BoardResponse
+//{
+//    public ErrorCode Result { get; set; }
+//    public GameData GameData { get; set; }
+//}
+
+//public class GameData
+//{
+//    public byte[] Board { get; set; }
+//    public string BlackPlayer { get; set; }
+//    public string WhitePlayer { get; set; }
+//    public OmokStone CurrentTurn { get; set; }
+//    public string WinnerPlayerId { get; set; }
+//    public OmokStone WinnerStone { get; set; }
+//}
+
 public class BoardResponse
 {
     public ErrorCode Result { get; set; }
