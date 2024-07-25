@@ -19,13 +19,13 @@ public class RequestMatchingController : ControllerBase
     }
 
     [HttpPost]
-    public MatchResponse Match([FromBody] MatchRequest request)
+    public MatchResponse RequestMatching([FromBody] MatchRequest request)
     {
         if (request == null || string.IsNullOrEmpty(request.PlayerId))
         {
             return new MatchResponse { Result = ErrorCode.InvalidRequest };
         }
-        var result = _matchService.Matching(request.PlayerId);
+        var result = _matchService.RequestMatching(request.PlayerId);
         return new MatchResponse { Result = result };
     }
 }

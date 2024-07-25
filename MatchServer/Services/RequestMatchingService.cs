@@ -14,7 +14,7 @@ public class RequestMatchingService : IRequestMatchingService
         _matchWorker = matchWorker;
     }
 
-    public ErrorCode Matching(string playerId)
+    public ErrorCode RequestMatching(string playerId)
     {
         try
         {

@@ -4,5 +4,5 @@ namespace MatchServer.Services.Interfaces;
 
 public interface IRequestMatchingService
 {
-    ErrorCode Matching(string playerId);
+    ErrorCode RequestMatching(string playerId);
 }
