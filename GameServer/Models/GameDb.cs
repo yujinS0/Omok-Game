@@ -1,10 +1,10 @@
 namespace GameServer.Models;
 
-public class CharInfo
+public class PlayerInfo
 {
-    public int CharUid { get; set; }
+    public int PlayerUid { get; set; }
     public string HivePlayerId { get; set; }
-    public string CharName { get; set; }
+    public string NickName { get; set; }
     public int Exp { get; set; }
     public int Level { get; set; }
     public int Win { get; set; }

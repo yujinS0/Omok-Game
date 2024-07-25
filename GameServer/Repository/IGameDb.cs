@@ -5,10 +5,9 @@ namespace GameServer.Repository;
 
 public interface IGameDb : IDisposable
 {
-    Task<CharInfo> CreateUserGameDataAsync(string playerId);
-    Task<CharInfo> GetCharInfoDataAsync(string playerId);
-    Task UpdateCharNameAsync(string playerId, string newCharName);
+    Task<PlayerInfo> CreatePlayerInfoDataAsync(string playerId);
+    Task<PlayerInfo> GetPlayerInfoDataAsync(string playerId);
     Task UpdateGameResultAsync(string winnerId, string loserId);
-    Task<bool> UpdateCharacterNameAsync(string playerId, string newCharName);
-    Task<CharSummary> GetCharInfoSummaryAsync(string playerId);
+    Task<bool> UpdateNickNameAsync(string playerId, string newNickName);
+    Task<PlayerBasicInfo> GetplayerBasicInfoAsync(string playerId);
 }

@@ -160,9 +160,9 @@ public enum ErrorCode : UInt16
     // GameDb 4000 ~ 
     GetGameDbConnectionFail = 4002,
 
-    // CharInfo 4500 ~
-    CharacterNotFound = 4501,
-    UpdateCharacterNameFailed = 4502,
+    // PlayerInfo 4500 ~
+    PlayerNotFound = 4501,
+    UpdatePlayerNickNameFailed = 4502,
 
 
     // MasterDb 5000 ~

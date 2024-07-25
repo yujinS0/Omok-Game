@@ -20,32 +20,32 @@ public class PlayerInfoController : ControllerBase
     }
 
     [HttpPost("basic-player-data")]
-    public async Task<CharacterSummaryResponse> GetCharacterInfoSummary([FromBody] CharacterSummaryRequest request)
+    public async Task<PlayerBasicInfoResponse> GetBasicPlayerData([FromBody] PlayerBasicInfoRequest request)
     {
-        var (error, charInfo) = await _playerInfoService.GetCharInfoSummaryAsync(request.PlayerId);
+        var (error, playerBasicInfo) = await _playerInfoService.GetPlayerBasicDataAsync(request.PlayerId);
 
         if (error != ErrorCode.None)
         {
-            return new CharacterSummaryResponse
+            return new PlayerBasicInfoResponse
             {
                 Result = error,
-                CharSummary = null
+                PlayerBasicInfo = null
             };
         }
 
-        return new CharacterSummaryResponse
+        return new PlayerBasicInfoResponse
         {
             Result = error,
-            CharSummary = charInfo
+            PlayerBasicInfo = playerBasicInfo
         };
     }
 
     [HttpPost("update-nickname")]
-    public async Task<UpdateCharacterNameResponse> UpdateCharacterName([FromBody] UpdateCharacterNameRequest request)
+    public async Task<UpdateNickNameResponse> UpdateNickNameAsync([FromBody] UpdateNickNameRequest request)
     {
-        var result = await _playerInfoService.UpdateCharacterNameAsync(request.PlayerId, request.CharName);
+        var result = await _playerInfoService.UpdateNickNameAsync(request.PlayerId, request.NickName);
 
-        return new UpdateCharacterNameResponse
+        return new UpdateNickNameResponse
         {
             Result = result
         };

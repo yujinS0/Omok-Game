@@ -23,25 +23,27 @@ public class PlayerInfoService : IPlayerInfoService
         _gameDb = gameDb;
     }
 
-    public async Task<ErrorCode> UpdateCharacterNameAsync(string playerId, string newCharName)
+    public async Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicDataAsync(string playerId)
     {
-        var result = await _gameDb.UpdateCharacterNameAsync(playerId, newCharName);
+        var playerInfo = await _gameDb.GetplayerBasicInfoAsync(playerId);
+
+        if (playerInfo == null)
+        {
+            return (ErrorCode.PlayerNotFound, null);
+        }
+        return (ErrorCode.None, playerInfo);
+    }
+
+    public async Task<ErrorCode> UpdateNickNameAsync(string playerId, string newNickName)
+    {
+        var result = await _gameDb.UpdateNickNameAsync(playerId, newNickName);
 
         if (!result)
         {
-            return ErrorCode.UpdateCharacterNameFailed;
+            return ErrorCode.UpdatePlayerNickNameFailed;
         }
 
         return ErrorCode.None;
     }
-    public async Task<(ErrorCode, CharSummary?)> GetCharInfoSummaryAsync(string playerId)
-    {
-        var charInfo = await _gameDb.GetCharInfoSummaryAsync(playerId);
-
-        if (charInfo == null)
-        {
-            return (ErrorCode.CharacterNotFound, null);
-        }
-        return (ErrorCode.None, charInfo);
-    }
+    
 }

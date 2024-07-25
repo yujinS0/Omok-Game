@@ -11,7 +11,7 @@
 @using OmokClient.Services
 @inject ISessionStorageService sessionStorage
 @inject MatchingService MatchingService
-@inject CharacterService CharacterService
+@inject PlayerService PlayerService
 
 <PageTitle>Matching</PageTitle>
 
@@ -25,17 +25,17 @@
 {
     <p>Loading...</p>
 }
-else if (string.IsNullOrEmpty(charName))
+else if (string.IsNullOrEmpty(nickName))
 {
     <h4>닉네임을 생성해주세요</h4>
-    <Input placeholder="닉네임 입력" @bind-Value="newCharName" />
+    <Input placeholder="닉네임 입력" @bind-Value="newNickName" />
     <Button Type="primary" Size="large" OnClick="CreateNickname">닉네임 생성</Button>
 }
 else
 {
     <h4>플레이어 정보</h4>
     <div class="info-container">
-        <div class="info-item">닉네임: <span class="info-value">@charName</span></div>
+        <div class="info-item">닉네임: <span class="info-value">@nickName</span></div>
         <div class="info-item">경험치: <span class="info-value">@exp</span></div>
         <div class="info-item">레벨: <span class="info-value">@level</span></div>
 
@@ -60,8 +60,8 @@ else
 
 @code {
     private string userId = string.Empty;
-    private string charName = string.Empty;
-    private string newCharName = string.Empty;
+    private string nickName = string.Empty;
+    private string newNickName = string.Empty;
     private int exp;
     private int level;
     private int win;
@@ -76,23 +76,23 @@ else
         Console.WriteLine("GameStart page initialized.");
 
         userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
-        charName = await sessionStorage.GetItemAsync<string>("sessionCharName") ?? string.Empty;
+        nickName = await sessionStorage.GetItemAsync<string>("sessionNickName") ?? string.Empty;
 
         if (!string.IsNullOrEmpty(userId))
         {
-            charName = await CharacterService.GetCharacterNameAsync(userId);
+            nickName = await PlayerService.GetNickNameAsync(userId);
 
-            if (!string.IsNullOrEmpty(charName))
+            if (!string.IsNullOrEmpty(nickName))
             {
-                var characterInfo = await CharacterService.GetCharacterInfoAsync(userId);
+                var characterInfo = await PlayerService.GetPlayerBasicInfoAsync(userId);
                 if (characterInfo != null && characterInfo.Result == ErrorCode.None)
                 {
-                    charName = characterInfo.CharSummary.CharName;
-                    exp = characterInfo.CharSummary.Exp;
-                    level = characterInfo.CharSummary.Level;
-                    win = characterInfo.CharSummary.Win;
-                    lose = characterInfo.CharSummary.Lose;
-                    draw = characterInfo.CharSummary.Draw;
+                    nickName = characterInfo.PlayerBasicInfo.NickName;
+                    exp = characterInfo.PlayerBasicInfo.Exp;
+                    level = characterInfo.PlayerBasicInfo.Level;
+                    win = characterInfo.PlayerBasicInfo.Win;
+                    lose = characterInfo.PlayerBasicInfo.Lose;
+                    draw = characterInfo.PlayerBasicInfo.Draw;
                 }
             }
         }
@@ -101,12 +101,12 @@ else
 
     private async Task CreateNickname()
     {
-        if (!string.IsNullOrEmpty(newCharName))
+        if (!string.IsNullOrEmpty(newNickName))
         {
-            var updateResponse = await CharacterService.UpdateCharacterNameAsync(userId, newCharName);
+            var updateResponse = await PlayerService.UpdateNickNameAsync(userId, newNickName);
             if (updateResponse != null && updateResponse.Result == ErrorCode.None)
             {
-                charName = newCharName;
+                nickName = newNickName;
                 StateHasChanged();
             }
         }

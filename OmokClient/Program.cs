@@ -33,7 +33,7 @@ builder.Services.AddScoped<BaseService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<MatchingService>();
 builder.Services.AddScoped<GameService>();
-builder.Services.AddScoped<CharacterService>();
+builder.Services.AddScoped<PlayerService>();
 
 // CustomAuthenticationStateProvider µî·Ï
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();

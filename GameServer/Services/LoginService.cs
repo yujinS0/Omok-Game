@@ -90,11 +90,11 @@ public class LoginService : ILoginService
 
     private async Task<ErrorCode> InitializeUserDataAsync(string playerId)
     {
-        var charInfo = await _gameDb.GetCharInfoDataAsync(playerId);
-        if (charInfo == null)
+        var playerInfo = await _gameDb.GetPlayerInfoDataAsync(playerId);
+        if (playerInfo == null)
         {
-            _logger.LogInformation("First login detected, creating new char_info for hive_player_id: {PlayerId}", playerId);
-            charInfo = await _gameDb.CreateUserGameDataAsync(playerId);
+            _logger.LogInformation("First login detected, creating new player_info for hive_player_id: {PlayerId}", playerId);
+            playerInfo = await _gameDb.CreatePlayerInfoDataAsync(playerId);
         }
         return ErrorCode.None;
     }

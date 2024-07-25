@@ -31,12 +31,12 @@ public class GameDb : IGameDb
         _connection?.Dispose();
     }
 
-    public async Task<CharInfo> CreateUserGameDataAsync(string playerId)
+    public async Task<PlayerInfo> CreatePlayerInfoDataAsync(string playerId)
     {
-        var newCharInfo = new CharInfo
+        var newPlayerInfo = new PlayerInfo
         {
             HivePlayerId = playerId,
-            CharName = string.Empty,
+            NickName = playerId,
             Exp = 0,
             Level = 1,
             Win = 0,
@@ -44,29 +44,29 @@ public class GameDb : IGameDb
             Draw = 0
         };
 
-        var insertId = await _queryFactory.Query("char_info").InsertGetIdAsync<int>(new
+        var insertId = await _queryFactory.Query("player_info").InsertGetIdAsync<int>(new
         {
-            hive_player_id = newCharInfo.HivePlayerId,
-            char_name = newCharInfo.CharName,
-            char_exp = newCharInfo.Exp,
-            char_level = newCharInfo.Level,
-            char_win = newCharInfo.Win,
-            char_lose = newCharInfo.Lose,
-            char_draw = newCharInfo.Draw
+            hive_player_id = newPlayerInfo.HivePlayerId,
+            nickname = newPlayerInfo.NickName,
+            exp = newPlayerInfo.Exp,
+            level = newPlayerInfo.Level,
+            win = newPlayerInfo.Win,
+            lose = newPlayerInfo.Lose,
+            draw = newPlayerInfo.Draw
         });
 
-        newCharInfo.CharUid = insertId;
+        newPlayerInfo.PlayerUid = insertId;
 
-        return newCharInfo;
+        return newPlayerInfo;
     }
 
-    public async Task<CharInfo> GetCharInfoDataAsync(string playerId)
+    public async Task<PlayerInfo> GetPlayerInfoDataAsync(string playerId)
     {
         try
         {
-            var result = await _queryFactory.Query("char_info")
+            var result = await _queryFactory.Query("player_info")
                 .Where("hive_player_id", playerId)
-                .Select("hive_player_id", "char_name", "char_exp", "char_level", "char_win", "char_lose", "char_draw")
+                .Select("hive_player_id", "nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
             if (result == null)
@@ -75,39 +75,31 @@ public class GameDb : IGameDb
                 return null;
             }
 
-            var charInfo = new CharInfo
+            var playerInfo = new PlayerInfo
             {
                 HivePlayerId = result.hive_player_id,
-                CharName = result.char_name,
-                Exp = result.char_exp,
-                Level = result.char_level,
-                Win = result.char_win,
-                Lose = result.char_lose,
-                Draw = result.char_draw
+                NickName = result.nickname,
+                Exp = result.exp,
+                Level = result.level,
+                Win = result.win,
+                Lose = result.lose,
+                Draw = result.draw
             };
 
-            _logger.LogInformation("GetCharInfoDataAsync succeeded for playerId: {PlayerId}", playerId);
-            return charInfo;
+            _logger.LogInformation("GetPlayerInfoDataAsync succeeded for playerId: {PlayerId}", playerId);
+            return playerInfo;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while getting char info data for playerId: {PlayerId}", playerId);
+            _logger.LogError(ex, "An error occurred while getting player info data for playerId: {PlayerId}", playerId);
             throw;
         }
     }
 
-
-    public async Task UpdateCharNameAsync(string playerId, string newCharName)
-    {
-        await _queryFactory.Query("char_info")
-            .Where("hive_player_id", playerId)
-            .UpdateAsync(new { char_name = newCharName });
-    }
-
     public async Task UpdateGameResultAsync(string winnerId, string loserId)
     {
-        var winnerData = await GetCharInfoDataAsync(winnerId);
-        var loserData = await GetCharInfoDataAsync(loserId);
+        var winnerData = await GetPlayerInfoDataAsync(winnerId);
+        var loserData = await GetPlayerInfoDataAsync(loserId);
 
         if (winnerData == null)
         {
@@ -127,34 +119,34 @@ public class GameDb : IGameDb
         loserData.Lose++;
         loserData.Exp += GameConstants.LoseExp;
 
-        await _queryFactory.Query("char_info")
+        await _queryFactory.Query("player_info")
             .Where("hive_player_id", winnerId)
-            .UpdateAsync(new { char_win = winnerData.Win, char_exp = winnerData.Exp });
+            .UpdateAsync(new { win = winnerData.Win, exp = winnerData.Exp });
 
-        await _queryFactory.Query("char_info")
+        await _queryFactory.Query("player_info")
             .Where("hive_player_id", loserId)
-            .UpdateAsync(new { char_lose = loserData.Lose, char_exp = loserData.Exp });
+            .UpdateAsync(new { lose = loserData.Lose, exp = loserData.Exp });
 
         _logger.LogInformation("Updated game result. Winner: {WinnerId}, Wins: {Wins}, Exp: {WinnerExp}, Loser: {LoserId}, Losses: {Losses}, Exp: {LoserExp}",
             winnerId, winnerData.Win, winnerData.Exp, loserId, loserData.Lose, loserData.Exp);
     }
 
-    public async Task<bool> UpdateCharacterNameAsync(string playerId, string newCharName)
+    public async Task<bool> UpdateNickNameAsync(string playerId, string newNickName)
     {
-        var affectedRows = await _queryFactory.Query("char_info")
+        var affectedRows = await _queryFactory.Query("player_info")
             .Where("hive_player_id", playerId)
-            .UpdateAsync(new { char_name = newCharName });
+            .UpdateAsync(new { nickname = newNickName });
 
         return affectedRows > 0;
     }
 
-    public async Task<CharSummary> GetCharInfoSummaryAsync(string playerId)
+    public async Task<PlayerBasicInfo> GetplayerBasicInfoAsync(string playerId)
     {
         try
         {
-            var result = await _queryFactory.Query("char_info")
+            var result = await _queryFactory.Query("player_info")
                 .Where("hive_player_id", playerId)
-                .Select("char_name", "char_exp", "char_level", "char_win", "char_lose", "char_draw")
+                .Select("nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
             if (result == null)
@@ -163,21 +155,21 @@ public class GameDb : IGameDb
                 return null;
             }
 
-            var charInfoSummary = new CharSummary
+            var playerBasicInfo = new PlayerBasicInfo
             {
-                CharName = result.char_name,
-                Exp = result.char_exp,
-                Level = result.char_level,
-                Win = result.char_win,
-                Lose = result.char_lose,
-                Draw = result.char_draw
+                NickName = result.nickname,
+                Exp = result.exp,
+                Level = result.level,
+                Win = result.win,
+                Lose = result.lose,
+                Draw = result.draw
             };
 
-            return charInfoSummary;
+            return playerBasicInfo;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while getting char info summary for playerId: {PlayerId}", playerId);
+            _logger.LogError(ex, "An error occurred while getting player info summary for playerId: {PlayerId}", playerId);
             throw;
         }
     }
