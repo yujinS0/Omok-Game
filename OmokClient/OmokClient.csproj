@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Layout\BottomNavBar.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="AntDesign" Version="0.19.4" />
 	<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
 	<PackageReference Include="Blazored.SessionStorage" Version="2.4.0" />
@@ -28,6 +32,18 @@
     <Content Update="Pages\Register.razor">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Layout\BottomNavBar.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Layout\BottomNavBar.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Layout\BottomNavBar.razor" />
   </ItemGroup>
 
 </Project>
