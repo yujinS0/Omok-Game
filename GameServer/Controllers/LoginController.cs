@@ -31,6 +31,8 @@ public class LoginController : ControllerBase
                 HiveToken = request.Token
             };
 
+            //TODO: 이름이 login 이라고 하는 것이 좋을 것 같습니다. 이 함수 안에서 하이브에서 토큰을 검증하고, 플레이어 데이터를 초기화하는 것이기 때문입니다.
+            // VerifyTokenAndInitializePlayerDataAsync은 너무 이름이 구체화 되어서 로그인 과정에 변경이 발생하면 이 이름도 바뀌어야 해서 유연하지 않습니다
             var result = await _loginService.VerifyTokenAndInitializePlayerDataAsync(verifyTokenRequest, request);
             return new GameLoginResponse { Result = result };
         }

@@ -25,8 +25,12 @@ public class LoginService : ILoginService
         _memoryDb = memoryDb;
     }
 
+    //TODO: 게임서버에서는 외부 서비스 호출, DB 호출은 모두가 비동기 호출을 합니다. 그래서 외부 서비스 호출이나 DB 호출을 하는 함수에 async 이름을 붙이지 마세요. 불필요합니다.
+
     public async Task<ErrorCode> VerifyTokenAndInitializePlayerDataAsync(VerifyTokenRequest verifyTokenRequest, GameLoginRequest request)
     {
+        //TODO: 52라인까지를 하나의 함수로 만들어주세요. 34라인에서 53라인까지는 VerifyTokenAsync 에 들어가야 합니다.
+        ///
         var (result, responseBody) = await VerifyTokenAsync(verifyTokenRequest);
 
         if (result != ErrorCode.None)
@@ -47,13 +51,17 @@ public class LoginService : ILoginService
             _logger.LogWarning("Token validation failed with result: {Result}", validationResult);
             return (ErrorCode)validationResult;
         }
+        /////
 
+
+        //TODO: 이름을 메모리디비에 플레이어 기본 정보를 저장한다는 뜻이 들어가면 좋겠습니다.
         var saveResult = await SaveLoginInfoAsync(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
         if (saveResult != ErrorCode.None)
         {
             return saveResult;
         }
 
+        //TODO 실패를 하는 경우 위에 Redis에 저장한 것 삭제해야 합니다.
         var initializeResult = await InitializeUserDataAsync(request.PlayerId);
         if (initializeResult != ErrorCode.None)
         {
