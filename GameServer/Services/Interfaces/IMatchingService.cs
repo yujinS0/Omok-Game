@@ -7,6 +7,6 @@ namespace GameServer.Services.Interfaces;
 
 public interface IMatchingService
 {
-    Task<ErrorCode> RequestMatchingAsync(MatchRequest request);
+    Task<ErrorCode> RequestMatchingAsync(string playerId);
     Task<(ErrorCode, MatchResult)> CheckAndInitializeMatchAsync(string playerId);
 }

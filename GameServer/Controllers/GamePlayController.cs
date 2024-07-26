@@ -24,7 +24,7 @@ public class GamePlayController : ControllerBase
     [HttpPost("put-omok")]
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request) 
     {
-        var (result, winner) = await _gameService.PutOmokAsync(request); 
+        var (result, winner) = await _gameService.PutOmokAsync(request.PlayerId, request.X, request.Y); 
 
         if (result != ErrorCode.None)
         {

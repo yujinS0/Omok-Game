@@ -22,14 +22,14 @@ public class GameService : IGameService
     }
 
     // TODO request 넘겨주기 X??
-    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request) // TODO 함수 분리하기 
+    public async Task<(ErrorCode, Winner)> PutOmokAsync(string playerId, int x, int y) // TODO 함수 분리하기 
     {
-        string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
+        string playingUserKey = KeyGenerator.PlayingUser(playerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);
 
         if (userGameData == null)
         {
-            _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", request.PlayerId);
+            _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", playerId);
             return (ErrorCode.UserGameDataNotFound, null);
         }
 
@@ -46,15 +46,15 @@ public class GameService : IGameService
         omokGameData.Decoding(rawData);
 
         string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
-        if (request.PlayerId != currentTurnPlayerName)
+        if (playerId != currentTurnPlayerName)
         {
-            _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", request.PlayerId);
+            _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", playerId);
             return (ErrorCode.NotYourTurn, null);
         }
 
         try
         {
-            byte[] updatedRawData = omokGameData.SetStone(rawData, request.PlayerId, request.X, request.Y);
+            byte[] updatedRawData = omokGameData.SetStone(rawData, playerId, x, y);
             bool updateResult = await _memoryDb.UpdateGameDataAsync(gameRoomId, updatedRawData);
 
             if (!updateResult)
@@ -80,7 +80,7 @@ public class GameService : IGameService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to set stone at ({X}, {Y}) for PlayerId: {PlayerId}", request.X, request.Y, request.PlayerId);
+            _logger.LogError(ex, "Failed to set stone at ({X}, {Y}) for PlayerId: {PlayerId}", x, y, playerId);
             return (ErrorCode.SetStoneFailException, null);
         }
     }

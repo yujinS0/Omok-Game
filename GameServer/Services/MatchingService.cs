@@ -24,10 +24,11 @@ public class MatchingService : IMatchingService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<ErrorCode> RequestMatchingAsync(MatchRequest request)
+    public async Task<ErrorCode> RequestMatchingAsync(string playerId)
     {
         //TODO: josn을 쉽게 사용하는 코드를 사용해주세요   https://poe.com/s/VprKGWJGOY9kQ3egSnlu
         var client = _httpClientFactory.CreateClient();
+        var request = new MatchRequest { PlayerId = playerId };
         var matchRequestJson = JsonSerializer.Serialize(request);
         var content = new StringContent(matchRequestJson, Encoding.UTF8, "application/json");
 

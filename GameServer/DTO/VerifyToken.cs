@@ -6,7 +6,7 @@ namespace GameServer.DTO;
 public class VerifyTokenRequest
 {
     [Required]
-    public string HivePlayerId { get; set; }
+    public string HiveUserId { get; set; }
     [Required]
     public required string HiveToken { get; set; }
 }

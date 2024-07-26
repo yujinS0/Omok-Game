@@ -24,7 +24,7 @@ public class RequestMatchingController : ControllerBase
     [HttpPost]
     public async Task<MatchResponse> RequestMatching([FromBody] MatchRequest request)
     {
-        var errorCode = await _matchingService.RequestMatchingAsync(request);
+        var errorCode = await _matchingService.RequestMatchingAsync(request.PlayerId);
 
         return new MatchResponse
         {
