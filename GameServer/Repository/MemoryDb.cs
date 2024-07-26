@@ -30,6 +30,7 @@ namespace GameServer.Repository
                 AppVersion = appVersion,
                 DataVersion = dataVersion
             };
+
             var redis = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
             bool result = await redis.SetAsync(playerLoginInfo);
             if (result)
@@ -142,6 +143,7 @@ namespace GameServer.Repository
         {
             try
             {
+                //TODO: 아래처럼 코드를 너무 붙이지 마세요. 코드가 눈에 잘 안들어옵니다. 보기 좋은 코드를 작성해주세요
                 var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
                 _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
                 await redisString.SetAsync(playingUserInfo);

@@ -26,6 +26,7 @@ public class MatchingService : IMatchingService
 
     public async Task<ErrorCode> RequestMatchingAsync(MatchRequest request)
     {
+        //TODO: josn을 쉽게 사용하는 코드를 사용해주세요   https://poe.com/s/VprKGWJGOY9kQ3egSnlu
         var client = _httpClientFactory.CreateClient();
         var matchRequestJson = JsonSerializer.Serialize(request);
         var content = new StringContent(matchRequestJson, Encoding.UTF8, "application/json");
@@ -39,6 +40,8 @@ public class MatchingService : IMatchingService
         var responseBody = await response.Content.ReadAsStringAsync();
         var matchResponse = JsonSerializer.Deserialize<MatchResponse>(responseBody);
 
+        //TODO: 코드를 보기 편하게 if문을 명시적으로 사용해주세요
+        // 다른 코드들을 이렇게 해주세요
         return matchResponse?.Result ?? ErrorCode.InternalError;
     }
 

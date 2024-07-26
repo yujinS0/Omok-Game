@@ -24,20 +24,20 @@
 
 # GameDB
 
-### Char_Info 테이블
+### player_info 테이블
 
 ```sql
-  CREATE TABLE char_info (
-    char_uid INT AUTO_INCREMENT PRIMARY KEY,
-    hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-    char_name VARCHAR(100),
-    char_exp INT,
-    char_level INT,
-    char_win INT,
-    char_lose INT,
-    char_draw INT,
-    create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );
+  CREATE TABLE player_info (
+  player_uid INT AUTO_INCREMENT PRIMARY KEY,
+  hive_player_id VARCHAR(255) NOT NULL UNIQUE,
+  nickname VARCHAR(100),
+  exp INT,
+  level INT,
+  win INT,
+  lose INT,
+  draw INT,
+  create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 

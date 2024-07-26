@@ -47,6 +47,7 @@ namespace HiveServer.Repository
 
                 _logger.LogInformation($"Account successfully registered with ID: {id}.");
 
+                //TODO: 여기에서 실패가 발새했을 때 바로 위의 InsertGetIdAsync을 롤백해야 합니다.
                 // login_token 테이블에 기본 데이터 삽입
                 var tokenResult = await InitializeLoginToken(hive_player_id);
                 if (tokenResult != ErrorCode.None)
@@ -103,6 +104,7 @@ namespace HiveServer.Repository
         {
             try
             {
+                //TODO: 변수는 user 인데 내용은 player 이라서 서로 일치가 되지 않습니다. 클라이언트를 지칭하는게 hive에서는 user, game에서는 player로 통일해주세요.
                 // 1. 사용자 정보 가져오기
                 var user = await _queryFactory.Query("account")
                                               .Select("hive_player_id", "hive_player_pw", "salt")

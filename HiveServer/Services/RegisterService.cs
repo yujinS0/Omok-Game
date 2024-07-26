@@ -15,6 +15,7 @@ public class RegisterService : IRegisterService
         _hiveDb = hiveDb;
     }
 
+    //TODO: 서비스에서 AccountResponse를 반환하지 않도록 해주세요 
     public async Task<AccountResponse> Register(AccountRequest request)
     {
         AccountResponse response = new();
