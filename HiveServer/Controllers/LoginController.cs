@@ -20,8 +20,14 @@ public class LoginController : ControllerBase
     [HttpPost]
     public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
-        var response = await _loginService.Login(request);
-        _logger.LogInformation($"[Login] hive_user_id: {request.HiveUserId}, Result: {response.Result}");
-        return response;
+        var (result, token) = await _loginService.Login(request.HiveUserId, request.HiveUserPw);
+        _logger.LogInformation($"[Login] hive_user_id: {request.HiveUserId}, Result: {result}");
+
+        return new LoginResponse
+        {
+            Result = result,
+            HiveUserId = request.HiveUserId,
+            HiveToken = token
+        };
     }
 }

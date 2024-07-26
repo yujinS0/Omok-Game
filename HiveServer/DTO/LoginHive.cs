@@ -21,7 +21,6 @@ public class LoginResponse
 {
     [Required]
     public ErrorCode Result { get; set; } = ErrorCode.None;
-
     [Required]
     public string HiveUserId { get; set; }
     public string HiveToken { get; set; }

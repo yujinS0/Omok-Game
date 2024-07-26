@@ -20,8 +20,11 @@ public class VerifyTokenController : ControllerBase
     [HttpPost]
     public async Task<VerifyTokenResponse> Verify([FromBody] VerifyTokenRequest request)
     {
-        var response = await _verifyTokenService.Verify(request);
-        _logger.LogInformation($"[VerifyToken] hive_user_id: {request.HiveUserId}, Result: {response.Result}");
-        return response;
+        var result = await _verifyTokenService.Verify(request.HiveUserId, request.HiveToken);
+        _logger.LogInformation($"[VerifyToken] hive_user_id: {request.HiveUserId}, Result: {result}");
+        return new VerifyTokenResponse
+        {
+            Result = result,
+        };
     }
 }

@@ -1,6 +1,8 @@
 using HiveServer.Repository;
 using HiveServer.Services.Interfaces;
 using HiveServer.Services;
+using AutoMapper;
+using HiveServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,8 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader();
         });
 });
+
+//builder.Services.AddAutoMapper(typeof(MappingProfile)); // AutoMapper µî·Ï
 
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings"));
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("MysqlConfig"));

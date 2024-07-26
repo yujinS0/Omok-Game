@@ -111,7 +111,7 @@ namespace HiveServer.Repository
 
 
         // 하이브 로그인 시 id와 pw가 일치하는지 salt적용해서 검증하는 함수
-        public async Task<(ErrorCode, string)> VerifyUser(string hiveUserId, string hiveUserPw)
+        public async Task<ErrorCode> VerifyUser(string hiveUserId, string hiveUserPw)
         {
             try
             {
@@ -126,7 +126,7 @@ namespace HiveServer.Repository
                 if (user == null)
                 {
                     _logger.LogWarning("User not found with ID: {UserId}", hiveUserId);
-                    return (ErrorCode.UserNotFound, "");
+                    return ErrorCode.UserNotFound;
                 }
 
                 // 2. 입력된 비밀번호 해싱 (salt 값으로)
@@ -136,21 +136,21 @@ namespace HiveServer.Repository
                 if (user.hive_user_pw != hashedInputPassword)
                 {
                     _logger.LogWarning("Password mismatch for UserId: {UserId}", hiveUserId);
-                    return (ErrorCode.LoginFailPwNotMatch, "");
+                    return ErrorCode.LoginFailPwNotMatch;
                 }
 
                 _logger.LogInformation("User verified successfully with ID: {UserId}", hiveUserId);
-                return (ErrorCode.None, hiveUserId);
+                return ErrorCode.None;
             }
             catch (MySqlException ex)
             {
                 _logger.LogError(ex, "Database error when verifying user with UserId: {UserId}", hiveUserId);
-                return (ErrorCode.DatabaseError, "");
+                return ErrorCode.DatabaseError;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to verify user with UserId: {UserId}", hiveUserId);
-                return (ErrorCode.InternalError, "");
+                return ErrorCode.InternalError;
             }
         }
 

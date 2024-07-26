@@ -20,9 +20,12 @@ public class RegisterController : ControllerBase
     [HttpPost]
     public async Task<AccountResponse> Register([FromBody] AccountRequest request)
     {
-        var result = await _registerService.Register(request);
-        var response = new AccountResponse();
-        _logger.LogInformation($"[Register] hive_user_id: {request.HiveUserId}, Result: {response.Result}");
-        return response;
+        var result = await _registerService.Register(request.HiveUserId, request.HiveUserPw);
+
+        _logger.LogInformation($"[Register] hive_user_id: {request.HiveUserId}, Result: {result}");
+        return new AccountResponse 
+        {
+            Result = result
+        };
     }
 }

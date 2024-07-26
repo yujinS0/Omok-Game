@@ -16,12 +16,12 @@ public class LoginService : ILoginService
         _hiveDb = hiveDb;
     }
 
-    public async Task<LoginResponse> Login(LoginRequest request)
+    public async Task<(ErrorCode, string)> Login(string hiveUserId, string hiveUserPw)
     {
-        var (error, hiveUserId) = await _hiveDb.VerifyUser(request.HiveUserId, request.HiveUserPw);
+        var error = await _hiveDb.VerifyUser(hiveUserId, hiveUserPw);
         if (error != ErrorCode.None)
         {
-            return new LoginResponse { Result = error };
+            return (error, "");
         }
 
         var token = Security.MakeHashingToken(_saltValue, hiveUserId);
@@ -29,9 +29,9 @@ public class LoginService : ILoginService
 
         if (!tokenSet)
         {
-            return new LoginResponse { Result = ErrorCode.InternalError };
+            return (ErrorCode.InternalError, "");
         }
 
-        return new LoginResponse { HiveUserId = hiveUserId, HiveToken = token, Result = ErrorCode.None };
+        return (ErrorCode.None, token);
     }
 }
