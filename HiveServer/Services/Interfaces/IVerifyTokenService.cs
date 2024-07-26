@@ -4,6 +4,6 @@ namespace HiveServer.Services.Interfaces;
 
 public interface IVerifyTokenService
 {
-    Task<bool> ValidateTokenAsync(string hivePlayerId, string hiveToken);
+    Task<bool> ValidateTokenAsync(string hiveUserId, string hiveToken);
     Task<VerifyTokenResponse> Verify(VerifyTokenRequest request);
 }

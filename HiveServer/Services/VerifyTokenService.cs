@@ -15,14 +15,14 @@ public class VerifyTokenService : IVerifyTokenService
         _hiveDb = hiveDb;
     }
 
-    public async Task<bool> ValidateTokenAsync(string hivePlayerId, string hiveToken)
+    public async Task<bool> ValidateTokenAsync(string hiveUserId, string hiveToken)
     {
-        return await _hiveDb.ValidateTokenAsync(hivePlayerId, hiveToken);
+        return await _hiveDb.ValidateTokenAsync(hiveUserId, hiveToken);
     }
 
     public async Task<VerifyTokenResponse> Verify(VerifyTokenRequest request)
     {
-        bool isValid = await ValidateTokenAsync(request.HivePlayerId, request.HiveToken);
+        bool isValid = await ValidateTokenAsync(request.HiveUserId, request.HiveToken);
 
         if (!isValid)
         {

@@ -18,20 +18,20 @@ public class LoginService : ILoginService
 
     public async Task<LoginResponse> Login(LoginRequest request)
     {
-        var (error, hivePlayerId) = await _hiveDb.VerifyUser(request.HivePlayerId, request.HivePlayerPw);
+        var (error, hiveUserId) = await _hiveDb.VerifyUser(request.HiveUserId, request.HiveUserPw);
         if (error != ErrorCode.None)
         {
             return new LoginResponse { Result = error };
         }
 
-        var token = Security.MakeHashingToken(_saltValue, hivePlayerId);
-        var tokenSet = await _hiveDb.SaveToken(hivePlayerId, token);
+        var token = Security.MakeHashingToken(_saltValue, hiveUserId);
+        var tokenSet = await _hiveDb.SaveToken(hiveUserId, token);
 
         if (!tokenSet)
         {
             return new LoginResponse { Result = ErrorCode.InternalError };
         }
 
-        return new LoginResponse { HivePlayerId = hivePlayerId, HiveToken = token, Result = ErrorCode.None };
+        return new LoginResponse { HiveUserId = hiveUserId, HiveToken = token, Result = ErrorCode.None };
     }
 }

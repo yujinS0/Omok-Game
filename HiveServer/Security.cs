@@ -20,10 +20,10 @@ public class Security
         return stringBuilder.ToString();
     }
 
-    public static string MakeHashingToken(string saltValue, string playerId) // saltValue와 playerId를 결합하여 SHA256 해시 생성
+    public static string MakeHashingToken(string saltValue, string userId) // saltValue와 userId를 결합하여 SHA256 해시 생성
     {
         var sha = SHA256.Create();
-        var hash = sha.ComputeHash(Encoding.ASCII.GetBytes(saltValue + playerId));
+        var hash = sha.ComputeHash(Encoding.ASCII.GetBytes(saltValue + userId));
         var stringBuilder = new StringBuilder();
         foreach (var b in hash)
         {

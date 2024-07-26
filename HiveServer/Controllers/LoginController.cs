@@ -21,7 +21,7 @@ public class LoginController : ControllerBase
     public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
         var response = await _loginService.Login(request);
-        _logger.LogInformation($"[Login] hive_player_id: {request.HivePlayerId}, Result: {response.Result}");
+        _logger.LogInformation($"[Login] hive_user_id: {request.HiveUserId}, Result: {response.Result}");
         return response;
     }
 }

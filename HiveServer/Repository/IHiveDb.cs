@@ -2,9 +2,9 @@ namespace HiveServer.Repository;
 
 public interface IHiveDb : IDisposable
 {
-    public Task<ErrorCode> RegisterAccount(string hive_player_id, string hive_player_pw);
-    public Task<(ErrorCode, string)> VerifyUser(string hive_player_id, string hive_player_pw);
-    public Task<bool> SaveToken(string hive_player_id, string token);
+    public Task<ErrorCode> RegisterAccount(string hiveUserId, string hiveUserPw);
+    public Task<(ErrorCode, string)> VerifyUser(string hiveUserId, string hiveUserPw);
+    public Task<bool> SaveToken(string hiveUserId, string token);
 
-    public Task<bool> ValidateTokenAsync(string hive_player_id, string token);  
+    public Task<bool> ValidateTokenAsync(string hiveUserId, string token);  
 }
