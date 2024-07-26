@@ -21,7 +21,8 @@ public class GameService : IGameService
         _logger = logger;
     }
 
-    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request) // TODO 함수 분리하기
+    // TODO request 넘겨주기 X??
+    public async Task<(ErrorCode, Winner)> PutOmokAsync(PutOmokRequest request) // TODO 함수 분리하기 
     {
         string playingUserKey = KeyGenerator.PlayingUser(request.PlayerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfoAsync(playingUserKey);

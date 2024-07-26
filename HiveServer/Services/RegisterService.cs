@@ -16,10 +16,11 @@ public class RegisterService : IRegisterService
     }
 
     //TODO: 서비스에서 AccountResponse를 반환하지 않도록 해주세요 
-    public async Task<AccountResponse> Register(AccountRequest request)
+    //=> 수정 완료했습니다.
+    public async Task<ErrorCode> Register(AccountRequest request)
     {
         AccountResponse response = new();
-        response.Result = await _hiveDb.RegisterAccount(request.HivePlayerId, request.HivePlayerPw);
-        return response;
+        ErrorCode result = await _hiveDb.RegisterAccount(request.HiveUserId, request.HiveUserPw);
+        return result;
     }
 }

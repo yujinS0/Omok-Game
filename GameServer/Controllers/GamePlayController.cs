@@ -15,16 +15,16 @@ public class GamePlayController : ControllerBase
     private readonly ILogger<GamePlayController> _logger;
     private readonly IGameService _gameService;
 
-    public GamePlayController(ILogger<GamePlayController> logger, IGameService gameService)
+    public GamePlayController(ILogger<GamePlayController> logger, IGameService gameService) 
     {
         _logger = logger;
         _gameService = gameService;
     }
 
     [HttpPost("put-omok")]
-    public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request)
+    public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request) 
     {
-        var (result, winner) = await _gameService.PutOmokAsync(request);
+        var (result, winner) = await _gameService.PutOmokAsync(request); 
 
         if (result != ErrorCode.None)
         {
