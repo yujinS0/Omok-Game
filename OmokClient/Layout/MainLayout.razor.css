@@ -1,4 +1,8 @@
-.page {
+.top-row {
+    background-color: #333;
+}
+
+/*.page {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -13,7 +17,7 @@ main {
 }
 
 .top-row {
-    background-color: #f7f7f7;
+    background-color: #333;
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
     height: 3.5rem;
@@ -75,3 +79,4 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+*/

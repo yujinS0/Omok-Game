@@ -1,11 +1,103 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
 }
 
 body {
-    background-color: #DEB887; /* 원하는 배경 색상 */
+    width: 100vw;
+    background-image: url('/images/background_main.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
 }
 
+.page {
+    position: relative;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.top-row {
+    width: 100vw;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: #333;
+    padding: 10px;
+    height: 60px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.user-email {
+    font-size: 1rem;
+    margin-right: 20px;
+    color: #e0e0e0;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.content {
+    width: 100%;
+    max-width: 1200px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.bottomappbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #333;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 60px;
+    z-index: 10;
+}
+
+.bottom-navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.nav-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+}
+
+    .nav-button:hover {
+        background-color: #555;
+    }
+
+code {
+    color: #c02d76;
+}
+
+/* 기존 CSS 내용 통합 */
 h1:focus {
     outline: none;
 }
@@ -21,11 +113,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-.content {
-    padding-top: 1.1rem;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -101,44 +189,3 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
-.bottomappbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #333;
-    color: white;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 60px;
-    z-index: 10;
-}
-
-.bottom-navbar {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.bottom-nav .nav-button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    padding: 10px;
-}
-
-    .bottom-nav .nav-button:hover {
-        background-color: #555;
-    }
-
-
-code {
-    color: #c02d76;
-}

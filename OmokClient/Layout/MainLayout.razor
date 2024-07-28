@@ -5,24 +5,28 @@
 @inject ISessionStorageService sessionStorage
 
 <div class="page">
-    @* <div class="sidebar">
-        <NavMenu />
-    </div> *@
-
+    <header class="top-row px-4">
+        @if (!string.IsNullOrEmpty(sessionStorageId))
+        {
+            <span class="user-email">Welcome, @sessionStorageId!</span>
+        }
+    </header>
     <main>
+        @*
         <div class="top-row px-4">
-            @* @if (isAuthenticated)
-            {
-                <span class="ml-auto navbar-text">Welcome, @username!</span>
-            } *@
-            @if (!string.IsNullOrEmpty(sessionStorageId))
+        @* @if (isAuthenticated)
+        {
+        <span class="ml-auto navbar-text">Welcome, @username!</span>
+        } *@
+        @* @if (!string.IsNullOrEmpty(sessionStorageId))
             {
                 @if (!string.IsNullOrEmpty(sessionStorageId))
                 {
                     <span class="user-email">@sessionStorageId</span>
                 }
             }
-        </div>
+        </div>*@
+        
 
         <article class="content px-4">
             @Body
@@ -30,6 +34,14 @@
 
     </main>
 
+    <footer class="bottomappbar">
+        <div class="bottom-navbar">
+            <button class="nav-button">우편함</button>
+            <button class="nav-button">아이템</button>
+            <button class="nav-button">출석부</button>
+            <button class="nav-button">상점</button>
+        </div>
+    </footer>
 </div>
 
 @code {
@@ -48,3 +60,9 @@
         // }
     }
 }
+
+<style>
+    top-row px-4 {
+        background-color: #333;
+    }
+</style>
