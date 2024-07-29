@@ -23,9 +23,9 @@ public class PlayerInfoService : IPlayerInfoService
         _gameDb = gameDb;
     }
 
-    public async Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicDataAsync(string playerId)
+    public async Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicData(string playerId)
     {
-        var playerInfo = await _gameDb.GetplayerBasicInfoAsync(playerId);
+        var playerInfo = await _gameDb.GetplayerBasicInfo(playerId);
 
         if (playerInfo == null)
         {
@@ -34,9 +34,9 @@ public class PlayerInfoService : IPlayerInfoService
         return (ErrorCode.None, playerInfo);
     }
 
-    public async Task<ErrorCode> UpdateNickNameAsync(string playerId, string newNickName)
+    public async Task<ErrorCode> UpdateNickName(string playerId, string newNickName)
     {
-        var result = await _gameDb.UpdateNickNameAsync(playerId, newNickName);
+        var result = await _gameDb.UpdateNickName(playerId, newNickName);
 
         if (!result)
         {
