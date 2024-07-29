@@ -1,5 +1,37 @@
 # 시퀀스 다이어그램 (GamePlay)
+
 ------------------------------
+## OmokGameData 
+### : 게임 데이터 가져오는 요청 (모든 플레이어)
+게임 데이터 = 오목 보드 정보 + 참가 플레이어 + 현재 턴 + 승자 등등
+
+
+#### 어떤 상태의 플레이어가 요청하는지?
+
+* 기본적으로 LoadGameStateAsync() 라는 함수에서 게임 오목판을 비롯한 게임 데이터를 로드하고 있다.
+  + 게임 첫 시작 시 : OnInitializedAsync()
+  + 자기 차례 아닐 때 : 턴 상태 요청하면서 StartTurnPollingAsync()
+    + 이때 자기 차례가 되었을 때 로드
+
+```mermaid
+sequenceDiagram
+	actor P as 모든 Player
+	participant G as Game Server
+  	participant R as Redis
+
+	P ->> G: 게임 데이터 정보 요청
+	G ->> R : GameData 가져오기
+	R-->>G: 
+	alt 데이터 존재 X
+		G-->>P: 오류 응답
+	else 데이터 존재 O
+		G -->> P : GameData 정보 응답
+	end
+```
+
+------------------------------
+
+
 ## Put Omok
 ### : 돌두기 (자기 차례 플레이어)
 ```mermaid
@@ -78,34 +110,5 @@ sequenceDiagram
 
 
 ------------------------------
-
-
-## OmokGameData 
-### : 게임 데이터 가져오는 요청 (모든 플레이어)
-게임 데이터 = 오목 보드 정보 + 참가 플레이어 + 현재 턴 + 승자 등등
-
-
-#### 어떤 상태의 플레이어가 요청하는지?
-
-* 기본적으로 LoadGameStateAsync() 라는 함수에서 게임 오목판을 비롯한 게임 데이터를 로드하고 있다.
-  + 게임 첫 시작 시 : OnInitializedAsync()
-  + 자기 차례 아닐 때 : 턴 상태 요청하면서 StartTurnPollingAsync()
-    + 이때 자기 차례가 되었을 때 로드
-
-```mermaid
-sequenceDiagram
-	actor P as 모든 Player
-	participant G as Game Server
-  	participant R as Redis
-
-	P ->> G: 게임 데이터 정보 요청
-	G ->> R : GameData 가져오기
-	R-->>G: 
-	alt 데이터 존재 X
-		G-->>P: 오류 응답
-	else 데이터 존재 O
-		G -->> P : GameData 정보 응답
-	end
-```
 
 
