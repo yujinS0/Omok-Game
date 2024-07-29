@@ -1,5 +1,12 @@
-﻿namespace GameServer.Repository;
+﻿using GameServer.Models;
 
-public interface IMasterDb
+namespace GameServer.Repository;
+
+public interface IMasterDb : IDisposable
 {
+    Task<bool> Load();
+    GameServer.Models.Version GetVersion();
+    List<AttendanceReward> GetAttendanceRewards();
+    List<Item> GetItems();
+    List<FirstItem> GetFirstItems();
 }

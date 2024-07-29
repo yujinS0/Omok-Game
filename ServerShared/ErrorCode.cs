@@ -172,6 +172,7 @@ public enum ErrorCode : UInt16
     // MasterDb 5000 ~
     MasterDB_Fail_LoadData = 5001,
     MasterDB_Fail_InvalidData = 5002,
+    FailToLoadAppVersionInMasterDb = 5003,
 
     // User
     UserInfoFailException = 6001,

@@ -22,7 +22,7 @@ builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("RedisConf
 
 builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
 builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
-//builder.Services.AddSingleton<IMasterDb, MasterDb>(); // Master Data
+builder.Services.AddSingleton<IMasterDb, MasterDb>(); // Master Data
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddScoped<IGameService, GameService>();
