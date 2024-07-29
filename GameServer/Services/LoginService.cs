@@ -26,6 +26,7 @@ public class LoginService : ILoginService
     }
 
     //TODO: 게임서버에서는 외부 서비스 호출, DB 호출은 모두가 비동기 호출을 합니다. 그래서 외부 서비스 호출이나 DB 호출을 하는 함수에 async 이름을 붙이지 마세요. 불필요합니다.
+    //=> 수정 완료했습니다
 
     public async Task<ErrorCode> login(string playerId, string token, string appVersion, string dataVersion)
     {
@@ -35,7 +36,7 @@ public class LoginService : ILoginService
 
 
         //TODO: 이름을 메모리디비에 플레이어 기본 정보를 저장한다는 뜻이 들어가면 좋겠습니다.
-        //=> 수정완료했습니다.
+        //=> 수정 완료했습니다.
         var saveResult = await SavePlayerLoginInfoToMemoryDb(playerId, token, appVersion, dataVersion);
         if (saveResult != ErrorCode.None)
         {
