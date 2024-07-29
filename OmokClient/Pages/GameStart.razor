@@ -25,12 +25,12 @@
 {
     <p>Loading...</p>
 }
-else if (string.IsNullOrEmpty(nickName))
+@* else if (string.IsNullOrEmpty(nickName))
 {
     <h4>닉네임을 생성해주세요</h4>
     <Input placeholder="닉네임 입력" @bind-Value="newNickName" />
     <Button Type="primary" Size="large" OnClick="CreateNickname">닉네임 생성</Button>
-}
+} *@
 else
 {
     <h4>플레이어 정보</h4>

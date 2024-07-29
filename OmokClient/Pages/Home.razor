@@ -68,7 +68,7 @@
                 Console.WriteLine("Game login successful");
                 await _message.Success("게임 로그인 성공");
 
-                CustomAuthProvider.NotifyUserLoggedIn(loginResponse.HivePlayerId);
+                CustomAuthProvider.NotifyUserLoggedIn(loginResponse.HiveUserId);
 
                 await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
                 Console.WriteLine("Navigating to /gamestart");

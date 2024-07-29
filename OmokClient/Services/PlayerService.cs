@@ -42,6 +42,7 @@ public class PlayerService : BaseService
         }
     }
 
+
     public async Task<UpdateNickNameResponse> UpdateNickNameAsync(string playerId, string newNickName)
     {
         var client = await CreateClientWithHeadersAsync("GameAPI");
@@ -62,7 +63,7 @@ public class PlayerService : BaseService
 // Player DTO
 public class PlayerBasicInfoRequest
 {
-    public string PlayerId { get; set; }
+    public required string PlayerId { get; set; }
 }
 
 public class PlayerBasicInfoResponse
