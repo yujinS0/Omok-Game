@@ -7,37 +7,36 @@
 @inject MessageService _message
 @inject NavigationManager Navigation
 
-<h3>Omok Game</h3>
-
-<div class="wrapper">
-    <div class="omok-container">
-        <table class="omok-table">
-            @for (int i = 0; i < 15; i++)
+<div class="main-content"
+        <div class="omok-container">
+            <h3>Omok Game</h3>
+            <table class="omok-table">
+                @for (int i = 0; i < 15; i++)
+                {
+                    <tr>
+                        @for (int j = 0; j < 15; j++)
+                        {
+                            var row = i;
+                            var col = j;
+                            <td>
+                                <button @onclick="@(args => PutStone(row, col))" class="omok-button" onmouseover="this.style.border='2px solid #000'" onmouseout="this.style.border='1px solid #ccc'">
+                                    <img src="@GetStoneImage(row, col)" alt="stone" class="stone-img" />
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            </table>
+        </div>
+        <div class="info-container">
+            <div class="info-item">흑돌: <span class="info-value">@blackPlayer</span></div>
+            <div class="info-item">백돌: <span class="info-value">@whitePlayer</span></div>
+            <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
+            <div class="info-item">남은 시간: <span class="info-value">@remainingTime</span></div>
+            @if ((currentTurn == "black" && playerId == blackPlayer) || (currentTurn == "white" && playerId == whitePlayer))
             {
-                <tr>
-                    @for (int j = 0; j < 15; j++)
-                    {
-                        var row = i;
-                        var col = j;
-                        <td>
-                            <button @onclick="@(args => PutStone(row, col))" class="omok-button" onmouseover="this.style.border='2px solid #000'" onmouseout="this.style.border='1px solid #ccc'">
-                                <img src="@GetStoneImage(row, col)" alt="stone" class="stone-img" />
-                            </button>
-                        </td>
-                    }
-                </tr>
+                <div class="your-turn-message">당신의 차례입니다!</div>
             }
-        </table>
-    </div>
-    <div class="info-container">
-        <div class="info-item">흑돌: <span class="info-value">@blackPlayer</span></div>
-        <div class="info-item">백돌: <span class="info-value">@whitePlayer</span></div>
-        <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
-        <div class="info-item">남은 시간: <span class="info-value">@remainingTime</span></div>
-        @if ((currentTurn == "black" && playerId == blackPlayer) || (currentTurn == "white" && playerId == whitePlayer))
-        {
-            <div class="your-turn-message">당신의 차례입니다!</div>
-        }
     </div>
 </div>
 
@@ -310,10 +309,10 @@
 
     .wrapper {
         display: flex;
-        justify-content: flex-start; /* 왼쪽 정렬 */
-        align-items: flex-start; /* 위쪽 정렬 */
-        height: 100vh;
-        width: 100%;
+        flex-direction: row;
+        justify-content: center; /* 중앙 정렬 */
+        align-items: flex-start;
+        height: calc(100vh - 60px); /* 헤더를 제외한 높이 */
         padding: 20px; /* 원하는 여백 설정 */
     }
 
@@ -360,12 +359,11 @@
 
 
     .omok-container {
-        background-color: #F5DEB3;
-        border-collapse: collapse;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        background-color: rgba(245, 222, 179, 0.9);
         padding: 20px;
-        max-width: 80vw; /* 최대 너비 설정 */
-        margin-bottom: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        margin-right: 20px; /* 여백 설정 */
     }
 
     .omok-table {
@@ -387,7 +385,8 @@
 
         .omok-button:hover {
             cursor: pointer;
-            border: 2px solid #000;
+            border: 1px solid #333;
+            background-color: #555; /* 호버 시 배경색 설정 */
         }
 
     .stone-img {

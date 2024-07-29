@@ -7,10 +7,13 @@ namespace OmokClient.Services;
 
 public class MatchingService : BaseService
 {
+    private readonly ISessionStorageService _sessionStorage;
     private readonly IHttpClientFactory _httpClientFactory;
 
     public MatchingService(IHttpClientFactory httpClientFactory, ISessionStorageService sessionStorage)
-            : base(httpClientFactory, sessionStorage) { }
+            : base(httpClientFactory, sessionStorage) 
+    {
+    }
 
     public async Task<MatchResponse?> RequestMatchingAsync(string playerId)
     {

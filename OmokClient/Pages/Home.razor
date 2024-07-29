@@ -5,7 +5,7 @@
 @inject NavigationManager Navigation
 @inject Blazored.SessionStorage.ISessionStorageService sessionStorage
 @inject OmokClient.Services.AuthService AuthService
-@inject OmokClient.Services.PlayerService CharacterService
+@inject OmokClient.Services.PlayerService PlayerService
 
 <PageTitle>Login</PageTitle>
 
@@ -52,7 +52,13 @@
 
 @code {
     private string loginEmail = string.Empty;
-    private string loginPassword = string.Empty;
+    private string loginPassword = string.Empty; 
+    private string nickName = string.Empty;
+    private int exp;
+    private int level;
+    private int win;
+    private int lose;
+    private int draw;
 
     private async Task LoginUser()
     {
@@ -72,6 +78,30 @@
 
                 await sessionStorage.SetItemAsync("sessionUserId", loginEmail);
                 Console.WriteLine("Navigating to /gamestart");
+
+                // 플레이어 정보 저장
+                var userId = loginResponse.HiveUserId;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var characterInfo = await PlayerService.GetPlayerBasicInfoAsync(userId);
+                    if (characterInfo != null && characterInfo.Result == ErrorCode.None)
+                    {
+                        nickName = characterInfo.PlayerBasicInfo.NickName;
+                        exp = characterInfo.PlayerBasicInfo.Exp;
+                        level = characterInfo.PlayerBasicInfo.Level;
+                        win = characterInfo.PlayerBasicInfo.Win;
+                        lose = characterInfo.PlayerBasicInfo.Lose;
+                        draw = characterInfo.PlayerBasicInfo.Draw;
+                    }
+                    
+                }
+                await sessionStorage.SetItemAsync("sessionNickName", nickName);
+                await sessionStorage.SetItemAsync("sessionExp", exp);
+                await sessionStorage.SetItemAsync("sessionLevel", level);
+                await sessionStorage.SetItemAsync("sessionWin", win);
+                await sessionStorage.SetItemAsync("sessionLose", lose);
+                await sessionStorage.SetItemAsync("sessionDraw", draw);
+
                 Navigation.NavigateTo("gamestart", true);
             }
             else

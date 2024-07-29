@@ -33,11 +33,11 @@ public class BaseService // TODO 로그인 토큰 보내는 부분 추가하기?
         client.DefaultRequestHeaders.Add("DataVersion", dataVersion);
 
         // 디버깅 - 헤더가 제대로 추가되었는지 확인
-        //Console.WriteLine("HttpClient Headers:");
-        //foreach (var header in client.DefaultRequestHeaders)
-        //{
-        //    Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
-        //}
+        Console.WriteLine("HttpClient Headers:");
+        foreach (var header in client.DefaultRequestHeaders)
+        {
+            Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+        }
 
         return client;
     }

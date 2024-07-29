@@ -1,4 +1,5 @@
 ﻿@page "/gamestart"
+@using Microsoft.AspNetCore.Components
 @inject IHttpClientFactory ClientFactory
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
@@ -15,53 +16,31 @@
 
 <PageTitle>Matching</PageTitle>
 
-<h3>오목 게임</h3>
+<div class="main-content">
+    <div class="matching-container">
+        <h3>오목 게임</h3>
 
-<h4>안녕하세요! @userId !</h4>
+        <p>오목 게임에 오신 것을 환영합니다!!</p>
 
-<p>오목 게임에 오신 것을 환영합니다!!</p>
+        <p>매칭을 원하신다면 아래 매칭 버튼을 눌러주세요.</p>
+        <Button Type="primary" Size="large" OnClick="StartMatching" disabled="@isMatching"> 매칭 시작 </Button>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-@* else if (string.IsNullOrEmpty(nickName))
-{
-    <h4>닉네임을 생성해주세요</h4>
-    <Input placeholder="닉네임 입력" @bind-Value="newNickName" />
-    <Button Type="primary" Size="large" OnClick="CreateNickname">닉네임 생성</Button>
-} *@
-else
-{
-    <h4>플레이어 정보</h4>
-    <div class="info-container">
-        <div class="info-item">닉네임: <span class="info-value">@nickName</span></div>
-        <div class="info-item">경험치: <span class="info-value">@exp</span></div>
-        <div class="info-item">레벨: <span class="info-value">@level</span></div>
-
-        <br />
-        <h5>전적</h5>
-        <div class="info-item">승리: <span class="info-value">@win</span></div>
-        <div class="info-item">패배: <span class="info-value">@lose</span></div>
-        <div class="info-item">무승부: <span class="info-value">@draw</span></div>
+        @if (isMatching)
+        {
+            <Button type="primary" Size="large" loading>
+                매칭 상대 찾는 중 ...
+            </Button>
+        }
     </div>
-
-    <br />
-    <p>매칭을 원하신다면 아래 매칭 버튼을 눌러주세요.</p>
-    <Button Type="primary" Size="large" OnClick="StartMatching" disabled="@isMatching"> 매칭 시작 </Button>
-
-    @if (isMatching)
-    {
-        <Button type="primary" Size="large" loading>
-            매칭 상대 찾는 중 ...
-        </Button>
-    }
-}
+</div>
 
 @code {
     private string userId = string.Empty;
-    private string nickName = string.Empty;
+    private bool isAuthenticated = false;
+    private string username = string.Empty;
+    private string sessionStorageId = string.Empty;
     private string newNickName = string.Empty;
+    private string nickName = string.Empty;
     private int exp;
     private int level;
     private int win;
@@ -71,32 +50,41 @@ else
     private bool isLoading = true;
     private Timer? checkMatchTimer;
 
+    [CascadingParameter]
+    public MainLayout? MainLayout { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("GameStart page initialized.");
-
         userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
-        nickName = await sessionStorage.GetItemAsync<string>("sessionNickName") ?? string.Empty;
-
-        if (!string.IsNullOrEmpty(userId))
+        Navigation.LocationChanged += HandleLocationChanged;
+        await LoadSessionDataAsync();
+        if (MainLayout != null)
         {
-            nickName = await PlayerService.GetNickNameAsync(userId);
-
-            if (!string.IsNullOrEmpty(nickName))
-            {
-                var characterInfo = await PlayerService.GetPlayerBasicInfoAsync(userId);
-                if (characterInfo != null && characterInfo.Result == ErrorCode.None)
-                {
-                    nickName = characterInfo.PlayerBasicInfo.NickName;
-                    exp = characterInfo.PlayerBasicInfo.Exp;
-                    level = characterInfo.PlayerBasicInfo.Level;
-                    win = characterInfo.PlayerBasicInfo.Win;
-                    lose = characterInfo.PlayerBasicInfo.Lose;
-                    draw = characterInfo.PlayerBasicInfo.Draw;
-                }
-            }
+            await MainLayout.ForceReload(); // 강제 리로드 호출
         }
-        isLoading = false;
+    }
+
+    private async Task LoadSessionDataAsync()
+    {
+        userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+        sessionStorageId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
+        nickName = await sessionStorage.GetItemAsync<string>("sessionNickName") ?? string.Empty;
+        exp = await sessionStorage.GetItemAsync<int>("sessionExp");
+        level = await sessionStorage.GetItemAsync<int>("sessionLevel");
+        win = await sessionStorage.GetItemAsync<int>("sessionWin");
+        lose = await sessionStorage.GetItemAsync<int>("sessionLose");
+        draw = await sessionStorage.GetItemAsync<int>("sessionDraw");
+        StateHasChanged();
+    }
+
+    private async void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        await LoadSessionDataAsync();
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
     }
 
     private async Task CreateNickname()
@@ -160,6 +148,11 @@ else
 }
 
 <style>
+    .matching-container {
+        text-align: center;
+        padding: 20px;
+    }
+
     h3 {
         font-family: 'Arial', sans-serif;
         font-size: 3em;

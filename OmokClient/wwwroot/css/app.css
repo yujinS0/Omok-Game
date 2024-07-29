@@ -3,6 +3,9 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    display: flex; /* FlexBox 사용으로 중앙 정렬 */
+    justify-content: center; /* 가로 중앙 정렬 */
+    align-items: center; /* 세로 중앙 정렬 */
 }
 
 body {
@@ -12,13 +15,14 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     height: 100vh;
+    overflow: hidden; /* 스크롤바 생성 방지 */
 }
 
 .page {
-    position: relative;
+    position: relative; /*위치 상대적*/
     width: 100vw;
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /*세로 배치*/
     height: 100vh;
 }
 
@@ -29,15 +33,80 @@ body {
     align-items: center;
     background-color: #333;
     padding: 10px;
-    height: 60px;
-    border-bottom: 1px solid #e0e0e0;
+    height: 80px;
+    border-bottom: 1px solid #e0e0e0; /*하단 테두리 설정*/
 }
 
 .user-email {
     font-size: 1rem;
-    margin-right: 20px;
+    margin-right: 20px; /*오른쪽 마진*/
     color: #e0e0e0;
 }
+
+.content-wrapper {
+    display: flex;
+    flex: 1;
+    flex-direction: row; /* 가로 배치 설정 */
+    height: calc(100%); 
+    width: 100%;
+    justify-content: center; 
+    align-items: center; 
+}
+
+.player-info {
+    width: 250px; 
+    height: calc(80%); /*부모 요소의 %*/
+    background-color: rgba(255, 255, 255, 0.8); /* 배경색 */
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /*모서리 둥글게*/
+    overflow-y: auto;
+    flex-shrink: 0; /* 크기 고정*/
+    display: flex; /* Flexbox를 사용하여 자식 요소를 정렬 */
+    justify-content: center; /* 자식 요소를 가로로 중앙 정렬 */
+    align-items: center; /* 자식 요소를 세로로 중앙 정렬 */
+}
+player-info-text {
+    justify-content: center;
+    align-items: center;
+}
+.main-content {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: calc(80%);
+    max-width: 1200px;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    margin-left: 5px; /* player-info와의 간격을 줍니다 */
+}
+
+.card-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.omok-container {
+    background-color: rgba(245, 222, 179, 0.9);
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    margin-right: 20px; /* 여백 설정 */
+}
+
+.info-container {
+    background-color: rgba(255, 215, 0, 0.9);
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
 
 main {
     flex: 1;
@@ -64,16 +133,16 @@ main {
     background-color: #333;
     color: white;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-around; 
     align-items: center;
-    height: 60px;
+    height: 100px;
     z-index: 10;
 }
 
 .bottom-navbar {
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-around; /* 아이템 간격 균등 분배 */
     align-items: center;
 }
 
@@ -85,12 +154,12 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    cursor: pointer;
+    cursor: pointer; 
     padding: 10px;
 }
 
     .nav-button:hover {
-        background-color: #555;
+        background-color: #555; /* 호버 시 배경색 설정 */
     }
 
 code {
