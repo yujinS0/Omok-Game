@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Threading.Tasks;
+using GameServer.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using ServerShared;
@@ -10,11 +11,13 @@ public class CheckVersion
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<CheckVersion> _logger;
+    private readonly IMasterDb _masterDb;
 
-    public CheckVersion(RequestDelegate next, ILogger<CheckVersion> logger)
+    public CheckVersion(RequestDelegate next, ILogger<CheckVersion> logger, IMasterDb masterDb)
     {
         _next = next;
         _logger = logger;
+        _masterDb = masterDb;
     }
 
     public async Task Invoke(HttpContext httpContext)
@@ -32,7 +35,20 @@ public class CheckVersion
 
     private async Task<bool> VersionCompare(string appVersion, string dataVersion, HttpContext context)
     {
-        if (!appVersion.Equals("0.1.0")) // TODO MasterDB에서 받아오도록
+        var currentVersion = _masterDb.GetVersion();
+        if (currentVersion == null)
+        {
+            _logger.LogWarning("Current version is null. Cannot perform version comparison.");
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
+            {
+                Result = ErrorCode.FailToLoadAppVersionInMasterDb
+            });
+            await context.Response.WriteAsync(errorJsonResponse);
+            return false;
+        }
+
+        if (!appVersion.Equals(currentVersion.AppVersion)) // TODO MasterDB에서 받아오도록
         {
             context.Response.StatusCode = StatusCodes.Status426UpgradeRequired;
             var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
@@ -43,7 +59,7 @@ public class CheckVersion
             return false;
         }
 
-        if (!dataVersion.Equals("0.1.0"))
+        if (!dataVersion.Equals(currentVersion.MasterDataVersion))
         {
             context.Response.StatusCode = StatusCodes.Status426UpgradeRequired;
             var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
