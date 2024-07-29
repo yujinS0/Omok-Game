@@ -31,7 +31,7 @@ public class GameDb : IGameDb
         _connection?.Dispose();
     }
 
-    public async Task<PlayerInfo> CreatePlayerInfoDataAsync(string playerId)
+    public async Task<PlayerInfo> CreatePlayerInfoData(string playerId)
     {
         var newPlayerInfo = new PlayerInfo
         {
@@ -60,7 +60,7 @@ public class GameDb : IGameDb
         return newPlayerInfo;
     }
 
-    public async Task<PlayerInfo> GetPlayerInfoDataAsync(string playerId)
+    public async Task<PlayerInfo> GetPlayerInfoData(string playerId)
     {
         try
         {
@@ -96,10 +96,10 @@ public class GameDb : IGameDb
         }
     }
 
-    public async Task UpdateGameResultAsync(string winnerId, string loserId)
+    public async Task UpdateGameResult(string winnerId, string loserId)
     {
-        var winnerData = await GetPlayerInfoDataAsync(winnerId);
-        var loserData = await GetPlayerInfoDataAsync(loserId);
+        var winnerData = await GetPlayerInfoData(winnerId);
+        var loserData = await GetPlayerInfoData(loserId);
 
         if (winnerData == null)
         {
@@ -131,7 +131,7 @@ public class GameDb : IGameDb
             winnerId, winnerData.Win, winnerData.Exp, loserId, loserData.Lose, loserData.Exp);
     }
 
-    public async Task<bool> UpdateNickNameAsync(string playerId, string newNickName)
+    public async Task<bool> UpdateNickName(string playerId, string newNickName)
     {
         var affectedRows = await _queryFactory.Query("player_info")
             .Where("hive_player_id", playerId)
@@ -140,7 +140,7 @@ public class GameDb : IGameDb
         return affectedRows > 0;
     }
 
-    public async Task<PlayerBasicInfo> GetplayerBasicInfoAsync(string playerId)
+    public async Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId)
     {
         try
         {
