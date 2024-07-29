@@ -21,7 +21,7 @@ namespace GameServer.Repository
             _redisConn = new RedisConnection(config);
         }
 
-        public async Task<bool> SaveUserLoginInfo(string playerId, string token, string appVersion, string dataVersion)
+        public async Task<bool> SavePlayerLoginInfo(string playerId, string token, string appVersion, string dataVersion)
         {
             var key = KeyGenerator.UserLogin(playerId);
             var playerLoginInfo = new PlayerLoginInfo
@@ -44,7 +44,23 @@ namespace GameServer.Repository
             return result;
         }
 
-        public async Task<string> GetUserLoginTokenAsync(string playerId)
+        public async Task<bool> DeletePlayerLoginInfo(string playerId)
+        {
+            var key = KeyGenerator.UserLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            bool result = await redisString.DeleteAsync();
+            if (result)
+            {
+                _logger.LogInformation("Successfully deleted login info for UserId: {UserId}", playerId);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to delete login info for UserId: {UserId}", playerId);
+            }
+            return result;
+        }
+
+        public async Task<string> GetUserLoginToken(string playerId)
         {
             var key = KeyGenerator.UserLogin(playerId);
             var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
@@ -63,14 +79,14 @@ namespace GameServer.Repository
         }
 
 
-        public async Task<string> GetGameRoomIdAsync(string playerId)
+        public async Task<string> GetGameRoomId(string playerId)
         {
             var key = KeyGenerator.PlayingUser(playerId);
-            var userGameData = await GetPlayingUserInfoAsync(key);
-            return userGameData?.GameRoomId;
+            var userGameData = await GetPlayingUserInfo(key);
+            return userGameData.GameRoomId;
         }
 
-        public async Task<byte[]> GetGameDataAsync(string key)
+        public async Task<byte[]> GetGameData(string key)
         {
             try
             {
@@ -95,11 +111,11 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task<bool> UpdateGameDataAsync(string key, byte[] rawData) // key로 OmokData 값 업데이트
+        public async Task<bool> UpdateGameData(string key, byte[] rawData) // key로 OmokData 값 업데이트
         {
             try
             {
-                var redisString = new RedisString<byte[]>(_redisConn, key, RedisExpireTime.GameData);  // byte[]? OmokGameData?
+                var redisString = new RedisString<byte[]>(_redisConn, key, RedisExpireTime.GameData);
                 var result = await redisString.SetAsync(rawData);
                 _logger.LogInformation("Update game info: Key={Key}, GamerawData={rawData}", key, rawData);
                 return result;
@@ -110,7 +126,7 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task<MatchResult> GetMatchResultAsync(string key) // 매칭 결과 조회
+        public async Task<MatchResult> GetMatchResult(string key) // 매칭 결과 조회
         {
             try
             {
@@ -139,13 +155,15 @@ namespace GameServer.Repository
         }
 
         // 매칭 완료 후 게임중인 유저 게임 데이터 저장하는
-        public async Task<bool> StorePlayingUserInfoAsync(string key, UserGameData playingUserInfo) // key로 PlayingUserInfo 저장
+        public async Task<bool> StorePlayingUserInfo(string key, UserGameData playingUserInfo) // key로 PlayingUserInfo 저장
         {
             try
             {
                 //TODO: 아래처럼 코드를 너무 붙이지 마세요. 코드가 눈에 잘 안들어옵니다. 보기 좋은 코드를 작성해주세요
+                //=> 넵! 수정 완료했습니다!
                 var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
                 _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+
                 await redisString.SetAsync(playingUserInfo);
                 _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
                 return true;
@@ -156,7 +174,7 @@ namespace GameServer.Repository
                 return false;
             }
         }
-        public async Task<UserGameData> GetPlayingUserInfoAsync(string key)
+        public async Task<UserGameData> GetPlayingUserInfo(string key)
         {
             try
             {
@@ -181,7 +199,7 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task<bool> SetUserReqLockAsync(string key)
+        public async Task<bool> SetUserReqLock(string key)
         {
             try
             {
@@ -204,7 +222,7 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task DelUserReqLockAsync(string key)
+        public async Task DelUserReqLock(string key)
         {
             try
             {
