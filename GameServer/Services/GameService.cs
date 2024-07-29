@@ -24,6 +24,7 @@ public class GameService : IGameService
 
     public async Task<(ErrorCode, Winner)> PutOmok(string playerId, int x, int y)
     {
+        //TODO: rawData은 이미 omokGameData에서 참조하고 있을텐데 별도로 반환해야 하는 이유가 있을까요?
         var (validatePlayerTurn, omokGameData, rawData, gameRoomId) = await ValidatePlayerTurn(playerId);
 
         if (validatePlayerTurn != ErrorCode.None)
@@ -100,6 +101,8 @@ public class GameService : IGameService
             return (ErrorCode.NotYourTurn, null, null, null);
         }
 
+        //TODO: 게임이 끝난 상태인데 돌두기를 요청한 것인지 체크를 하고 있나요?
+
         return (ErrorCode.None, omokGameData, rawData, gameRoomId);
     }
 
@@ -114,6 +117,7 @@ public class GameService : IGameService
         var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
         var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerName() : omokGameData.GetBlackPlayerName();
 
+        //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
         await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId); // GameDb에 결과 업데이트
 
         return new Winner { Stone = winnerStone, PlayerId = winnerPlayerId };
@@ -146,6 +150,7 @@ public class GameService : IGameService
         });
     }
 
+    //TODO: 결과가 현재 턴을 가진 플레이어의 ID를 반환하고 있는데 메서드 이름과 동작이 일치하지 않습니다. 메서드 이름으로는 Turn이 바뀌었다 여부를 반환해야하는데 내용은 현재 턴을 가진 플레이어ID를 반환하고 있네요
     public async Task<(ErrorCode, string)> TurnChecking(string playerId)
     {
         var currentTurn = await GetCurrentTurn(playerId);

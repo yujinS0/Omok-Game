@@ -81,6 +81,8 @@ public class CheckUserAuth
             return;
         }
 
+
+        //TODO: 버그. 락 옵션 해제를 여기서 하면 위에서 락 건 것을 바로 풀어버리게 됩니다
         await _memoryDb.DelUserReqLock(userLockKey); // 락 해제
 
         await _next(context);

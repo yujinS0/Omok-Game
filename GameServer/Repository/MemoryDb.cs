@@ -83,6 +83,7 @@ namespace GameServer.Repository
         {
             var key = KeyGenerator.PlayingUser(playerId);
             var userGameData = await GetPlayingUserInfo(key);
+            //TODO: 버그. userGameData가 null일 경우 처리 필요
             return userGameData.GameRoomId;
         }
 
@@ -159,13 +160,12 @@ namespace GameServer.Repository
         {
             try
             {
-                //TODO: 아래처럼 코드를 너무 붙이지 마세요. 코드가 눈에 잘 안들어옵니다. 보기 좋은 코드를 작성해주세요
-                //=> 넵! 수정 완료했습니다!
                 var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
                 _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
 
                 await redisString.SetAsync(playingUserInfo);
                 _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+                
                 return true;
             }
             catch (Exception ex)
@@ -204,6 +204,7 @@ namespace GameServer.Repository
             try
             {
                 var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime); // 30초 동안 락 설정
+                //TODO: 버그. SetAsync에서 When.NotExists 옵션을 사용해야합니다.
                 var result = await redisString.SetAsync(key);
                 if (result)
                 {

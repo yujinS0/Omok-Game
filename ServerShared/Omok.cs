@@ -274,6 +274,7 @@ public class OmokGameData
 
         // 현재 턴인 플레이어 이름 확인
         string currentTurnPlayerName = GetCurrentTurnPlayerName();
+        //TODO: 실패 시에 예외가 아닌 에러코드를 반환해주세요
         if (currentTurnPlayerName != playerId)
         {
             throw new InvalidOperationException("Not the player's turn.");
