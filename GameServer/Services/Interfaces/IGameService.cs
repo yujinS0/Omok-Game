@@ -7,8 +7,8 @@ namespace GameServer.Services.Interfaces;
 
 public interface IGameService
 {
-    Task<(ErrorCode, Winner)> PutOmokAsync(string playerId, int x, int y);
-    Task<(ErrorCode, GameInfo)> GiveUpPutOmokAsync(string playerId);
-    Task<(ErrorCode, string)> TurnCheckingAsync(string playerId);
-    Task<(ErrorCode, byte[]?)> GetGameRawDataAsync(string playerId);
+    Task<(ErrorCode, Winner)> PutOmok(string playerId, int x, int y);
+    Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId);
+    Task<(ErrorCode, string)> TurnChecking(string playerId);
+    Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId);
 }

@@ -22,28 +22,28 @@ public class PlayerInfoController : ControllerBase
     [HttpPost("basic-player-data")]
     public async Task<PlayerBasicInfoResponse> GetBasicPlayerData([FromBody] PlayerBasicInfoRequest request)
     {
-        var (error, playerBasicInfo) = await _playerInfoService.GetPlayerBasicDataAsync(request.PlayerId);
+        var (result, playerBasicInfo) = await _playerInfoService.GetPlayerBasicData(request.PlayerId);
 
-        if (error != ErrorCode.None)
+        if (result != ErrorCode.None)
         {
             return new PlayerBasicInfoResponse
             {
-                Result = error,
+                Result = result,
                 PlayerBasicInfo = null
             };
         }
 
         return new PlayerBasicInfoResponse
         {
-            Result = error,
+            Result = result,
             PlayerBasicInfo = playerBasicInfo
         };
     }
 
     [HttpPost("update-nickname")]
-    public async Task<UpdateNickNameResponse> UpdateNickNameAsync([FromBody] UpdateNickNameRequest request)
+    public async Task<UpdateNickNameResponse> UpdateNickName([FromBody] UpdateNickNameRequest request)
     {
-        var result = await _playerInfoService.UpdateNickNameAsync(request.PlayerId, request.NickName);
+        var result = await _playerInfoService.UpdateNickName(request.PlayerId, request.NickName);
 
         return new UpdateNickNameResponse
         {

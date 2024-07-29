@@ -7,6 +7,6 @@ namespace GameServer.Services.Interfaces;
 
 public interface IPlayerInfoService
 {
-    Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicDataAsync(string playerId);
-    Task<ErrorCode> UpdateNickNameAsync(string playerId, string newNickName);
+    Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicData(string playerId);
+    Task<ErrorCode> UpdateNickName(string playerId, string newNickName);
 }

@@ -24,7 +24,7 @@ public class GamePlayController : ControllerBase
     [HttpPost("put-omok")]
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request) 
     {
-        var (result, winner) = await _gameService.PutOmokAsync(request.PlayerId, request.X, request.Y); 
+        var (result, winner) = await _gameService.PutOmok(request.PlayerId, request.X, request.Y); 
 
         if (result != ErrorCode.None)
         {
@@ -37,7 +37,7 @@ public class GamePlayController : ControllerBase
     [HttpPost("giveup-put-omok")]
     public async Task<TurnChangeResponse> GiveUpPutOmok([FromBody] PlayerRequest request)
     {
-        var (result, gameInfo) = await _gameService.GiveUpPutOmokAsync(request.PlayerId);
+        var (result, gameInfo) = await _gameService.GiveUpPutOmok(request.PlayerId);
         return new TurnChangeResponse
         {
             Result = result,
@@ -48,7 +48,7 @@ public class GamePlayController : ControllerBase
     [HttpPost("turn-checking")]
     public async Task<PlayerResponse> TurnChecking([FromBody] PlayerRequest request)
     {
-        var (result, currentTurnPlayer) = await _gameService.TurnCheckingAsync(request.PlayerId);
+        var (result, currentTurnPlayer) = await _gameService.TurnChecking(request.PlayerId);
 
         if (result != ErrorCode.None)
         {
@@ -68,13 +68,13 @@ public class GamePlayController : ControllerBase
     [HttpPost("omok-game-data")] // 게임 전체 데이터 가져오는 요청
     public async Task<BoardResponse> GetOmokGameData([FromBody] PlayerRequest request)
     {
-        var (errorCode, gameData) = await _gameService.GetGameRawDataAsync(request.PlayerId);
+        var (result, gameData) = await _gameService.GetGameRawData(request.PlayerId);
 
-        if (errorCode != ErrorCode.None)
+        if (result != ErrorCode.None)
         {
             return new BoardResponse
             {
-                Result = errorCode
+                Result = result
             };
         }
 

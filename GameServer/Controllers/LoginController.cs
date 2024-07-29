@@ -24,7 +24,6 @@ public class LoginController : ControllerBase
     {
         try
         {
-            // Verify Token
             var verifyTokenRequest = new VerifyTokenRequest
             {
                 HiveUserId = request.PlayerId,
@@ -35,6 +34,7 @@ public class LoginController : ControllerBase
             // VerifyTokenAndInitializePlayerDataAsync은 너무 이름이 구체화 되어서 로그인 과정에 변경이 발생하면 이 이름도 바뀌어야 해서 유연하지 않습니다
             //=> 수정 완료했습니다.
             var result = await _loginService.login(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
+            
             return new GameLoginResponse { Result = result };
         }
         catch (HttpRequestException e)

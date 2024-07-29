@@ -44,7 +44,7 @@ public class CheckUserAuth
             return;
         }
 
-        var redisToken = await _memoryDb.GetUserLoginTokenAsync(playerId);
+        var redisToken = await _memoryDb.GetUserLoginToken(playerId);
 
         if (string.IsNullOrEmpty(redisToken))
         {
@@ -70,7 +70,7 @@ public class CheckUserAuth
 
         // 락 설정
         var userLockKey = KeyGenerator.UserLockKey(playerId);
-        if (!await _memoryDb.SetUserReqLockAsync(userLockKey)) // TODO keyGen 사용하기
+        if (!await _memoryDb.SetUserReqLock(userLockKey))
         {
             context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
             var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
@@ -81,11 +81,8 @@ public class CheckUserAuth
             return;
         }
 
-        // 락 해제
-        await _memoryDb.DelUserReqLockAsync(userLockKey);
+        await _memoryDb.DelUserReqLock(userLockKey); // 락 해제
 
-
-        // Call the next delegate/middleware in the pipeline
         await _next(context);
     }
 
