@@ -115,12 +115,14 @@ public enum ErrorCode : UInt16
 
     GameEnd = 2500,
     UpdateGameDataFailException = 2501,
-    SetStoneFailException = 2502,
     NotYourTurn = 2503,
     RequestTurnEnd = 2505,
     TurnChangedByTimeout = 2510,
 
-    
+    SetStoneFailException = 2521,
+    InvalidOperationException = 2522,
+
+
 
     // Item 3000 ~
     CharReceiveFailInsert = 3011,
@@ -164,6 +166,8 @@ public enum ErrorCode : UInt16
     PlayerNotFound = 4501,
     UpdatePlayerNickNameFailed = 4502,
 
+    // Redis 4700 ~
+    RedisException = 4701,
 
     // MasterDb 5000 ~
     MasterDB_Fail_LoadData = 5001,

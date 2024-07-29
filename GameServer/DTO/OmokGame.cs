@@ -21,7 +21,8 @@ public class PlayerRequest
     public string PlayerId { get; set; }
 }
 
-//public class BoardResponse
+// 추후 이런 식으로 수정 예정
+//public class BoardClassResponse
 //{
 //    public ErrorCode Result { get; set; }
 //    public GameData GameData { get; set; }
