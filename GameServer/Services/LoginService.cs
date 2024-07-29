@@ -97,6 +97,9 @@ public class LoginService : ILoginService
         {
             _logger.LogInformation("First login detected, creating new player_info for hive_player_id: {PlayerId}", playerId);
             playerInfo = await _gameDb.CreatePlayerInfoData(playerId);
+
+            // Add initial items to the new player
+            await _gameDb.AddInitialItemsForPlayer(playerId);
         }
         return ErrorCode.None;
     }

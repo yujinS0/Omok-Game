@@ -10,4 +10,5 @@ public interface IGameDb : IDisposable
     Task UpdateGameResult(string winnerId, string loserId);
     Task<bool> UpdateNickName(string playerId, string newNickName);
     Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId);
+    Task AddInitialItemsForPlayer(string playerId);
 }

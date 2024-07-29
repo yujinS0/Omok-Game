@@ -13,8 +13,9 @@ public class GameDb : IGameDb
     private readonly ILogger<GameDb> _logger;
     private MySqlConnection _connection;
     readonly QueryFactory _queryFactory;
+    private readonly IMasterDb _masterDb;
 
-    public GameDb(IOptions<DbConfig> dbConfig, ILogger<GameDb> logger)
+    public GameDb(IOptions<DbConfig> dbConfig, ILogger<GameDb> logger, IMasterDb masterDb)
     {
         _dbConfig = dbConfig;
         _logger = logger;
@@ -23,6 +24,7 @@ public class GameDb : IGameDb
         _connection.Open();
 
         _queryFactory = new QueryFactory(_connection, new MySqlCompiler());
+        _masterDb = masterDb;
     }
 
     public void Dispose()
@@ -174,6 +176,22 @@ public class GameDb : IGameDb
         }
     }
 
+    public async Task AddInitialItemsForPlayer(string playerId)
+    {
+        var firstItems = _masterDb.GetFirstItems(); // MasterDb에서 데이터 가져오기
+
+        foreach (var item in firstItems)
+        {
+            await _queryFactory.Query("player_item").InsertAsync(new
+            {
+                player_id = playerId,
+                item_code = item.ItemCode,
+                item_cnt = item.Count
+            });
+
+            _logger.LogInformation($"Added item for player_id={playerId}: ItemCode={item.ItemCode}, Count={item.Count}");
+        }
+    }
 
 
 }
