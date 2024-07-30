@@ -102,10 +102,12 @@ public class LoginService : ILoginService
         if (playerInfo == null)
         {
             _logger.LogInformation("First login detected, creating new player_info for hive_player_id: {PlayerId}", playerId);
-            playerInfo = await _gameDb.CreatePlayerInfoData(playerId);
-
-            // Add initial items to the new player
-            await _gameDb.AddInitialItemsForPlayer(playerId);
+            playerInfo = await _gameDb.CreatePlayerInfoDataAndStartItems(playerId);
+            if (playerInfo == null)
+            {
+                _logger.LogError("Failed to create new player info for UserId: {UserId}", playerId);
+                return ErrorCode.CreatePlayerInfoDataAndStartItemsFail;
+            }
         }
         return ErrorCode.None;
     }

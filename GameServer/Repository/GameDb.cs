@@ -4,6 +4,7 @@ using SqlKata.Execution;
 using Microsoft.Extensions.Options;
 using GameServer.Models;
 using GameServer.DTO;
+using ServerShared;
 
 namespace GameServer.Repository;
 
@@ -33,33 +34,77 @@ public class GameDb : IGameDb
         _connection?.Dispose();
     }
 
-    public async Task<PlayerInfo> CreatePlayerInfoData(string playerId)
+    public async Task<PlayerInfo> CreatePlayerInfoDataAndStartItems(string playerId)
     {
-        var newPlayerInfo = new PlayerInfo
+        using var transaction = await _connection.BeginTransactionAsync();
+        try
         {
-            HivePlayerId = playerId,
-            NickName = playerId,
-            Exp = 0,
-            Level = 1,
-            Win = 0,
-            Lose = 0,
-            Draw = 0
-        };
+            var newPlayerInfo = new PlayerInfo
+            {
+                HivePlayerId = playerId,
+                NickName = playerId,
+                Exp = 0,
+                Level = 1,
+                Win = 0,
+                Lose = 0,
+                Draw = 0
+            };
 
-        var insertId = await _queryFactory.Query("player_info").InsertGetIdAsync<int>(new
+            var insertId = await _queryFactory.Query("player_info").InsertGetIdAsync<int>(new
+            {
+                hive_player_id = newPlayerInfo.HivePlayerId,
+                nickname = newPlayerInfo.NickName,
+                exp = newPlayerInfo.Exp,
+                level = newPlayerInfo.Level,
+                win = newPlayerInfo.Win,
+                lose = newPlayerInfo.Lose,
+                draw = newPlayerInfo.Draw
+            }, transaction);
+
+            newPlayerInfo.PlayerUid = insertId;
+
+            var addItemsResult = await AddFirstItemsForPlayer(newPlayerInfo.HivePlayerId, transaction);
+            if (addItemsResult != ErrorCode.None)
+            {
+                await transaction.RollbackAsync();
+                return null;
+            }
+
+            await transaction.CommitAsync();
+            return newPlayerInfo;
+        }
+        catch (Exception ex)
         {
-            hive_player_id = newPlayerInfo.HivePlayerId,
-            nickname = newPlayerInfo.NickName,
-            exp = newPlayerInfo.Exp,
-            level = newPlayerInfo.Level,
-            win = newPlayerInfo.Win,
-            lose = newPlayerInfo.Lose,
-            draw = newPlayerInfo.Draw
-        });
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Error creating player info for playerId: {PlayerId}", playerId);
+            return null;
+        }
+    }
 
-        newPlayerInfo.PlayerUid = insertId;
+    private async Task<ErrorCode> AddFirstItemsForPlayer(string playerId, MySqlTransaction transaction)
+    {
+        var firstItems = _masterDb.GetFirstItems();
 
-        return newPlayerInfo;
+        try
+        {
+            foreach (var item in firstItems)
+            {
+                await _queryFactory.Query("player_item").InsertAsync(new
+                {
+                    player_id = playerId,
+                    item_code = item.ItemCode,
+                    item_cnt = item.Count
+                }, transaction);
+
+                _logger.LogInformation($"Added item for player_id={playerId}: ItemCode={item.ItemCode}, Count={item.Count}");
+            }
+            return ErrorCode.None;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding initial items for playerId: {PlayerId}", playerId);
+            return ErrorCode.AddFirstItemsForPlayerFail;
+        }
     }
 
     public async Task<PlayerInfo> GetPlayerInfoData(string playerId)
@@ -175,24 +220,6 @@ public class GameDb : IGameDb
             throw;
         }
     }
-
-    public async Task AddInitialItemsForPlayer(string playerId)
-    {
-        var firstItems = _masterDb.GetFirstItems(); // MasterDb에서 데이터 가져오기
-
-        foreach (var item in firstItems)
-        {
-            await _queryFactory.Query("player_item").InsertAsync(new
-            {
-                player_id = playerId,
-                item_code = item.ItemCode,
-                item_cnt = item.Count
-            });
-
-            _logger.LogInformation($"Added item for player_id={playerId}: ItemCode={item.ItemCode}, Count={item.Count}");
-        }
-    }
-
 
 }
 

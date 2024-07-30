@@ -161,6 +161,8 @@ public enum ErrorCode : UInt16
 
     // GameDb 4000 ~ 
     GetGameDbConnectionFail = 4002,
+    AddFirstItemsForPlayerFail = 4003,
+    CreatePlayerInfoDataAndStartItemsFail = 4004,
 
     // PlayerInfo 4500 ~
     PlayerNotFound = 4501,
