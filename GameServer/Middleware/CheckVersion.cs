@@ -48,7 +48,7 @@ public class CheckVersion
             return false;
         }
 
-        if (!appVersion.Equals(currentVersion.AppVersion)) // TODO MasterDB에서 받아오도록
+        if (!appVersion.Equals(currentVersion.AppVersion))
         {
             context.Response.StatusCode = StatusCodes.Status426UpgradeRequired;
             var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
