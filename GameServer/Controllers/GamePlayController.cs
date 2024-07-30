@@ -25,6 +25,8 @@ public class GamePlayController : ControllerBase
     public async Task<PutOmokResponse> PutOmok([FromBody] PutOmokRequest request) 
     {
         //TODO: 버그. 미들웨어에서는 헤더에 있는 PlayerId를 사용하는데 여기서는 body(요청)에 있는 PlayerId를 사용하고 있습니다. 유저가 헤더와 보디의 PlayerId를 다르게 사용할 수도 있습니다.
+        //=> 수정 완료했습니다.
+        // 미들웨어에서 만약 Body에 PlayerId가 포함되어 있는 경우에는, 헤더에 있는 PlayerId와 같은지 확인하는 부분을 추가.
         var (result, winner) = await _gameService.PutOmok(request.PlayerId, request.X, request.Y); 
 
         if (result != ErrorCode.None)
