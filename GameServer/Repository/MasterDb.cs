@@ -10,7 +10,7 @@ using GameServer.Models;
 
 namespace GameServer.Repository;
 
-public class MasterDb : IMasterDb // TODO syj 구현중
+public class MasterDb : IMasterDb
 {
     readonly IOptions<DbConfig> _dbConfig;
     readonly ILogger<MasterDb> _logger;
@@ -32,7 +32,6 @@ public class MasterDb : IMasterDb // TODO syj 구현중
 
         _queryFactory = new QueryFactory(_connection, new MySqlCompiler());
 
-        // Load data on initialization
         var loadTask = Load();
         loadTask.Wait();
     }
@@ -42,7 +41,7 @@ public class MasterDb : IMasterDb // TODO syj 구현중
         _connection?.Dispose();
     }
 
-    public async Task<bool> Load() // 생성자에서 로드
+    public async Task<bool> Load()
     {
         try
         {
