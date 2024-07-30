@@ -97,9 +97,10 @@ public class OmokGameData
         // 6. 이긴 사람 정보 저장 (초기값 0)
         rawData[index++] = (byte)OmokStone.None;
 
-       
+
         // TODO StartGame 로직 분리 및 구현 추가하기
-        rawData = StartGame(rawData); // 임시 StartGame 처리까지 여기서 진행
+        //rawData = StartGame(rawData); // 임시 StartGame 처리까지 여기서 진행
+        StartGame();
 
         return rawData;
     }
@@ -167,25 +168,19 @@ public class OmokGameData
         DecodingTurnAndTime();
         DecodingWinner();
     }
-
-    public byte[] StartGame(byte[] rawData)
+    public void StartGame()
     {
-        Decoding(rawData);
         _turnPlayerStone = OmokStone.Black;
         _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
-        rawData[turnIndex] = (byte)OmokStone.Black;
+        _rawData[turnIndex] = (byte)OmokStone.Black;
 
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
-        Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
-
-        return rawData;
+        Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
     }
 
-    public byte[] SetStone(byte[] rawData, string playerId, int x, int y)
+    public void SetStone(string playerId, int x, int y)
     {
-        Decoding(rawData);
-
         // 현재 턴인 플레이어 이름 확인
         string currentTurnPlayerName = GetCurrentTurnPlayerName();
         if (currentTurnPlayerName != playerId)
@@ -202,22 +197,20 @@ public class OmokGameData
 
         // 돌 두기
         bool isBlack = playerId == GetBlackPlayerName();
-        rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
+        _rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
 
         // 턴 변경
         _turnPlayerStone = isBlack ? OmokStone.White : OmokStone.Black;
         int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
-        rawData[turnIndex] = (byte)_turnPlayerStone;
+        _rawData[turnIndex] = (byte)_turnPlayerStone;
 
         // 턴 둔 시간 변경
         _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
-        Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
+        Array.Copy(turnTimeBytes, 0, _rawData, turnIndex + 1, turnTimeBytes.Length);
 
         // 오목 승리 조건 체크하는 함수
         OmokCheck();
-
-        return rawData;
     }
 
     public void OmokCheck() // 결과 체크
@@ -238,6 +231,7 @@ public class OmokGameData
                     _winner = stone;
                     int winnerIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length + 1 + 8;
                     _rawData[winnerIndex] = (byte)stone;
+                    
                     return;
                 }
             }
