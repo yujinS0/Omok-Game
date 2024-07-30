@@ -143,7 +143,7 @@ public class GameDb : IGameDb
         }
     }
 
-    public async Task UpdateGameResult(string winnerId, string loserId)
+    public async Task UpdateGameResult(string winnerId, string loserId) // SYJ TODO 로직 분리하기? CheckForWinner
     {
         var winnerData = await GetPlayerInfoData(winnerId);
         var loserData = await GetPlayerInfoData(loserId);
