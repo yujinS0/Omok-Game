@@ -114,13 +114,15 @@ public enum ErrorCode : UInt16
     UserGameDataNotFound = 2401,
 
     GameEnd = 2500,
-    UpdateGameDataFailException = 2501,
-    NotYourTurn = 2503,
-    RequestTurnEnd = 2505,
-    TurnChangedByTimeout = 2510,
+    GameAlreadyEnd = 2501,
+    UpdateGameDataFailException = 2502,
+    UpdateGameResultFail = 2503,
+    NotYourTurn = 2513,
+    RequestTurnEnd = 2515,
+    TurnChangedByTimeout = 2520,
 
-    SetStoneFailException = 2521,
-    InvalidOperationException = 2522,
+    SetStoneFailException = 2531,
+    InvalidOperationException = 2532,
 
 
 

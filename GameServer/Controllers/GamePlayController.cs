@@ -47,22 +47,22 @@ public class GamePlayController : ControllerBase
     }
 
     [HttpPost("turn-checking")]
-    public async Task<PlayerResponse> TurnChecking([FromBody] PlayerRequest request)
+    public async Task<TurnCheckResponse> TurnChecking([FromBody] PlayerRequest request)
     {
-        var (result, currentTurnPlayer) = await _gameService.TurnChecking(request.PlayerId);
+        var (result, isMyTurn) = await _gameService.TurnChecking(request.PlayerId);
 
         if (result != ErrorCode.None)
         {
-            return new PlayerResponse
+            return new TurnCheckResponse
             {
                 Result = result
             };
         }
 
-        return new PlayerResponse
+        return new TurnCheckResponse
         {
             Result = ErrorCode.None,
-            PlayerId = currentTurnPlayer
+            IsMyTurn = isMyTurn
         };
     }
 

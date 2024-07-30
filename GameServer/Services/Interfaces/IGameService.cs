@@ -9,6 +9,6 @@ public interface IGameService
 {
     Task<(ErrorCode, Winner)> PutOmok(string playerId, int x, int y);
     Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId);
-    Task<(ErrorCode, string)> TurnChecking(string playerId);
+    Task<(ErrorCode, bool)> TurnChecking(string playerId);
     Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId);
 }

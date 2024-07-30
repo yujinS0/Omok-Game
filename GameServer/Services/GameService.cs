@@ -25,7 +25,8 @@ public class GameService : IGameService
     public async Task<(ErrorCode, Winner)> PutOmok(string playerId, int x, int y)
     {
         //TODO: rawData은 이미 omokGameData에서 참조하고 있을텐데 별도로 반환해야 하는 이유가 있을까요?
-        var (validatePlayerTurn, omokGameData, rawData, gameRoomId) = await ValidatePlayerTurn(playerId);
+        //=> 수정 완료했습니다!
+        var (validatePlayerTurn, omokGameData, gameRoomId) = await ValidatePlayerTurn(playerId);
 
         if (validatePlayerTurn != ErrorCode.None)
         {
@@ -35,8 +36,8 @@ public class GameService : IGameService
 
         try
         {
-            byte[] updatedRawData = omokGameData.SetStone(rawData, playerId, x, y);
-            bool updateResult = await _memoryDb.UpdateGameData(gameRoomId, updatedRawData);
+            omokGameData.SetStone(playerId, x, y);
+            bool updateResult = await _memoryDb.UpdateGameData(gameRoomId, omokGameData.GetRawData());
 
             if (!updateResult)
             {
@@ -45,14 +46,13 @@ public class GameService : IGameService
             }
 
             // 오목 두고 승자 체크하기
-            var winner = await CheckForWinner(omokGameData);
-            if (winner != null)
+            var (result, winner) = await CheckForWinner(omokGameData);
+            if (result != ErrorCode.None)
             {
-                return (ErrorCode.None, winner);
+                return (result, null);
             }
 
             return (ErrorCode.None, null);
-
         }
         catch (InvalidOperationException ex)
         {
@@ -71,7 +71,7 @@ public class GameService : IGameService
         }
     }
 
-    private async Task<(ErrorCode, OmokGameData, byte[], string)> ValidatePlayerTurn(string playerId)
+    private async Task<(ErrorCode, OmokGameData, string)> ValidatePlayerTurn(string playerId)
     {
         string playingUserKey = KeyGenerator.PlayingUser(playerId);
         UserGameData userGameData = await _memoryDb.GetPlayingUserInfo(playingUserKey);
@@ -79,7 +79,7 @@ public class GameService : IGameService
         if (userGameData == null)
         {
             _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.UserGameDataNotFound, null, null, null);
+            return (ErrorCode.UserGameDataNotFound, null, null);
         }
 
         string gameRoomId = userGameData.GameRoomId;
@@ -88,39 +88,57 @@ public class GameService : IGameService
         if (rawData == null)
         {
             _logger.LogError("Failed to retrieve game data for RoomId: {RoomId}", gameRoomId);
-            return (ErrorCode.GameRoomNotFound, null, null, null);
+            return (ErrorCode.GameRoomNotFound, null, null);
         }
 
         var omokGameData = new OmokGameData();
         omokGameData.Decoding(rawData);
 
+        // 게임이 끝난 상태인지 체크
+        OmokStone winnerStone = omokGameData.GetWinnerStone();
+        if (winnerStone != OmokStone.None)
+        {
+            _logger.LogError("Game End. PlayerId: {PlayerId}", playerId);
+            return (ErrorCode.GameAlreadyEnd, null, null);
+        }
+
         string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
         if (playerId != currentTurnPlayerName)
         {
             _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.NotYourTurn, null, null, null);
+            return (ErrorCode.NotYourTurn, null, null);
         }
-
         //TODO: 게임이 끝난 상태인데 돌두기를 요청한 것인지 체크를 하고 있나요?
+        //=> 수정 완료했습니다.
 
-        return (ErrorCode.None, omokGameData, rawData, gameRoomId);
+        return (ErrorCode.None, omokGameData, gameRoomId);
     }
 
-    private async Task<Winner> CheckForWinner(OmokGameData omokGameData)
+    private async Task<(ErrorCode, Winner)> CheckForWinner(OmokGameData omokGameData)
     {
         var winnerStone = omokGameData.GetWinnerStone();
         if (winnerStone == OmokStone.None)
         {
-            return null;
+            return (ErrorCode.None, null);
         }
 
         var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
         var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerName() : omokGameData.GetBlackPlayerName();
 
-        //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
-        await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId); // GameDb에 결과 업데이트
+        try
+        {
+            //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
+            //=> 수정중. try-catch로 기본 예외 처리
+            //=> + 메서드의 반환값을 통해 처리하기? Update 반환값 찾아보기 TODO SYJ
+            await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId); // GameDb에 결과 업데이트
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update game result for winner: {WinnerId}, loser: {LoserId}", winnerPlayerId, loserPlayerId);
+            return (ErrorCode.UpdateGameResultFail, null);
+        }
 
-        return new Winner { Stone = winnerStone, PlayerId = winnerPlayerId };
+        return (ErrorCode.None, new Winner { Stone = winnerStone, PlayerId = winnerPlayerId });
     }
 
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId)
@@ -151,13 +169,14 @@ public class GameService : IGameService
     }
 
     //TODO: 결과가 현재 턴을 가진 플레이어의 ID를 반환하고 있는데 메서드 이름과 동작이 일치하지 않습니다. 메서드 이름으로는 Turn이 바뀌었다 여부를 반환해야하는데 내용은 현재 턴을 가진 플레이어ID를 반환하고 있네요
-    public async Task<(ErrorCode, string)> TurnChecking(string playerId)
+    //=> 수정 완료했습니다!
+    public async Task<(ErrorCode, bool)> TurnChecking(string playerId)
     {
         var currentTurn = await GetCurrentTurn(playerId);
 
         if (currentTurn == OmokStone.None)
         {
-            return (ErrorCode.GameTurnNotFound, null);
+            return (ErrorCode.GameTurnNotFound, false);
         }
 
         string currentTurnPlayer;
@@ -171,15 +190,22 @@ public class GameService : IGameService
         }
         else
         {
-            return (ErrorCode.GameTurnPlayerNotFound, null);
+            return (ErrorCode.GameTurnPlayerNotFound, false);
         }
 
         if (string.IsNullOrEmpty(currentTurnPlayer))
         {
-            return (ErrorCode.GameTurnPlayerNotFound, null);
+            return (ErrorCode.GameTurnPlayerNotFound, false);
         }
 
-        return (ErrorCode.None, currentTurnPlayer);
+        if(currentTurnPlayer == playerId)
+        {
+            return (ErrorCode.None, true);
+        }
+        else
+        {
+            return (ErrorCode.None, false);
+        }
     }
 
     public async Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId)

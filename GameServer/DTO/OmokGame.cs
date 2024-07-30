@@ -50,6 +50,12 @@ public class PlayerResponse
     public string PlayerId { get; set; }
 }
 
+public class TurnCheckResponse
+{
+    public ErrorCode Result { get; set; }
+    public bool IsMyTurn { get; set; }
+}
+
 public class CurrentTurnResponse
 {
     public ErrorCode Result { get; set; }

@@ -48,16 +48,20 @@ public class GameService : BaseService
         };
     }
 
-    public async Task<string> CheckTurnAsync(string playerId)
+    public async Task<TurnCheckResponse> CheckTurnAsync(string playerId)
     {
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
         var response = await gameClient.PostAsJsonAsync("GamePlay/turn-checking", new { PlayerId = playerId });
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<PlayerResponse>();
-            return result.PlayerId;
+            var result = await response.Content.ReadFromJsonAsync<TurnCheckResponse>();
+            return result;
         }
-        return null;
+        return new TurnCheckResponse
+        {
+            Result = ErrorCode.RequestFailed,
+            IsMyTurn = false
+        };
     }
 
     public async Task<byte[]> GetRawOmokGameData(string playerId)
@@ -193,6 +197,13 @@ public class PlayerResponse
     public ErrorCode Result { get; set; }
     public string PlayerId { get; set; }
 }
+
+public class TurnCheckResponse
+{
+    public ErrorCode Result { get; set; }
+    public bool IsMyTurn { get; set; }
+}
+
 
 public class CurrentTurnResponse
 {

@@ -31,11 +31,11 @@
         <div class="info-container">
             <div class="info-item">흑돌: <span class="info-value">@blackPlayer</span></div>
             <div class="info-item">백돌: <span class="info-value">@whitePlayer</span></div>
-            <div class="info-item">현재 차례: <span class="info-value">@currentTurn</span></div>
+            <div class="info-item">현재 차례: <span class="info-value">@currentTurnDisplay</span></div>
             <div class="info-item">남은 시간: <span class="info-value">@remainingTime</span></div>
-            @if ((currentTurn == "black" && playerId == blackPlayer) || (currentTurn == "white" && playerId == whitePlayer))
+            @if (isMyTurn)
             {
-                <div class="your-turn-message">당신의 차례입니다!</div>
+                    <div class="your-turn-message">당신의 차례입니다!</div>
             }
     </div>
 </div>
@@ -46,8 +46,10 @@
     private string blackPlayer = string.Empty;
     private string whitePlayer = string.Empty;
     private string currentTurn = string.Empty;
+    private string currentTurnDisplay = string.Empty; // 현재 턴 표시용
     private int remainingTime = 30;
     private bool isPollingActive = true;
+    private bool isMyTurn = false; // 자신의 차례인지 여부
     private Timer? timer;
 
     protected override async Task OnInitializedAsync()
@@ -74,17 +76,17 @@
         Console.WriteLine("== StartTurnPollingAsync ==");
         while (isPollingActive)
         {
-            var currentTurnPlayerId = await GameService.CheckTurnAsync(playerId);
-            if (string.IsNullOrEmpty(currentTurnPlayerId))
+            var turnCheckResponse = await GameService.CheckTurnAsync(playerId);
+            if (turnCheckResponse.Result != ErrorCode.None)
             {
                 await Task.Delay(1000); // 현재 게임이 시작되지 않았으면 1초 대기
                 continue;
             }
 
-            currentTurn = (currentTurnPlayerId == blackPlayer) ? "black" : "white"; // 가독성 높이기
-                                                                                    // TODO 자기 차례이면 잘 보이게 표시하기
+            isMyTurn = turnCheckResponse.IsMyTurn;
+            currentTurnDisplay = isMyTurn ? "내 차례" : "상대 차례";
 
-            Console.WriteLine($"Current turn: {currentTurn}");
+            Console.WriteLine($"Current turn: {currentTurnDisplay}");
             await InvokeAsync(StateHasChanged); // UI 갱신을 보장
 
             // Check for winner
@@ -102,15 +104,12 @@
                 return;
             }
 
-            // // Load the board state (오목판 업데이트)
-            // await LoadGameStateAsync();
-
-            if (currentTurnPlayerId == playerId)
+            // Load the board state (오목판 업데이트)
+            if (isMyTurn)
             {
                 Console.WriteLine("이제 내 차례!");
-                Console.WriteLine($"Your turn: {currentTurn}");
+                Console.WriteLine($"Your turn: {currentTurnDisplay}");
                 StartTimer();
-                // Load the board state (오목판 업데이트)
                 await LoadGameStateAsync();
                 await InvokeAsync(StateHasChanged); // 자신의 차례가 되었을 때 UI를 갱신
                 break;
@@ -163,7 +162,7 @@
         await sessionStorage.RemoveItemAsync("blackPlayer");
         await sessionStorage.RemoveItemAsync("whitePlayer");
 
-        await Task.Delay(3000); // 3초 대기
+        await Task.Delay(2000); // 2초 대기
         Navigation.NavigateTo("/gamestart");
     }
 
