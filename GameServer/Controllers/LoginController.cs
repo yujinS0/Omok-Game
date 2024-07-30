@@ -36,11 +36,11 @@ public class LoginController : ControllerBase
             //=> 수정 완료했습니다.
             if (result == ErrorCode.None)
             {
-                _logger.LogInformation("Login successful for UserId={UserId}", request.PlayerId);
+                _logger.LogInformation("Login successful for PlayerId={PlayerId}", request.PlayerId);
             }
             else
             {
-                _logger.LogWarning("Login failed for UserId={UserId} with ErrorCode={ErrorCode}", request.PlayerId, result);
+                _logger.LogWarning("Login failed for PlayerId={PlayerId} with ErrorCode={ErrorCode}", request.PlayerId, result);
             }
 
             return new GameLoginResponse { Result = result };
