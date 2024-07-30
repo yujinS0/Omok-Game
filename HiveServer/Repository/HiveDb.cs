@@ -54,8 +54,9 @@ namespace HiveServer.Repository
 
 
                     //TODO: InitializeLoginToken 이름이 좀 애매합니다. 계정 생성 시 default로 만들어야하는 데이터 생성 이라는 뜻이면 좋겠습니다. or AuthToken용 데이터 생성이라고 하던지
-                    // login_token 테이블에 "기본 데이터" 삽입
-                    var tokenResult = await InitializeLoginToken(hiveUserId, transaction);
+                    //=> 수정 완료했습니다! InitializeDefaultAuthToken
+                    // login_token 테이블에 "default AuthToken용 데이터" 삽입
+                    var tokenResult = await InitializeDefaultAuthToken(hiveUserId, transaction);
                     if (tokenResult != ErrorCode.None)
                     {
                         _logger.LogError("Failed to initialize token entry for UserId: {UserId}", hiveUserId);
@@ -81,7 +82,7 @@ namespace HiveServer.Repository
         }
 
         // login_token 테이블에 기본 세팅 (초기화 담당)
-        private async Task<ErrorCode> InitializeLoginToken(string hiveUserId, MySqlTransaction transaction)
+        private async Task<ErrorCode> InitializeDefaultAuthToken(string hiveUserId, MySqlTransaction transaction)
         {
             try
             {
