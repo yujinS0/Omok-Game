@@ -84,6 +84,13 @@ namespace GameServer.Repository
             var key = KeyGenerator.PlayingUser(playerId);
             var userGameData = await GetPlayingUserInfo(key);
             //TODO: 버그. userGameData가 null일 경우 처리 필요
+            //=> 수정 완료했습니다.
+            if (userGameData == null)
+            {
+                _logger.LogWarning("No game room found for PlayerId: {PlayerId}", playerId);
+                return null;
+            }
+
             return userGameData.GameRoomId;
         }
 
@@ -205,7 +212,8 @@ namespace GameServer.Repository
             {
                 var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime); // 30초 동안 락 설정
                 //TODO: 버그. SetAsync에서 When.NotExists 옵션을 사용해야합니다.
-                var result = await redisString.SetAsync(key);
+                //=> 수정 완료했습니다.
+                var result = await redisString.SetAsync(key, RedisExpireTime.LockTime, StackExchange.Redis.When.NotExists);
                 if (result)
                 {
                     _logger.LogInformation("Successfully set lock for Key={Key}", key);
@@ -223,17 +231,26 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task DelUserReqLock(string key)
+        public async Task<bool> DelUserReqLock(string key)
         {
             try
             {
                 var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime);
-                await redisString.DeleteAsync();
-                _logger.LogInformation("Successfully deleted lock for Key={Key}", key);
+                var result = await redisString.DeleteAsync();
+                if (result)
+                {
+                    _logger.LogInformation("Successfully deleted lock for Key={Key}", key);
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to delete lock for Key={Key}", key);
+                }
+                return result;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting lock for Key={Key}", key);
+                return false;
             }
         }
 

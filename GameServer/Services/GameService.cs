@@ -144,6 +144,11 @@ public class GameService : IGameService
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId)
     {
         var gameRoomId = await _memoryDb.GetGameRoomId(playerId);
+        if (gameRoomId == null)
+        {
+            // Handle the error, e.g., return an appropriate error code or message
+            return (ErrorCode.GameRoomNotFound, null);
+        }
         var rawData = await _memoryDb.GetGameData(gameRoomId);
 
         var omokGameData = new OmokGameData();
