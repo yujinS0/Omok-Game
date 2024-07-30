@@ -15,5 +15,5 @@ public interface IMemoryDb : IDisposable
     Task<UserGameData> GetPlayingUserInfo(string key);
     Task<string> GetGameRoomId(string playerId);
     Task<bool> SetUserReqLock(string key);
-    Task DelUserReqLock(string key);
+    Task<bool> DelUserReqLock(string key);
 }

@@ -40,7 +40,6 @@ public enum ErrorCode : UInt16
     AuthTokenMismatch = 2010,
     AuthTokenKeyNotFound = 2011,
     AuthTokenFailWrongKeyword = 2012,
-    AuthTokenFailSetNx = 2013,
     AccountIdMismatch = 2014,
     DuplicatedLogin = 2015,
     CreateUserFailInsert = 2016,
@@ -59,6 +58,8 @@ public enum ErrorCode : UInt16
     InitNewUserGameDataFailAttendance = 2029,
     InvalidAppVersion = 2030,
     InvalidDataVersion = 2031,
+    AuthTokenFailSetNx = 2032,
+    AuthTokenFailDelNx = 2033,
 
     // Match Error 2050
     UpdateStartGameDataFailException = 2050,

@@ -86,7 +86,17 @@ public class CheckUserAuth
         //=> 수정 완료했습니다.
         await _next(context);
 
-        await _memoryDb.DelUserReqLock(userLockKey); // 락 해제
+        //await _memoryDb.DelUserReqLock(userLockKey); // 락 해제
+        var lockReleaseResult = await _memoryDb.DelUserReqLock(userLockKey);
+        if (!lockReleaseResult)
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var errorJsonResponse = JsonSerializer.Serialize(new MiddlewareResponse
+            {
+                Result = ErrorCode.AuthTokenFailDelNx
+            });
+            await context.Response.WriteAsync(errorJsonResponse);
+        }
     }
 
     class MiddlewareResponse
