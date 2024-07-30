@@ -60,6 +60,7 @@ public enum ErrorCode : UInt16
     InvalidDataVersion = 2031,
     AuthTokenFailSetNx = 2032,
     AuthTokenFailDelNx = 2033,
+    PlayerIdMismatch = 2034,
 
     // Match Error 2050
     UpdateStartGameDataFailException = 2050,
