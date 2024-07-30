@@ -44,7 +44,7 @@ public class LoginService : ILoginService
             return saveResult;
         }
 
-        var initializeResult = await InitializeUserData(playerId);
+        var initializeResult = await InitializePlayerData(playerId);
         if (initializeResult != ErrorCode.None)
         {
             await _memoryDb.DeletePlayerLoginInfo(playerId); 
@@ -96,7 +96,7 @@ public class LoginService : ILoginService
         }
         return ErrorCode.None;
     }
-    private async Task<ErrorCode> InitializeUserData(string playerId)
+    private async Task<ErrorCode> InitializePlayerData(string playerId)
     {
         var playerInfo = await _gameDb.GetPlayerInfoData(playerId);
         if (playerInfo == null)
