@@ -1,6 +1,6 @@
 # 시퀀스 다이어그램 (Register-Login)
 ## Register 
-### : 계정 생성
+### : 계정 생성 요청 /register
 
 ```mermaid
 sequenceDiagram
@@ -19,7 +19,7 @@ sequenceDiagram
 ```
 
 ## Login 
-### : 로그인
+### : 로그인 요청 /login
 ```mermaid
 sequenceDiagram
 	actor P as Player
