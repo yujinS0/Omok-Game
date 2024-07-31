@@ -6,6 +6,7 @@ using ServerShared;
 using SqlKata.Execution;
 using GameServer.DTO;
 using GameServer.Models;
+using GameServer.Repository.Interfaces;
 
 
 namespace GameServer.Repository;

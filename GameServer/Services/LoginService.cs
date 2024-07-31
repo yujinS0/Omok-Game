@@ -3,10 +3,10 @@ using System.Text.Json;
 using System.Text;
 using GameServer.DTO;
 using GameServer.Models;
-using GameServer.Repository;
 using GameServer.Services.Interfaces;
 using ServerShared;
 using StackExchange.Redis;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Services;
 
@@ -35,18 +35,17 @@ public class LoginService : ILoginService
             return result;
         }
 
-
-        var saveResult = await SavePlayerLoginInfoToMemoryDb(playerId, token, appVersion, dataVersion);
-        if (saveResult != ErrorCode.None)
-        {
-            return saveResult;
-        }
-
         var initializeResult = await InitializePlayerData(playerId);
         if (initializeResult != ErrorCode.None)
         {
-            await _memoryDb.DeletePlayerLoginInfo(playerId); 
+            await _memoryDb.DeletePlayerLoginInfo(playerId);
             return initializeResult;
+        }
+
+        var saveResult = await SavePlayerLoginInfoToMemoryDb(playerId, token, appVersion, dataVersion); // TODO 롤백 생각하기
+        if (saveResult != ErrorCode.None)
+        {
+            return saveResult;
         }
 
         _logger.LogInformation("Successfully authenticated user with token");
@@ -86,7 +85,13 @@ public class LoginService : ILoginService
 
     private async Task<ErrorCode> SavePlayerLoginInfoToMemoryDb(string playerId, string token, string appVersion, string dataVersion)
     {
-        var saveResult = await _memoryDb.SavePlayerLoginInfo(playerId, token, appVersion, dataVersion);
+        var playerUid = await _gameDb.GetPlayerUidByPlayerId(playerId);
+        if (playerUid == -1)
+        {
+            return ErrorCode.PlayerUidNotFound;
+        }
+
+        var saveResult = await _memoryDb.SavePlayerLoginInfo(playerId, playerUid, token, appVersion, dataVersion);
         if (!saveResult)
         {
             _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", playerId);
@@ -100,8 +105,8 @@ public class LoginService : ILoginService
         if (playerInfo == null)
         {
             _logger.LogInformation("First login detected, creating new player_info for hive_player_id: {PlayerId}", playerId);
-            playerInfo = await _gameDb.CreatePlayerInfoDataAndStartItems(playerId);
-            if (playerInfo == null)
+            var newPlayerInfo = await _gameDb.CreatePlayerInfoDataAndStartItems(playerId);
+            if (newPlayerInfo == null)
             {
                 _logger.LogError("Failed to create new player info for UserId: {UserId}", playerId);
                 return ErrorCode.CreatePlayerInfoDataAndStartItemsFail;

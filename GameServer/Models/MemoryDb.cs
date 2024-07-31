@@ -2,6 +2,7 @@
 
 public class PlayerLoginInfo
 {
+    public Int64 PlayerUid { get; set; }
     public string Token { get; set; }
     public string AppVersion { get; set; }
     public string DataVersion { get; set; }

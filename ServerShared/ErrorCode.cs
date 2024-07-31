@@ -167,13 +167,18 @@ public enum ErrorCode : UInt16
     GetGameDbConnectionFail = 4002,
     AddFirstItemsForPlayerFail = 4003,
     CreatePlayerInfoDataAndStartItemsFail = 4004,
+    GameDatabaseError = 4010,
 
     // PlayerInfo 4500 ~
     PlayerNotFound = 4501,
     UpdatePlayerNickNameFailed = 4502,
+    
+    PlayerUidNotFound = 4551,
+
 
     // Redis 4700 ~
     RedisException = 4701,
+    InValidPlayerUidError = 4710, 
 
     // MasterDb 5000 ~
     MasterDB_Fail_LoadData = 5001,
