@@ -30,7 +30,13 @@
                         <div>무승부: @draw</div>
                     </div>
                 </div>
-                <div class="main-content">
+                @if (OverlayContent != null)
+                {
+                    <div class="overlay-content">
+                        @OverlayContent
+                    </div>
+                }
+                <div class="main-content @(OverlayContent != null ? "with-overlay" : "")">
                     @Body
                 </div>
             </div>
@@ -48,10 +54,10 @@
         {
             <footer class="bottomappbar">
                 <div class="bottom-navbar">
-                    <button class="nav-button">우편함</button>
-                    <button class="nav-button">아이템</button>
-                    <button class="nav-button">출석부</button>
-                    <button class="nav-button">상점</button>
+                    <button class="nav-button" @onclick="ToggleMailbox">우편함</button>
+                    <button class="nav-button" @onclick="ToggleItems">아이템</button>
+                    <button class="nav-button" @onclick="ToggleAttendance">출석부</button>
+                    <button class="nav-button" @onclick="ToggleShop">상점</button>
                 </div>
             </footer>
         }
@@ -68,6 +74,7 @@
     private int win;
     private int lose;
     private int draw;
+    private RenderFragment? OverlayContent;
     private bool IsHomePage => Navigation.Uri.EndsWith("/");
     private bool IsRegisterPage => Navigation.Uri.EndsWith("/register");
     private string userId = string.Empty;
@@ -112,5 +119,49 @@
             await sessionStorage.SetItemAsync("sessionLose", lose);
             await sessionStorage.SetItemAsync("sessionDraw", draw);
         }
+    }
+
+    private void ToggleOverlayContent(RenderFragment? content)
+    {
+        if (OverlayContent == content)
+        {
+            OverlayContent = null;
+        }
+        else
+        {
+            OverlayContent = content;
+        }
+    }
+
+    private void ToggleMailbox()
+    {
+        ToggleOverlayContent(builder =>
+        {
+            builder.AddContent(0, "우편함 내용");
+        });
+    }
+
+    private void ToggleItems()
+    {
+        ToggleOverlayContent(builder =>
+        {
+            builder.AddContent(0, "아이템 내용");
+        });
+    }
+
+    private void ToggleAttendance()
+    {
+        ToggleOverlayContent(builder =>
+        {
+            builder.AddContent(0, "출석부 내용");
+        });
+    }
+
+    private void ToggleShop()
+    {
+        ToggleOverlayContent(builder =>
+        {
+            builder.AddContent(0, "상점 내용");
+        });
     }
 }

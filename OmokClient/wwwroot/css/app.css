@@ -258,3 +258,43 @@ a, .btn-link {
     .loading-progress-text:after {
         content: var(--blazor-load-percentage-text, "Loading");
     }
+
+.content-wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.overlay-content {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    width: 250px;
+    height: calc(80%); /* player-info와 같은 높이 */
+    padding: 20px;
+    margin-right: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /* 둥근 모서리 */
+    overflow-y: auto; /* 내용이 길어질 경우 스크롤 */
+}
+
+.main-content.with-overlay {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: calc(100% - 290px); /* 오버레이가 나타날 때 main-content의 가로 사이즈 줄이기 */
+}
+
+.player-info {
+    width: 250px;
+    height: calc(80%); /* 부모 요소의 % */
+    background-color: rgba(255, 255, 255, 0.8); /* 배경색 */
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /* 모서리 둥글게 */
+    overflow-y: auto;
+    flex-shrink: 0; /* 크기 고정 */
+    display: flex; /* Flexbox를 사용하여 자식 요소를 정렬 */
+    justify-content: center; /* 자식 요소를 가로로 중앙 정렬 */
+    align-items: center; /* 자식 요소를 세로로 중앙 정렬 */
+}
+
