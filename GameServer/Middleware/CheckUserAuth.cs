@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 using GameServer.Models;
-using GameServer.Repository;
 using System.Text.Json;
 using ServerShared;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Middleware;
 

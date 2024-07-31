@@ -1,7 +1,7 @@
 using GameServer.DTO;
 using GameServer.Models;
 
-namespace GameServer.Repository;
+namespace GameServer.Repository.Interfaces;
 
 public interface IGameDb : IDisposable
 {
@@ -10,4 +10,6 @@ public interface IGameDb : IDisposable
     Task UpdateGameResult(string winnerId, string loserId);
     Task<bool> UpdateNickName(string playerId, string newNickName);
     Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId);
+    Task<long> GetPlayerUidByPlayerId(string playerId);
+    Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize);
 }

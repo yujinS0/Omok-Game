@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using System.Threading.Tasks;
-using GameServer.Repository;
+using GameServer.Repository.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using ServerShared;

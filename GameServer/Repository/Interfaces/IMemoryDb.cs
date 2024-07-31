@@ -1,12 +1,13 @@
 using GameServer.DTO;
 using GameServer.Models;
 
-namespace GameServer.Repository;
+namespace GameServer.Repository.Interfaces;
 
 public interface IMemoryDb : IDisposable
 {
-    Task<bool> SavePlayerLoginInfo(string playerId, string token, string appVersion, string dataVersion);
+    Task<bool> SavePlayerLoginInfo(string playerId, Int64 playerUid, string token, string appVersion, string dataVersion);
     Task<bool> DeletePlayerLoginInfo(string playerId);
+    Task<Int64> GetPlayerUid(string playerId);
     Task<string> GetUserLoginToken(string playerId);
     Task<MatchResult> GetMatchResult(string key);
     Task<bool> StorePlayingUserInfo(string key, UserGameData playingUserInfo);
