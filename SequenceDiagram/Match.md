@@ -1,7 +1,7 @@
 # 시퀀스 다이어그램 (Match)
 ------------------------------
 ## Request Matching 
-### : 매칭 시작 요청 /RequestMatching
+### : 매칭 시작 요청 /requestMatching
 
 ```mermaid
 sequenceDiagram
@@ -26,7 +26,7 @@ sequenceDiagram
 ------------------------------
 
 ## Check Matching 
-### : 매칭 완료 여부 체크 (매칭 될 때까지 1초마다 요청) /CheckMatching
+### : 매칭 완료 여부 체크 (매칭 될 때까지 1초마다 요청) /checkMatching
 ```mermaid
 sequenceDiagram
 	actor P as Player
