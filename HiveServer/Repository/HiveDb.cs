@@ -53,9 +53,6 @@ namespace HiveServer.Repository
                     _logger.LogInformation($"Account successfully registered with ID: {id}.");
 
 
-                    //TODO: InitializeLoginToken 이름이 좀 애매합니다. 계정 생성 시 default로 만들어야하는 데이터 생성 이라는 뜻이면 좋겠습니다. or AuthToken용 데이터 생성이라고 하던지
-                    //=> 수정 완료했습니다! InitializeDefaultAuthToken
-                    // login_token 테이블에 "default AuthToken용 데이터" 삽입
                     var tokenResult = await InitializeDefaultAuthToken(hiveUserId, transaction);
                     if (tokenResult != ErrorCode.None)
                     {
@@ -63,8 +60,9 @@ namespace HiveServer.Repository
                         await transaction.RollbackAsync();
                         return tokenResult;
                     }
+
                     await transaction.CommitAsync();
-                    return ErrorCode.None; // Success
+                    return ErrorCode.None; 
                 }
                 catch (MySqlException ex)
                 {

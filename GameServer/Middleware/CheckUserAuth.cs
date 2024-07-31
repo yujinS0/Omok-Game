@@ -20,6 +20,7 @@ public class CheckUserAuth
         _logger = logger;
     }
 
+    //TODO: (07.31) 함수가 너무 길어서 가독성이 떨어집니다. 함수를 쪼개서 가독성을 높이세요.
     public async Task Invoke(HttpContext context)
     {
         //로그인, 회원가입 api는 토큰 검사를 하지 않는다.
@@ -91,8 +92,6 @@ public class CheckUserAuth
         }
 
 
-        //TODO: 버그. 락 옵션 해제를 여기서 하면 위에서 락 건 것을 바로 풀어버리게 됩니다
-        //=> 수정 완료했습니다.
         await _next(context);
 
         //await _memoryDb.DelUserReqLock(userLockKey); // 락 해제

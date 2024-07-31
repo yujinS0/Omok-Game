@@ -28,8 +28,6 @@ public class LoginService : ILoginService
     
     public async Task<ErrorCode> login(string playerId, string token, string appVersion, string dataVersion)
     {
-        //TODO: 버그. result을 평가하는 코드가 없습니다.
-        //=> 수정 완료했습니다.
         var result = await VerifyToken(playerId, token);
         if (result != ErrorCode.None)
         {

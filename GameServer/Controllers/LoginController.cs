@@ -32,8 +32,6 @@ public class LoginController : ControllerBase
 
             var result = await _loginService.login(request.PlayerId, request.Token, request.AppVersion, request.DataVersion);
 
-            //TODO: 로그인은 중요한 행동이니 로그인 성공 or 실패를 로그로 남기기 바랍니다.
-            //=> 수정 완료했습니다.
             if (result == ErrorCode.None)
             {
                 _logger.LogInformation("Login successful for PlayerId={PlayerId}", request.PlayerId);

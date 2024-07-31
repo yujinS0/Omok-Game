@@ -83,8 +83,7 @@ namespace GameServer.Repository
         {
             var key = KeyGenerator.PlayingUser(playerId);
             var userGameData = await GetPlayingUserInfo(key);
-            //TODO: 버그. userGameData가 null일 경우 처리 필요
-            //=> 수정 완료했습니다.
+            
             if (userGameData == null)
             {
                 _logger.LogWarning("No game room found for PlayerId: {PlayerId}", playerId);
@@ -211,8 +210,7 @@ namespace GameServer.Repository
             try
             {
                 var redisString = new RedisString<string>(_redisConn, key, RedisExpireTime.LockTime); // 30초 동안 락 설정
-                //TODO: 버그. SetAsync에서 When.NotExists 옵션을 사용해야합니다.
-                //=> 수정 완료했습니다.
+                
                 var result = await redisString.SetAsync(key, RedisExpireTime.LockTime, StackExchange.Redis.When.NotExists);
                 if (result)
                 {
