@@ -49,7 +49,9 @@ sequenceDiagram
 
 	alt 토큰 유효 O
 		opt 첫 로그인이면
-			G ->> GD : 유저 게임 데이터 생성
+			G ->> GD : "플레이어 기본 게임 데이터" 생성
+			GD -->> G : 
+			G ->> GD : "초기 아이템 데이터" 생성
 			GD -->> G :  
 		end
 
