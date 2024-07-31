@@ -1,11 +1,11 @@
 ﻿using GameServer.DTO;
-using GameServer.Repository;
 using ServerShared;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using GameServer.Services.Interfaces;
 using GameServer.Models;
 using StackExchange.Redis;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Services;
 

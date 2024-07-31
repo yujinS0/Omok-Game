@@ -3,10 +3,10 @@ using System.Text.Json;
 using System.Text;
 using GameServer.DTO;
 using GameServer.Models;
-using GameServer.Repository;
 using GameServer.Services.Interfaces;
 using ServerShared;
 using StackExchange.Redis;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Services;
 

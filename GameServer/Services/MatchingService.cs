@@ -1,6 +1,5 @@
 ﻿using GameServer;
 using GameServer.DTO;
-using GameServer.Repository;
 using GameServer.Models;
 using ServerShared;
 using GameServer.Services.Interfaces;
@@ -9,6 +8,7 @@ using GameServer.Services;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text;
+using GameServer.Repository.Interfaces;
 
 namespace MatchServer.Services;
 public class MatchingService : IMatchingService
