@@ -97,6 +97,10 @@ public class OmokGameData
         // 6. 이긴 사람 정보 저장 (초기값 0)
         rawData[index++] = (byte)OmokStone.None;
 
+        //// 멤버 변수 초기화
+        //_blackPlayer = blackPlayer;
+        //_whitePlayer = whitePlayer;
+
 
         // TODO StartGame 로직 분리 및 구현 추가하기
         //rawData = StartGame(rawData); // 임시 StartGame 처리까지 여기서 진행
@@ -170,6 +174,11 @@ public class OmokGameData
     }
     public void StartGame()
     {
+        //if (_blackPlayer == null || _whitePlayer == null)
+        //{
+        //    throw new InvalidOperationException("Players are not set.");
+        //}
+
         _turnPlayerStone = OmokStone.Black;
         _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         int turnIndex = BoardSizeSquare + 1 + _blackPlayer.Length + 1 + _whitePlayer.Length;
