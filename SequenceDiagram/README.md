@@ -21,5 +21,5 @@
 * Basic Player Data : 플레이어 기본 데이터 가져오는 요청  (닉네임, 레벨, 경험치, 승, 패, 무)
 * Update NickName : 닉네임 변경 요청
 
-## [Item](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Item.md)\
+## [Item](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Item.md)
 * PlayerItem : 플레이어의 아이템을 가져오는 요청
