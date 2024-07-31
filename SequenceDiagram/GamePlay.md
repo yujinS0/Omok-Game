@@ -2,11 +2,11 @@
 
 ------------------------------
 ## OmokGameData 
-### : 게임 데이터 가져오는 요청 (모든 플레이어)
+### : 게임 데이터 가져오는 요청 (모든 플레이어) /gamePlay/omok-game-data
 게임 데이터 = 오목 보드 정보 + 참가 플레이어 + 현재 턴 + 승자 등등
 
 
-#### 어떤 상태의 플레이어가 요청하는지?
+#### 요청하는 플레이어의 상태
 
 * 기본적으로 LoadGameStateAsync() 라는 함수에서 게임 오목판을 비롯한 게임 데이터를 로드하고 있다.
   + 게임 첫 시작 시 : OnInitializedAsync()
@@ -33,7 +33,7 @@ sequenceDiagram
 
 
 ## Put Omok
-### : 돌두기 (자기 차례 플레이어)
+### : 돌두기 (자기 차례 플레이어) /gamePlay/put-omok
 ```mermaid
 sequenceDiagram
 	actor P as 자기차례 Player
@@ -67,7 +67,7 @@ sequenceDiagram
 ------------------------------
 
 ## Giveup Put Omok 
-### : 돌두기 포기 요청 (자기 차례 플레이어)
+### : 돌두기 포기 요청 (자기 차례 플레이어) /gamePlay/giveup-put-omok
 ```mermaid
 sequenceDiagram
 	actor P as 자기차례 Player
@@ -93,7 +93,7 @@ sequenceDiagram
 ------------------------------
 
 ## Turn Checking 
-### : 현재 턴 상태 요청 (차례 대기 플레이어) 1초마다 요청
+### : 현재 턴 상태 요청 (차례 대기 플레이어) 1초마다 요청 /gamePlay/turn-checking
 
 ```mermaid
 sequenceDiagram
