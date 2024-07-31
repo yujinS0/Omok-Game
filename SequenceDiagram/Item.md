@@ -3,7 +3,7 @@
 ------------------------------
 
 ## PlayerItem
-### : 플레이어의 아이템 데이터 가져오는 요청
+### : 플레이어의 아이템 데이터 가져오는 요청 /player-item
 ```mermaid
 sequenceDiagram
 	actor Player
