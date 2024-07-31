@@ -100,16 +100,16 @@ INSERT INTO version (app_version, master_data_version) VALUES
 ### player_info 테이블
 
 ```sql
-  CREATE TABLE player_info (
-  player_uid INT AUTO_INCREMENT PRIMARY KEY,
-  hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-  nickname VARCHAR(100),
-  exp INT,
-  level INT,
-  win INT,
-  lose INT,
-  draw INT,
-  create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE player_info (
+	player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
+	hive_player_id VARCHAR(255) NOT NULL UNIQUE,
+	nickname VARCHAR(100),
+	exp INT,
+	level INT,
+	win INT,
+	lose INT,
+	draw INT,
+	create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -117,10 +117,10 @@ INSERT INTO version (app_version, master_data_version) VALUES
 
 ```sql
 CREATE TABLE IF NOT EXISTS player_item (
-	  player_item_uid Int AUTO_INCREMENT PRIMARY KEY,
-    player_uid INT NOT NULL COMMENT '플레이어 UID',
-    item_code INT NOT NULL COMMENT '아이템 ID',
-    item_cnt INT NOT NULL COMMENT '아이템 수'
+	player_item_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
+    	player_uid INT NOT NULL COMMENT '플레이어 UID',
+    	item_code INT NOT NULL COMMENT '아이템 ID',
+    	item_cnt INT NOT NULL COMMENT '아이템 수'
 );
 ```
 
@@ -129,14 +129,14 @@ CREATE TABLE IF NOT EXISTS player_item (
 
 ```sql
 CREATE TABLE mailbox (
-  mail_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  title VARCHAR(300) NOT NULL,
-  item_code INT NOT NULL,
-  item_cnt INT NOT NULL,
-  send_dt TIMESTAMP NOT NULL,
-  expire_dt TIMESTAMP NOT NULL,
-  receive_dt TIMESTAMP NULL,
-  receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
-  FOREIGN KEY (player_uid) REFERENCES player_info(player_uid)
+	mail_id BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	title VARCHAR(300) NOT NULL,
+	item_code INT NOT NULL,
+	item_cnt INT NOT NULL,
+	send_dt TIMESTAMP NOT NULL,
+	expire_dt TIMESTAMP NOT NULL,
+	receive_dt TIMESTAMP NULL,
+	receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
+	FOREIGN KEY (player_uid) REFERENCES player_info(player_uid)
 );
 ```
