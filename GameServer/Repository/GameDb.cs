@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using GameServer.Models;
 using GameServer.DTO;
 using ServerShared;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Repository;
 
@@ -63,7 +64,7 @@ public class GameDb : IGameDb
 
             newPlayerInfo.PlayerUid = insertId;
 
-            var addItemsResult = await AddFirstItemsForPlayer(newPlayerInfo.HivePlayerId, transaction);
+            var addItemsResult = await AddFirstItemsForPlayer(newPlayerInfo.PlayerUid, transaction);
             if (addItemsResult != ErrorCode.None)
             {
                 await transaction.RollbackAsync();
@@ -81,7 +82,7 @@ public class GameDb : IGameDb
         }
     }
 
-    private async Task<ErrorCode> AddFirstItemsForPlayer(string playerId, MySqlTransaction transaction)
+    private async Task<ErrorCode> AddFirstItemsForPlayer(long playerUid, MySqlTransaction transaction)
     {
         var firstItems = _masterDb.GetFirstItems();
 
@@ -91,18 +92,18 @@ public class GameDb : IGameDb
             {
                 await _queryFactory.Query("player_item").InsertAsync(new
                 {
-                    player_id = playerId,
+                    player_uid = playerUid, // player_id를 player_uid로 변경
                     item_code = item.ItemCode,
                     item_cnt = item.Count
                 }, transaction);
 
-                _logger.LogInformation($"Added item for player_id={playerId}: ItemCode={item.ItemCode}, Count={item.Count}");
+                _logger.LogInformation($"Added item for player_uid={playerUid}: ItemCode={item.ItemCode}, Count={item.Count}");
             }
             return ErrorCode.None;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding initial items for playerId: {PlayerId}", playerId);
+            _logger.LogError(ex, "Error adding initial items for playerUid: {PlayerUid}", playerUid);
             return ErrorCode.AddFirstItemsForPlayerFail;
         }
     }
@@ -219,6 +220,43 @@ public class GameDb : IGameDb
             _logger.LogError(ex, "An error occurred while getting player info summary for playerId: {PlayerId}", playerId);
             throw;
         }
+    }
+    public async Task<long> GetPlayerUidByPlayerId(string playerId)
+    {
+        try
+        {
+            var playerUid = await _queryFactory.Query("player_info")
+                                                 .Where("hive_player_id", playerId)
+                                                 .Select("player_uid")
+                                                 .FirstOrDefaultAsync<long>();
+            return playerUid;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving player UID for PlayerId: {PlayerId}", playerId);
+            return -1; // 오류코드 추가?
+        }
+    }
+
+    public async Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize)
+    {
+        int skip = (page - 1) * pageSize;
+
+        var rawItems = await _queryFactory.Query("player_item")
+                                      .Where("player_uid", playerUid)
+                                      .Select("player_item_code", "item_code", "item_cnt")
+                                      .Skip(skip)
+                                      .Limit(pageSize)
+                                      .GetAsync();
+
+        var items = rawItems.Select(item => new PlayerItem
+        {
+            PlayerItemCode = item.player_item_code,
+            ItemCode = item.item_code,
+            ItemCnt = item.item_cnt
+        }).ToList();
+
+        return items;
     }
 
 }

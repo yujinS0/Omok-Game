@@ -2,6 +2,7 @@ using GameServer.Repository;
 using GameServer.Services.Interfaces;
 using GameServer.Services;
 using MatchServer.Services;
+using GameServer.Repository.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
+builder.Services.AddScoped<IItemService, ItemService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory Ãß°¡
 
