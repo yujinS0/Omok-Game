@@ -3,7 +3,7 @@
 ------------------------------
 
 ## Basic Player Data
-### : 플레이어 기본 데이터 가져오는 요청 (닉네임, 레벨, 경험치, 승, 패, 무)
+### : 플레이어 기본 데이터 가져오는 요청 (닉네임, 레벨, 경험치, 승, 패, 무) /playerInfo/basic-player-data
 ```mermaid
 sequenceDiagram
 	actor Player
@@ -26,7 +26,7 @@ sequenceDiagram
 
 
 ## Update NickName
-### : 닉네임 변경 요청
+### : 닉네임 변경 요청 /playerInfo/update-nickname
 ```mermaid
 sequenceDiagram
 	actor Player
