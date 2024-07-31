@@ -118,7 +118,7 @@ CREATE TABLE player_info (
 ```sql
 CREATE TABLE IF NOT EXISTS player_item (
 	player_item_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
-    	player_uid INT NOT NULL COMMENT '플레이어 UID',
+    	player_uid BIGINT NOT NULL COMMENT '플레이어 UID',
     	item_code INT NOT NULL COMMENT '아이템 ID',
     	item_cnt INT NOT NULL COMMENT '아이템 수'
 );
