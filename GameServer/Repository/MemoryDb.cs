@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using GameServer.DTO;
 using GameServer.Models;
 using ServerShared;
+using GameServer.Repository.Interfaces;
 
 namespace GameServer.Repository
 {
@@ -21,11 +22,12 @@ namespace GameServer.Repository
             _redisConn = new RedisConnection(config);
         }
 
-        public async Task<bool> SavePlayerLoginInfo(string playerId, string token, string appVersion, string dataVersion)
+        public async Task<bool> SavePlayerLoginInfo(string playerId, Int64 playerUid, string token, string appVersion, string dataVersion)
         {
             var key = KeyGenerator.UserLogin(playerId);
             var playerLoginInfo = new PlayerLoginInfo
             {
+                PlayerUid = playerUid,
                 Token = token,
                 AppVersion = appVersion,
                 DataVersion = dataVersion
@@ -58,6 +60,24 @@ namespace GameServer.Repository
                 _logger.LogWarning("Failed to delete login info for UserId: {UserId}", playerId);
             }
             return result;
+        }
+
+        public async Task<Int64> GetPlayerUid(string playerId)
+        {
+            var key = KeyGenerator.UserLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var result = await redisString.GetAsync();
+
+            if (result.HasValue)
+            {
+                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                return result.Value.PlayerUid;
+            }
+            else
+            {
+                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                return -1;
+            }
         }
 
         public async Task<string> GetUserLoginToken(string playerId)
