@@ -3,6 +3,7 @@
 
 * [시퀀스 다이어그램](https://github.com/yujinS0/Omok-Game/tree/main/SequenceDiagram)
 * [데이터베이스 스키마](https://github.com/yujinS0/Omok-Game/blob/main/DB.md)
+* [MasterData(기획데이터)](https://github.com/yujinS0/Omok-Game/blob/main/MasterData.xlsx)
 
 # TODO-LIST
 앞으로의 개발 계획 및 진행상황 공유

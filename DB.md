@@ -1,23 +1,23 @@
 # HiveDB
 ### account 테이블
 ```sql
-  CREATE TABLE account (
-    account_uid INT AUTO_INCREMENT PRIMARY KEY,
-    hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-    hive_player_pw CHAR(64) NOT NULL,  -- SHA-256 해시 결과는 항상 64 길이의 문자열
-    create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    salt CHAR(64) NOT NULL
-  );
+CREATE TABLE account (
+  account_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
+  hive_user_id VARCHAR(255) NOT NULL UNIQUE,
+  hive_user_pw CHAR(64) NOT NULL,  -- SHA-256 해시 결과는 항상 64 길이의 문자열
+  create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  salt CHAR(64) NOT NULL
+);
 ```
 
 ### login_token 테이블
 ```sql
-  CREATE TABLE login_token (
-    hive_player_id VARCHAR(255) NOT NULL PRIMARY KEY,
+CREATE TABLE login_token (
+    hive_user_id VARCHAR(255) NOT NULL PRIMARY KEY,
     hive_token CHAR(64) NOT NULL,
     create_dt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     expires_dt DATETIME NOT NULL
-  );
+);
 ```
 
 
@@ -29,17 +29,28 @@
 
 ```sql
 CREATE TABLE player_info (
-	player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
-	hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-	nickname VARCHAR(100),
-	exp INT,
-	level INT,
-	win INT,
-	lose INT,
-	draw INT,
-	create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
+  player_id VARCHAR(255) NOT NULL UNIQUE,
+  nickname VARCHAR(255),
+  exp INT,
+  level INT,
+  win INT,
+  lose INT,
+  draw INT,
+  create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
+
+### player_money 테이블
+
+```sql
+CREATE TABLE player_money (
+  player_uid BIGINT NOT NULL PRIMARY KEY COMMENT '플레이어 UID',
+  game_money BIGINT,
+  diamond BIGINT
+);
+```
+
 
 ### player_item 테이블 
 
@@ -57,15 +68,16 @@ CREATE TABLE IF NOT EXISTS player_item (
 
 ```sql
 CREATE TABLE mailbox (
-	mail_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	title VARCHAR(300) NOT NULL,
-	item_code INT NOT NULL,
-	item_cnt INT NOT NULL,
-	send_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	expire_dt TIMESTAMP NOT NULL,
-	receive_dt TIMESTAMP NULL,
-	receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
-	FOREIGN KEY (player_uid) REFERENCES player_info(player_uid)
+  mail_id BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  title VARCHAR(150) NOT NULL,
+  content TEXT NOT NULL,
+  item_code INT NOT NULL,
+  item_cnt INT NOT NULL,
+  send_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  expire_dt TIMESTAMP NOT NULL,
+  receive_dt TIMESTAMP NULL,
+  receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
+  player_uid BIGINT NOT NULL
 );
 ```
 
@@ -105,10 +117,10 @@ CREATE TABLE mailbox (
 * 초기 데이터 (임시 수동 입력)
 ```sql
 INSERT INTO item (item_code, name, description) VALUES
-  (1, '돈', '게임 머니'),
-  (2, '실버', '실버(은) 보석'),
-  (3, '무르기 아이템', ''),
-  (4, '닉네임변경', '');
+(1, 'game_money', '게임 머니(인게임 재화)'),
+(2, 'diamond', '다이아몬드(유료 재화)'),
+(3, '무르기 아이템', '자신의 차례에 턴을 무를 수 있음'),
+(4, '닉네임변경', '기본 닉네임에서 변경할 수 있음');
 ```
 
 
