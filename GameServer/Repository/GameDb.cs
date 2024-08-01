@@ -42,7 +42,7 @@ public class GameDb : IGameDb
         {
             var newPlayerInfo = new PlayerInfo
             {
-                HivePlayerId = playerId,
+                PlayerId = playerId,
                 NickName = playerId,
                 Exp = 0,
                 Level = 1,
@@ -53,7 +53,7 @@ public class GameDb : IGameDb
 
             var insertId = await _queryFactory.Query("player_info").InsertGetIdAsync<int>(new
             {
-                hive_player_id = newPlayerInfo.HivePlayerId,
+                player_id = newPlayerInfo.PlayerId,
                 nickname = newPlayerInfo.NickName,
                 exp = newPlayerInfo.Exp,
                 level = newPlayerInfo.Level,
@@ -137,8 +137,8 @@ public class GameDb : IGameDb
         try
         {
             var result = await _queryFactory.Query("player_info")
-                .Where("hive_player_id", playerId)
-                .Select("hive_player_id", "nickname", "exp", "level", "win", "lose", "draw")
+                .Where("player_id", playerId)
+                .Select("player_id", "nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
             if (result == null)
@@ -149,7 +149,7 @@ public class GameDb : IGameDb
 
             var playerInfo = new PlayerInfo
             {
-                HivePlayerId = result.hive_player_id,
+                PlayerId = result.player_id,
                 NickName = result.nickname,
                 Exp = result.exp,
                 Level = result.level,
@@ -192,11 +192,11 @@ public class GameDb : IGameDb
         loserData.Exp += GameConstants.LoseExp;
 
         await _queryFactory.Query("player_info")
-            .Where("hive_player_id", winnerId)
+            .Where("player_id", winnerId)
             .UpdateAsync(new { win = winnerData.Win, exp = winnerData.Exp });
 
         await _queryFactory.Query("player_info")
-            .Where("hive_player_id", loserId)
+            .Where("player_id", loserId)
             .UpdateAsync(new { lose = loserData.Lose, exp = loserData.Exp });
 
         _logger.LogInformation("Updated game result. Winner: {WinnerId}, Wins: {Wins}, Exp: {WinnerExp}, Loser: {LoserId}, Losses: {Losses}, Exp: {LoserExp}",
@@ -206,7 +206,7 @@ public class GameDb : IGameDb
     public async Task<bool> UpdateNickName(string playerId, string newNickName)
     {
         var affectedRows = await _queryFactory.Query("player_info")
-            .Where("hive_player_id", playerId)
+            .Where("player_id", playerId)
             .UpdateAsync(new { nickname = newNickName });
 
         return affectedRows > 0;
@@ -219,7 +219,7 @@ public class GameDb : IGameDb
             //TODO: (08.01) 플레이어의 게임머니(돈)에 대한 정보는 어떻게 가져오나요?
             //=> 수정 완료했습니다. (게임머니의 경우 player_money 테이블에서 가져와서 PlayerBasicInfo 에 포함시키기)
             var playerInfoResult = await _queryFactory.Query("player_info")
-                .Where("hive_player_id", playerId)
+                .Where("player_id", playerId)
                 .Select("player_uid", "nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
@@ -268,7 +268,7 @@ public class GameDb : IGameDb
         try
         {
             var playerUid = await _queryFactory.Query("player_info")
-                                                 .Where("hive_player_id", playerId)
+                                                 .Where("player_id", playerId)
                                                  .Select("player_uid")
                                                  .FirstOrDefaultAsync<long>();
             return playerUid;

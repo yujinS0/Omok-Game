@@ -104,7 +104,7 @@ public class LoginService : ILoginService
         var playerInfo = await _gameDb.GetPlayerInfoData(playerId);
         if (playerInfo == null)
         {
-            _logger.LogInformation("First login detected, creating new player_info for hive_player_id: {PlayerId}", playerId);
+            _logger.LogInformation("First login detected, creating new player_info for player_id: {PlayerId}", playerId);
             var newPlayerInfo = await _gameDb.CreatePlayerInfoDataAndStartItems(playerId);
             if (newPlayerInfo == null)
             {
