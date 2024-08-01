@@ -59,6 +59,8 @@
     private int win;
     private int lose;
     private int draw;
+    private long gameMoney;
+    private long diamond;
 
     private async Task LoginUser()
     {
@@ -96,6 +98,8 @@
                     
                 }
                 await sessionStorage.SetItemAsync("sessionNickName", nickName);
+                await sessionStorage.SetItemAsync("sessionGameMoney", gameMoney);
+                await sessionStorage.SetItemAsync("sessionDiamond", diamond);
                 await sessionStorage.SetItemAsync("sessionExp", exp);
                 await sessionStorage.SetItemAsync("sessionLevel", level);
                 await sessionStorage.SetItemAsync("sessionWin", win);

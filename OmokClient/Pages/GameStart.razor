@@ -41,6 +41,8 @@
     private string sessionStorageId = string.Empty;
     private string newNickName = string.Empty;
     private string nickName = string.Empty;
+    private long gameMoney;
+    private long diamond;
     private int exp;
     private int level;
     private int win;
@@ -69,6 +71,8 @@
         userId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
         sessionStorageId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
         nickName = await sessionStorage.GetItemAsync<string>("sessionNickName") ?? string.Empty;
+        gameMoney = await sessionStorage.GetItemAsync<long>("sessionGameMoney");
+        diamond = await sessionStorage.GetItemAsync<long>("sessionDiamond");
         exp = await sessionStorage.GetItemAsync<int>("sessionExp");
         level = await sessionStorage.GetItemAsync<int>("sessionLevel");
         win = await sessionStorage.GetItemAsync<int>("sessionWin");

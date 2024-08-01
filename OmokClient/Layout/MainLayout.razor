@@ -23,6 +23,8 @@
                         <h3>플레이어 정보</h3>
                         <!-- Player Information Here -->
                         <div>닉네임: @nickName</div>
+                        <div>게임 머니: @gameMoney</div>
+                        <div>다이아몬드: @diamond</div>
                         <div>경험치: @exp</div>
                         <div>레벨: @level</div>
                         <div>승리: @win</div>
@@ -69,6 +71,8 @@
     private string username = string.Empty;
     private string sessionStorageId = string.Empty;
     private string nickName = string.Empty;
+    private long gameMoney;
+    private long diamond;
     private int exp;
     private int level;
     private int win;
@@ -83,6 +87,8 @@
     {
         sessionStorageId = await sessionStorage.GetItemAsync<string>("sessionUserId") ?? string.Empty;
         nickName = await sessionStorage.GetItemAsync<string>("sessionNickName") ?? string.Empty;
+        gameMoney = await sessionStorage.GetItemAsync<long>("sessionGameMoney");
+        diamond = await sessionStorage.GetItemAsync<long>("sessionDiamond");
         exp = await sessionStorage.GetItemAsync<int>("sessionExp");
         level = await sessionStorage.GetItemAsync<int>("sessionLevel");
         win = await sessionStorage.GetItemAsync<int>("sessionWin");
@@ -106,6 +112,8 @@
             if (characterInfo != null && characterInfo.Result == ErrorCode.None)
             {
                 nickName = characterInfo.PlayerBasicInfo.NickName;
+                gameMoney = characterInfo.PlayerBasicInfo.GameMoney;
+                diamond = characterInfo.PlayerBasicInfo.Diamond;
                 exp = characterInfo.PlayerBasicInfo.Exp;
                 level = characterInfo.PlayerBasicInfo.Level;
                 win = characterInfo.PlayerBasicInfo.Win;
@@ -113,6 +121,8 @@
                 draw = characterInfo.PlayerBasicInfo.Draw;
             }
             await sessionStorage.SetItemAsync("sessionNickName", nickName);
+            await sessionStorage.SetItemAsync("sessionGameMoney", gameMoney);
+            await sessionStorage.SetItemAsync("sessionDiamond", diamond);
             await sessionStorage.SetItemAsync("sessionExp", exp);
             await sessionStorage.SetItemAsync("sessionLevel", level);
             await sessionStorage.SetItemAsync("sessionWin", win);
