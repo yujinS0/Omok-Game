@@ -41,6 +41,17 @@ CREATE TABLE player_info (
 );
 ```
 
+### player_money 테이블
+
+```sql
+CREATE TABLE player_money (
+  player_uid BIGINT NOT NULL PRIMARY KEY COMMENT '플레이어 UID',
+  game_money BIGINT,
+  diamond BIGINT
+);
+```
+
+
 ### player_item 테이블 
 
 ```sql
