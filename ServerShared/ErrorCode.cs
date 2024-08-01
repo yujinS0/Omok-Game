@@ -121,6 +121,7 @@ public enum ErrorCode : UInt16
     UpdateGameResultFail = 2503,
     NotYourTurn = 2513,
     RequestTurnEnd = 2515,
+    ChangeTurnFailNotYourTurn = 2516,
     TurnChangedByTimeout = 2520,
 
     SetStoneFailException = 2531,

@@ -251,7 +251,7 @@ public class OmokGameData
         return count >= 5;
     }
 
-    public byte[] ChangeTurn(byte[] rawData, string playerId) 
+    public (ErrorCode errorCode, byte[] rawData) ChangeTurn(byte[] rawData, string playerId) 
     {
         Decoding(rawData);
 
@@ -259,9 +259,10 @@ public class OmokGameData
         string currentTurnPlayerName = GetCurrentTurnPlayerName();
         
         //TODO: 실패 시에 예외가 아닌 에러코드를 반환해주세요
+        //=> 수정 완료했습니다.
         if (currentTurnPlayerName != playerId)
         {
-            throw new InvalidOperationException("Not the player's turn.");
+            return (ErrorCode.ChangeTurnFailNotYourTurn, rawData);
         }
 
         bool isBlack = playerId == GetBlackPlayerName();
@@ -276,7 +277,7 @@ public class OmokGameData
         var turnTimeBytes = BitConverter.GetBytes(_turnTimeMilli);
         Array.Copy(turnTimeBytes, 0, rawData, turnIndex + 1, turnTimeBytes.Length);
 
-        return rawData;
+        return (ErrorCode.None, rawData);
     }
 
     void DecodingUserName()

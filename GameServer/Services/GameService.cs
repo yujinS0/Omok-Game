@@ -142,7 +142,6 @@ public class GameService : IGameService
         var gameRoomId = await _memoryDb.GetGameRoomId(playerId);
         if (gameRoomId == null)
         {
-            // Handle the error, e.g., return an appropriate error code or message
             return (ErrorCode.GameRoomNotFound, null);
         }
         var rawData = await _memoryDb.GetGameData(gameRoomId);
@@ -151,7 +150,11 @@ public class GameService : IGameService
 
         try
         {
-            var updatedRawData = omokGameData.ChangeTurn(rawData, playerId);
+            var (result, updatedRawData) = omokGameData.ChangeTurn(rawData, playerId);
+            if (result != ErrorCode.None)
+            {
+                return (result, null);
+            }
             await _memoryDb.UpdateGameData(gameRoomId, updatedRawData);
             _logger.LogInformation("Turn changed successfully for player {PlayerId}", playerId);
         }
