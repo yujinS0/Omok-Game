@@ -92,7 +92,8 @@ public class GameDb : IGameDb
             // 돈도 아이템 슬롯에 저장하나요?
             //=> 수정 완료했습니다
                 // 새롭게 player_money 테이블을 만들어 해당 부분에 저장하도록 코드를 수정했습니다.
-                // 이때 MasterData에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다.
+                // 이때 MasterData에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다. 
+                // (출석부 보상 처리를 위해 그렇게 결정했습니다)
             foreach (var item in firstItems)
             {
                 if (item.ItemCode == 1) // game_money
