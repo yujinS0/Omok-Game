@@ -38,18 +38,21 @@ public class ItemService : IItemService
             var itemCnts = new List<int>();
 
             //TODO: (08.01) items가 null인 경우에 문제가 없나요?
-            foreach (var item in items)
+            //=> 수정 완료했습니다.
+            if (items != null)
             {
-                playerItemCodes.Add(item.PlayerItemCode);
-                itemCodes.Add(item.ItemCode);
-                itemCnts.Add(item.ItemCnt);
+                foreach (var item in items)
+                {
+                    playerItemCodes.Add(item.PlayerItemCode);
+                    itemCodes.Add(item.ItemCode);
+                    itemCnts.Add(item.ItemCnt);
+                }
             }
 
             return (ErrorCode.None, playerItemCodes, itemCodes, itemCnts);
         }
         catch (Exception ex)
         {
-            // 예외 처리 및 로깅
             return (ErrorCode.GameDatabaseError, null, null, null);
         }
     }
