@@ -88,6 +88,8 @@ public class GameDb : IGameDb
 
         try
         {
+            //TODO: (08.01) 기본으로 주는 아이템에 돈이 있는 경우는 어디에 저장하나요?
+              // 돈도 아이템 슬롯에 저장하나요?
             foreach (var item in firstItems)
             {
                 await _queryFactory.Query("player_item").InsertAsync(new
@@ -192,6 +194,7 @@ public class GameDb : IGameDb
     {
         try
         {
+            //TODO: (08.01) 플레이어의 게임머니(돈)에 대한 정보는 어떻게 가져오나요?
             var result = await _queryFactory.Query("player_info")
                 .Where("hive_player_id", playerId)
                 .Select("nickname", "exp", "level", "win", "lose", "draw")

@@ -42,7 +42,7 @@ public class LoginService : ILoginService
             return initializeResult;
         }
 
-        var saveResult = await SavePlayerLoginInfoToMemoryDb(playerId, token, appVersion, dataVersion); // TODO 롤백 생각하기
+        var saveResult = await SavePlayerLoginInfoToMemoryDb(playerId, token, appVersion, dataVersion); 
         if (saveResult != ErrorCode.None)
         {
             return saveResult;

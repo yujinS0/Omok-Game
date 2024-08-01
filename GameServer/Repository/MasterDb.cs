@@ -28,17 +28,20 @@ public class MasterDb : IMasterDb
         _logger = logger;
         _dbConfig = dbConfig;
 
+        //TODO: (08.01) 여기에서 DB 객체를 만들 필요 없습니다. Load()에서 만들고 함수 종료 때 DB 연결을 끊어야 합니다.
         _connection = new MySqlConnection(_dbConfig.Value.MasterDBConnection);
         _connection.Open();
 
         _queryFactory = new QueryFactory(_connection, new MySqlCompiler());
 
+        //TODO: (08.01) 기획데이터 로딩이 실패하면 서버 실행이 중단되도록 해야합니다.
         var loadTask = Load();
         loadTask.Wait();
     }
 
     public void Dispose()
     {
+        //TODO: (08.01) 불필요한 코드입니다
         _connection?.Dispose();
     }
 
