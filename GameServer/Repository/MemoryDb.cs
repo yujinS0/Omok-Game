@@ -80,7 +80,7 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task<string> GetUserLoginToken(string playerId)
+        public async Task<string> GetLoginToken(string playerId)
         {
             var key = KeyGenerator.UserLogin(playerId);
             var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
@@ -98,6 +98,23 @@ namespace GameServer.Repository
             }
         }
 
+        public async Task<(Int64, string)> GetPlayerUidAndLoginToken(string playerId)
+        {
+            var key = KeyGenerator.UserLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var result = await redisString.GetAsync();
+
+            if (result.HasValue)
+            {
+                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                return (result.Value.PlayerUid , result.Value.Token);
+            }
+            else
+            {
+                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                return (-1, null);
+            }
+        }
 
         public async Task<string> GetGameRoomId(string playerId)
         {

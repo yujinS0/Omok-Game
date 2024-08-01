@@ -6,5 +6,5 @@ namespace GameServer.Services.Interfaces;
 
 public interface IItemService
 {
-    Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItem(string playerId, int itemPageNum);
+    Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItems(Int64 playerUid, int itemPageNum);
 }

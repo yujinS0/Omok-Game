@@ -24,19 +24,11 @@ public class ItemService : IItemService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItem(string playerId, int itemPageNum)
+    public async Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItems(Int64 playerUid, int itemPageNum)
     {
         //TODO: (08.01) 미들웨어에서 playerId를 로딩했으니 미들웨어에서 컨트룰러로 넘겨주도록 해야합니다.
-          // 그러면 아래처럼 또 redis에서 플레이어 데이터 가져올 필요가 없습니다.
-        // playerId로 MemoryDb에 있는 PlayerLoginInfo에서 PlayerUid 가져오기!
-        var playerUid = await _memoryDb.GetPlayerUid(playerId);
-        if(playerUid == -1)
-        {
-            return (ErrorCode.InValidPlayerUidError, null, null, null);
-        }
-        // 가져온 PlayerUid를 사용해서
-        // GameDb에 있는 GetPlayerItems(playerUid, itemPageNum, PageSize);로 가져오기
-
+        // 그러면 아래처럼 또 redis에서 플레이어 데이터 가져올 필요가 없습니다.
+        //=> 수정 완료했습니다.(미들웨어에서 HttpContext.Items에 저장하도록)
         try
         {
             var items = await _gameDb.GetPlayerItems(playerUid, itemPageNum, PageSize);

@@ -69,7 +69,7 @@ public class CheckUserAuth
             return;
         }
 
-        var redisToken = await _memoryDb.GetUserLoginToken(playerId);
+        var (playerUid, redisToken) = await _memoryDb.GetPlayerUidAndLoginToken(playerId);
 
         if (string.IsNullOrEmpty(redisToken))
         {
@@ -83,6 +83,8 @@ public class CheckUserAuth
             return;
         }
 
+        context.Items["PlayerUid"] = playerUid; // playerUid를 HttpContext.Items에 저장
+
         // 락 설정
         var userLockKey = KeyGenerator.UserLockKey(playerId);
         if (!await _memoryDb.SetUserReqLock(userLockKey))
@@ -91,10 +93,8 @@ public class CheckUserAuth
             return;
         }
 
-
         await _next(context);
 
-        //await _memoryDb.DelUserReqLock(userLockKey); // 락 해제
         var lockReleaseResult = await _memoryDb.DelUserReqLock(userLockKey);
         if (!lockReleaseResult)
         {
