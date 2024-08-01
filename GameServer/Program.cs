@@ -29,6 +29,7 @@ builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IMailService, MailService>();
 
 builder.Services.AddHttpClient(); // HttpClientFactory Ãß°¡
 

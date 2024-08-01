@@ -259,5 +259,48 @@ public class GameDb : IGameDb
         return items;
     }
 
+    public async Task<(List<int>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
+    {
+        var results = await _queryFactory.Query("mailbox")
+                                          .Where("player_uid", playerUid)
+                                          .Select("mail_id", "title", "item_code", "send_dt", "TIMESTAMPDIFF(SECOND, NOW(), expire_dt) as expiry_duration", "receive_yn")
+                                          .Skip(skip)
+                                          .Limit(pageSize)
+                                          .GetAsync();
+
+        var mailIds = new List<int>();
+        var titles = new List<string>();
+        var itemCodes = new List<int>();
+        var sendDates = new List<DateTime>();
+        var expiryDurations = new List<long>();
+        var receiveYns = new List<bool>();
+
+        foreach (var result in results)
+        {
+            mailIds.Add(result.mail_id);
+            titles.Add(result.title);
+            itemCodes.Add(result.item_code);
+            sendDates.Add(result.send_dt);
+            expiryDurations.Add(result.expiry_duration);
+            receiveYns.Add(result.receive_yn);
+        }
+
+        return (mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns);
+    }
+
+
+
+
+    public async Task<MailDetailResponse> GetMailDetail(long playerUid, int mailId)
+    {
+        var result = await _queryFactory.Query("mailbox")
+                                        .Where("player_uid", playerUid)
+                                        .Where("mail_id", mailId)
+                                        .Select("mail_id", "title", "content", "item_code", "item_cnt", "TIMESTAMPDIFF(SECOND, send_dt, expire_dt) as expiry_duration", "receive_yn")
+                                        .FirstOrDefaultAsync<MailDetailResponse>();
+
+        return result;
+    }
+
 }
 
