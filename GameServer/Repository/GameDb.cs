@@ -92,7 +92,7 @@ public class GameDb : IGameDb
             // 돈도 아이템 슬롯에 저장하나요?
             //=> 수정 완료했습니다
                 // 새롭게 player_money 테이블을 만들어 해당 부분에 저장하도록 코드를 수정했습니다.
-                // 이때 MasterData 에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다.
+                // 이때 MasterData에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다.
             foreach (var item in firstItems)
             {
                 if (item.ItemCode == 1) // game_money
@@ -217,25 +217,39 @@ public class GameDb : IGameDb
         try
         {
             //TODO: (08.01) 플레이어의 게임머니(돈)에 대한 정보는 어떻게 가져오나요?
-            var result = await _queryFactory.Query("player_info")
+            //=> 수정 완료했습니다. (게임머니의 경우 player_money 테이블에서 가져와서 PlayerBasicInfo 에 포함시키기)
+            var playerInfoResult = await _queryFactory.Query("player_info")
                 .Where("hive_player_id", playerId)
                 .Select("nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
-            if (result == null)
+            if (playerInfoResult == null)
             {
                 _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
                 return null;
             }
 
+            var playerMoneyResult = await _queryFactory.Query("player_money")
+            .Where("player_uid", playerInfoResult.player_uid)
+            .Select("game_money", "diamond")
+            .FirstOrDefaultAsync();
+
+            if (playerMoneyResult == null)
+            {
+                _logger.LogWarning("No money data found for playerId: {PlayerId}", playerId);
+                return null;
+            }
+
             var playerBasicInfo = new PlayerBasicInfo
             {
-                NickName = result.nickname,
-                Exp = result.exp,
-                Level = result.level,
-                Win = result.win,
-                Lose = result.lose,
-                Draw = result.draw
+                NickName = playerInfoResult.nickname,
+                GameMoney = playerMoneyResult.game_money,
+                Diamond = playerMoneyResult.diamond,
+                Exp = playerInfoResult.exp,
+                Level = playerInfoResult.level,
+                Win = playerInfoResult.win,
+                Lose = playerInfoResult.lose,
+                Draw = playerInfoResult.draw
             };
 
             return playerBasicInfo;
@@ -246,6 +260,7 @@ public class GameDb : IGameDb
             throw;
         }
     }
+
     public async Task<long> GetPlayerUidByPlayerId(string playerId)
     {
         try

@@ -22,6 +22,8 @@ public class PlayerBasicInfo
     public int Win { get; set; }
     public int Lose { get; set; }
     public int Draw { get; set; }
+    public long GameMoney { get; set; }
+    public long Diamond { get; set; }
 }
 
 public class UpdateNickNameRequest
