@@ -220,7 +220,7 @@ public class GameDb : IGameDb
             //=> 수정 완료했습니다. (게임머니의 경우 player_money 테이블에서 가져와서 PlayerBasicInfo 에 포함시키기)
             var playerInfoResult = await _queryFactory.Query("player_info")
                 .Where("hive_player_id", playerId)
-                .Select("nickname", "exp", "level", "win", "lose", "draw")
+                .Select("player_uid", "nickname", "exp", "level", "win", "lose", "draw")
                 .FirstOrDefaultAsync();
 
             if (playerInfoResult == null)
@@ -229,10 +229,12 @@ public class GameDb : IGameDb
                 return null;
             }
 
+            long playerUid = playerInfoResult.player_uid;
+
             var playerMoneyResult = await _queryFactory.Query("player_money")
-            .Where("player_uid", playerInfoResult.player_uid)
-            .Select("game_money", "diamond")
-            .FirstOrDefaultAsync();
+                .Where("player_uid", playerUid)
+                .Select("game_money", "diamond")
+                .FirstOrDefaultAsync();
 
             if (playerMoneyResult == null)
             {
