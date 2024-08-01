@@ -23,3 +23,8 @@
 
 ## [Item](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Item.md)
 * PlayerItem : 플레이어의 아이템을 가져오는 요청
+
+## [MailBox](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/MailBox.md)
+* Get Player MailBox : 플레이어의 우편함을 가져오는 요청
+* Add Mail: 플레이어의 우편함에 우편을 넣는 요청
+* Receive Mail : 플레이어가 자신의 우편함에서 우편을 수령하는 요청
