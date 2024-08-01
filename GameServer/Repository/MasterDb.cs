@@ -15,8 +15,6 @@ public class MasterDb : IMasterDb
 {
     readonly IOptions<DbConfig> _dbConfig;
     readonly ILogger<MasterDb> _logger;
-    private MySqlConnection _connection;
-    readonly QueryFactory _queryFactory;
 
     private GameServer.Models.Version _version { get; set; }
     private List<AttendanceReward> _attendanceRewardList { get; set; }
@@ -29,29 +27,37 @@ public class MasterDb : IMasterDb
         _dbConfig = dbConfig;
 
         //TODO: (08.01) 여기에서 DB 객체를 만들 필요 없습니다. Load()에서 만들고 함수 종료 때 DB 연결을 끊어야 합니다.
-        _connection = new MySqlConnection(_dbConfig.Value.MasterDBConnection);
-        _connection.Open();
-
-        _queryFactory = new QueryFactory(_connection, new MySqlCompiler());
+        //=> 수정 완료했습니다.
 
         //TODO: (08.01) 기획데이터 로딩이 실패하면 서버 실행이 중단되도록 해야합니다.
+        //=> 수정 완료했습니다.
         var loadTask = Load();
         loadTask.Wait();
-    }
 
-    public void Dispose()
-    {
-        //TODO: (08.01) 불필요한 코드입니다
-        _connection?.Dispose();
+        if (!loadTask.Result)
+        {
+            throw new InvalidOperationException("Failed to load master data from the database. Server is shutting down.");
+        }
     }
+    
+    //TODO: (08.01) 불필요한 코드입니다
+    //=> 수정 완료했습니다. 기존 Dispose() 삭제 후 Load() 메서드 끝부분에서 항상 close 하도록 수정했습니다!
+
 
     public async Task<bool> Load()
     {
+        MySqlConnection connection = null;
         try
         {
+            connection = new MySqlConnection(_dbConfig.Value.MasterDBConnection);
+            connection.Open();
+
+            var queryFactory = new QueryFactory(connection, new MySqlCompiler());
+
             // Load Version
-            var getVersionResult = await _queryFactory.Query("version").FirstOrDefaultAsync();
-            if (getVersionResult == null) {
+            var getVersionResult = await queryFactory.Query("version").FirstOrDefaultAsync();
+            if (getVersionResult == null)
+            {
                 _logger.LogWarning("No Version data found [MasterDb]");
                 return false;
             }
@@ -65,9 +71,8 @@ public class MasterDb : IMasterDb
 
             _logger.LogInformation($"Loaded version: AppVersion={_version.AppVersion}, MasterDataVersion={_version.MasterDataVersion}");
 
-
             // Load AttendanceReward
-            var attendanceRewardsResult = await _queryFactory.Query("attendance_reward").GetAsync();
+            var attendanceRewardsResult = await queryFactory.Query("attendance_reward").GetAsync();
             if (attendanceRewardsResult == null || !attendanceRewardsResult.Any())
             {
                 _logger.LogWarning("No AttendanceReward data found [MasterDb]");
@@ -88,7 +93,7 @@ public class MasterDb : IMasterDb
             }
 
             // Load Item
-            var itemsResult = await _queryFactory.Query("item").GetAsync();
+            var itemsResult = await queryFactory.Query("item").GetAsync();
             if (itemsResult == null || !itemsResult.Any())
             {
                 _logger.LogWarning("No Item data found [MasterDb]");
@@ -109,7 +114,7 @@ public class MasterDb : IMasterDb
             }
 
             // Load FirstItem
-            var firstItemsResult = await _queryFactory.Query("first_item").GetAsync();
+            var firstItemsResult = await queryFactory.Query("first_item").GetAsync();
             if (firstItemsResult == null || !firstItemsResult.Any())
             {
                 _logger.LogWarning("No FirstItem data found [MasterDb]");
@@ -132,6 +137,15 @@ public class MasterDb : IMasterDb
         {
             _logger.LogError(e, "[MasterDb.Load] Error loading data from database.");
             return false;
+        }
+        finally
+        {
+            // Load 메서드가 끝나면 항상 연결을 닫습니다.
+            if (connection != null)
+            {
+                await connection.CloseAsync();
+                await connection.DisposeAsync();
+            }
         }
 
         return true;
