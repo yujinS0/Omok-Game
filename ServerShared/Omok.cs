@@ -9,23 +9,6 @@ public enum OmokStone
     White
 }
 
-//1.오목 OmokGameData 초기값 설정
-// OmokGameData는 바이너리 배열 형태로 현재 게임 정보를 Redis에 저장하기 위한 것
-// 매칭 성사 시에 MakeRawData로 데이터를 생성한다
-// 데이터 구조 : 오목판 정보 + 흑돌 유저이름 + 백돌 유저이름 + 현재 턴(어떤 돌의 차례인지 1인지 2인지) + 턴 시간(최근 돌 두기 요청이 온 시간) + 이긴 사람 정보(없으면 0, 흑돌 이기면 1, 백돌 이기면 2)
-// 돌에 대해서 None이면 0, 흑돌이면 1, 백돌이면 2로 고정한다.
-// 초기 값 : 오목판은 모두 0, 현재 턴도 처음 생성 시에는 0, 턴 시간 초기값도 현재 데이터 생성한 시간 + 이긴 사람 정보 0
-
-
-// 2. 게임 시작 StartGame() 함수
-// StartGame() 함수가 호출된다면 
-// -> 초기값에서 현재 턴을 1(흑돌)로 바꾸고 턴시간을 해당 함수 호출 시점으로 바꾼다.
-
-
-// 3. 돌두기 SetStone() 함수
-// SetStone() 즉 돌두기 함수가 호출된다면
-// -> 초기값에서 오목판 정보를 입력받은 x, y값을 가지고 바꾸기. 현재턴을 다음 돌로 바꾸고 (isBlack이 True면 흑돌이라는 뜻이기 때문에 이제 백돌 차례라서 2로 바꾸기, False라면 1로 바꾸기), 턴시간도 현재 함수 호출 시간으로 바꾼다.
-
 public class OmokGameData
 {
     public const int BoardSize = 15;
@@ -53,8 +36,11 @@ public class OmokGameData
         return _rawData;
     }
 
-    public byte[] MakeRawData(string blackPlayer, string whitePlayer)  // rawDataSize를 따로 입력받는 것이 아니라 이름 길이에 따라 동적으로 변경하도록 수정했습니다.
+    public byte[] MakeRawData(string blackPlayer, string whitePlayer)
     {
+        _blackPlayer = blackPlayer;
+        _whitePlayer = whitePlayer;
+
         // 플레이어 이름의 길이를 동적으로 계산
         var blackPlayerBytes = Encoding.UTF8.GetBytes(blackPlayer);
         var whitePlayerBytes = Encoding.UTF8.GetBytes(whitePlayer);
@@ -97,16 +83,10 @@ public class OmokGameData
         // 6. 이긴 사람 정보 저장 (초기값 0)
         rawData[index++] = (byte)OmokStone.None;
 
-        //// 멤버 변수 초기화
-        //_blackPlayer = blackPlayer;
-        //_whitePlayer = whitePlayer;
-
-
-        // TODO StartGame 로직 분리 및 구현 추가하기
-        //rawData = StartGame(rawData); // 임시 StartGame 처리까지 여기서 진행
+        _rawData = rawData;
         StartGame();
 
-        return rawData;
+        return _rawData;
     }
 
     public OmokStone GetStoneAt(int x, int y) // 좌표의 돌 색
@@ -115,13 +95,13 @@ public class OmokGameData
         return (OmokStone)_rawData[index];
     }
 
-    public OmokStone GetCurrentTurn() // 현재 턴 정보 반환
+    public OmokStone GetCurrentTurn()
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length;
         return (OmokStone)_rawData[index];
     }
 
-    public string GetBlackPlayerName() // 흑돌 플레이어 이름
+    public string GetBlackPlayerName()
     {
         int index = BoardSizeSquare;
         int length = _rawData[index];
@@ -129,7 +109,7 @@ public class OmokGameData
         return Encoding.UTF8.GetString(_rawData, index, length);
     }
 
-    public string GetWhitePlayerName() // 백돌 플레이어 이름
+    public string GetWhitePlayerName()
     {
         int index = BoardSizeSquare;
         int blackPlayerNameLength = _rawData[index];
@@ -144,13 +124,13 @@ public class OmokGameData
         return GetCurrentTurn() == OmokStone.Black ? GetBlackPlayerName() : GetWhitePlayerName();
     }
 
-    public UInt64 GetTurnTime() // 현재 턴 시작 시각 반환
+    public UInt64 GetTurnTime()
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1;
         return BitConverter.ToUInt64(_rawData, index);
     }
 
-    public OmokStone GetWinnerStone() // 이긴 사람 정보 반환
+    public OmokStone GetWinnerStone()
     {
         int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1 + 8;
         return (OmokStone)_rawData[index];
@@ -174,10 +154,10 @@ public class OmokGameData
     }
     public void StartGame()
     {
-        //if (_blackPlayer == null || _whitePlayer == null)
-        //{
-        //    throw new InvalidOperationException("Players are not set.");
-        //}
+        if (_blackPlayer == null || _whitePlayer == null)
+        {
+            throw new InvalidOperationException("Players are not set.");
+        }
 
         _turnPlayerStone = OmokStone.Black;
         _turnTimeMilli = (UInt64)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
