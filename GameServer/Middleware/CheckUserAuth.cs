@@ -21,33 +21,73 @@ public class CheckUserAuth
     }
 
     //TODO: (07.31) 함수가 너무 길어서 가독성이 떨어집니다. 함수를 쪼개서 가독성을 높이세요.
+    //=> 수정 완료했습니다
     public async Task Invoke(HttpContext context)
     {
-        //로그인, 회원가입 api는 토큰 검사를 하지 않는다.
-        var formString = context.Request.Path.Value;
-        if (string.Compare(formString, "/login", StringComparison.OrdinalIgnoreCase) == 0 ||
-            string.Compare(formString, "/register", StringComparison.OrdinalIgnoreCase) == 0)
+        if (IsLoginOrRegisterRequest(context))
         {
-            // Call the next delegate/middleware in the pipeline
             await _next(context);
-
             return;
         }
 
-        // header에서 playerId & token 가져오기
-        if (!context.Request.Headers.TryGetValue("PlayerId", out var playerId) ||
-            !context.Request.Headers.TryGetValue("Token", out var token))
+        if (!TryGetHeaders(context, out var playerId, out var token))
         {
             await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.MissingHeader);
             return;
         }
 
-        // Body에서 PlayerId 가져오기
-        string bodyPlayerId = null;
+        string bodyPlayerId = await GetBodyPlayerId(context);
 
+        if (IsPlayerIdMismatch(playerId, bodyPlayerId))
+        {
+            await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.PlayerIdMismatch);
+            return;
+        }
+
+        var (playerUid, redisToken) = await _memoryDb.GetPlayerUidAndLoginToken(playerId);
+
+        if (!IsValidToken(token, redisToken))
+        {
+            await WriteErrorResponse(context, StatusCodes.Status401Unauthorized, ErrorCode.AuthTokenFailWrongAuthToken);
+            return;
+        }
+
+        context.Items["PlayerUid"] = playerUid; // HttpContext.Items에 저장
+
+        if (!await SetUserLock(context, playerId))
+        {
+            await WriteErrorResponse(context, StatusCodes.Status429TooManyRequests, ErrorCode.AuthTokenFailSetNx);
+            return;
+        }
+
+        await _next(context);
+
+        await ReleaseUserLock(context, playerId);
+    }
+
+    private bool IsLoginOrRegisterRequest(HttpContext context)
+    {
+        var formString = context.Request.Path.Value;
+        return string.Compare(formString, "/login", StringComparison.OrdinalIgnoreCase) == 0 ||
+               string.Compare(formString, "/register", StringComparison.OrdinalIgnoreCase) == 0;
+    }
+
+    private bool TryGetHeaders(HttpContext context, out string playerId, out string token)
+    {
+        bool hasPlayerId = context.Request.Headers.TryGetValue("PlayerId", out var playerIdHeader);
+        bool hasToken = context.Request.Headers.TryGetValue("Token", out var tokenHeader);
+
+        playerId = hasPlayerId ? playerIdHeader.ToString() : null;
+        token = hasToken ? tokenHeader.ToString() : null;
+
+        return hasPlayerId && hasToken;
+    }
+
+    private async Task<string> GetBodyPlayerId(HttpContext context)
+    {
         if (context.Request.ContentLength > 0 && context.Request.ContentType != null && context.Request.ContentType.Contains("application/json"))
         {
-            context.Request.EnableBuffering(); // Allow multiple reads of the body
+            context.Request.EnableBuffering();
             using (var reader = new StreamReader(context.Request.Body, leaveOpen: true))
             {
                 var body = await reader.ReadToEndAsync();
@@ -56,45 +96,36 @@ public class CheckUserAuth
                 var requestBody = JsonSerializer.Deserialize<JsonElement>(body);
                 if (requestBody.TryGetProperty("PlayerId", out var playerIdElement))
                 {
-                    bodyPlayerId = playerIdElement.GetString();
+                    return playerIdElement.GetString();
                 }
             }
         }
+        return null;
+    }
 
-        // Body의 PlayerId와 Header의 PlayerId가 일치하는지 확인
-        if (!string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != playerId)
-        {
-            Console.WriteLine($"Mismatch between Header PlayerId ({playerId}) and Body PlayerId ({bodyPlayerId})"); // 로그 추가
-            await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.PlayerIdMismatch);
-            return;
-        }
+    private bool IsPlayerIdMismatch(string headerPlayerId, string bodyPlayerId)
+    {
+        return !string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != headerPlayerId;
+    }
 
-        var (playerUid, redisToken) = await _memoryDb.GetPlayerUidAndLoginToken(playerId);
+    private bool IsValidToken(string token, string redisToken)
+    {
+        return !string.IsNullOrEmpty(redisToken) && token == redisToken;
+    }
 
-        if (string.IsNullOrEmpty(redisToken))
-        {
-            await WriteErrorResponse(context, StatusCodes.Status401Unauthorized, ErrorCode.AuthTokenKeyNotFound);
-            return;
-        }
-
-        if (token != redisToken)
-        {
-            await WriteErrorResponse(context, StatusCodes.Status401Unauthorized, ErrorCode.AuthTokenFailWrongAuthToken);
-            return;
-        }
-
-        context.Items["PlayerUid"] = playerUid; // playerUid를 HttpContext.Items에 저장
-
-        // 락 설정
+    private async Task<bool> SetUserLock(HttpContext context, string playerId)
+    {
         var userLockKey = KeyGenerator.UserLockKey(playerId);
         if (!await _memoryDb.SetUserReqLock(userLockKey))
         {
-            await WriteErrorResponse(context, StatusCodes.Status429TooManyRequests, ErrorCode.AuthTokenFailSetNx);
-            return;
+            return false;
         }
+        return true;
+    }
 
-        await _next(context);
-
+    private async Task ReleaseUserLock(HttpContext context, string playerId)
+    {
+        var userLockKey = KeyGenerator.UserLockKey(playerId);
         var lockReleaseResult = await _memoryDb.DelUserReqLock(userLockKey);
         if (!lockReleaseResult)
         {
