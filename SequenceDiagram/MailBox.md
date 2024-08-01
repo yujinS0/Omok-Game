@@ -10,13 +10,13 @@ sequenceDiagram
 	participant Game Server
   participant GameDB
 
-	Player ->> Game Server :  로드 요청 (with page number)
-	Game Server ->> GameDB : PlayerItem 가져오기
+	Player ->> Game Server : 우편함 로드 요청 (with page number)
+	Game Server ->> GameDB : MailBox 가져오기
 	GameDB -->> Game Server : 
 	alt 존재 X
 		Game Server -->> Player : 오류 응답
 	else 존재 O
-		Game Server -->> Player : PlayerItem 응답
+		Game Server -->> Player : MailBox 응답
 	end
 ```
 
@@ -29,18 +29,14 @@ sequenceDiagram
 ### : 플레이어의 우편함에 우편을 넣는 요청 /mail/add
 ```mermaid
 sequenceDiagram
-	actor Player
+	actor Admin
 	participant Game Server
-  participant GameDB
+  	participant GameDB
 
-	Player ->> Game Server : 아이템 로드 요청 (with page number)
-	Game Server ->> GameDB : PlayerItem 가져오기
+	Admin ->> Game Server : 우편 추가 요청
+	Game Server ->> GameDB : 우편 추가
 	GameDB -->> Game Server : 
-	alt 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : PlayerItem 응답
-	end
+	Game Server -->> Admin : 성공여부 응답
 ```
 
 
@@ -55,15 +51,19 @@ sequenceDiagram
 sequenceDiagram
 	actor Player
 	participant Game Server
-  participant GameDB
+  	participant GameDB
 
-	Player ->> Game Server : 아이템 로드 요청 (with page number)
-	Game Server ->> GameDB : PlayerItem 가져오기
+	Player ->> Game Server : 우편(아이템) 수령 요청
+	Game Server ->> GameDB : 우편함 우편 상태 조회
 	GameDB -->> Game Server : 
-	alt 존재 X
+	alt 수령 불가능 상태
 		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : PlayerItem 응답
+	else 수령 가능 상태
+		Game Server ->> GameDB : 수령 상태로 변경
+		GameDB ->> GameDB : 아이템 테이블에 추가
+		GameDB -->> Game Server : 
+		
+		Game Server -->> Player : 성공여부 응답
 	end
 ```
 
