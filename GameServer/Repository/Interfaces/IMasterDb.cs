@@ -2,7 +2,7 @@
 
 namespace GameServer.Repository.Interfaces;
 
-public interface IMasterDb : IDisposable
+public interface IMasterDb
 {
     Task<bool> Load();
     Models.Version GetVersion();
