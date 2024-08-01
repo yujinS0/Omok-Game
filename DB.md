@@ -1,4 +1,80 @@
+# HiveDB
+### account 테이블
+```sql
+  CREATE TABLE account (
+    account_uid INT AUTO_INCREMENT PRIMARY KEY,
+    hive_player_id VARCHAR(255) NOT NULL UNIQUE,
+    hive_player_pw CHAR(64) NOT NULL,  -- SHA-256 해시 결과는 항상 64 길이의 문자열
+    create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    salt CHAR(64) NOT NULL
+  );
+```
+
+### login_token 테이블
+```sql
+  CREATE TABLE login_token (
+    hive_player_id VARCHAR(255) NOT NULL PRIMARY KEY,
+    hive_token CHAR(64) NOT NULL,
+    create_dt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_dt DATETIME NOT NULL
+  );
+```
+
+
+---------------------------------------
+
+# GameDB
+
+### player_info 테이블
+
+```sql
+CREATE TABLE player_info (
+	player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
+	hive_player_id VARCHAR(255) NOT NULL UNIQUE,
+	nickname VARCHAR(100),
+	exp INT,
+	level INT,
+	win INT,
+	lose INT,
+	draw INT,
+	create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### player_item 테이블 
+
+```sql
+CREATE TABLE IF NOT EXISTS player_item (
+	player_item_code BIGINT AUTO_INCREMENT PRIMARY KEY,
+    	player_uid BIGINT NOT NULL COMMENT '플레이어 UID',
+    	item_code INT NOT NULL COMMENT '아이템 ID',
+    	item_cnt INT NOT NULL COMMENT '아이템 수'
+);
+```
+
+
+### mailbox 테이블
+
+```sql
+CREATE TABLE mailbox (
+	mail_id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+	title VARCHAR(300) NOT NULL,
+	item_code INT NOT NULL,
+	item_cnt INT NOT NULL,
+	send_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	expire_dt TIMESTAMP NOT NULL,
+	receive_dt TIMESTAMP NULL,
+	receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
+	FOREIGN KEY (player_uid) REFERENCES player_info(player_uid)
+);
+```
+
+--------------------
 # MasterData
+
+<details>
+<summary> MasterData 테이블 펼쳐서 확인하기 </summary>
+	
 ### attendance_reward 테이블
 ```sql
   CREATE TABLE IF NOT EXISTS attendance_reward (
@@ -67,76 +143,6 @@ INSERT INTO version (app_version, master_data_version) VALUES
   ('0.1.0', '0.1.0');
 ```
 
+</details>
 
 ---------------------------------------
-
-# HiveDB
-### account 테이블
-```sql
-  CREATE TABLE account (
-    account_uid INT AUTO_INCREMENT PRIMARY KEY,
-    hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-    hive_player_pw CHAR(64) NOT NULL,  -- SHA-256 해시 결과는 항상 64 길이의 문자열
-    create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    salt CHAR(64) NOT NULL
-  );
-```
-
-### login_token 테이블
-```sql
-  CREATE TABLE login_token (
-    hive_player_id VARCHAR(255) NOT NULL PRIMARY KEY,
-    hive_token CHAR(64) NOT NULL,
-    create_dt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    expires_dt DATETIME NOT NULL
-  );
-```
-
-
----------------------------------------
-
-# GameDB
-
-### player_info 테이블
-
-```sql
-CREATE TABLE player_info (
-	player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
-	hive_player_id VARCHAR(255) NOT NULL UNIQUE,
-	nickname VARCHAR(100),
-	exp INT,
-	level INT,
-	win INT,
-	lose INT,
-	draw INT,
-	create_dt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### player_item 테이블 
-
-```sql
-CREATE TABLE IF NOT EXISTS player_item (
-	player_item_code BIGINT AUTO_INCREMENT PRIMARY KEY,
-    	player_uid BIGINT NOT NULL COMMENT '플레이어 UID',
-    	item_code INT NOT NULL COMMENT '아이템 ID',
-    	item_cnt INT NOT NULL COMMENT '아이템 수'
-);
-```
-
-
-### mailbox 테이블
-
-```sql
-CREATE TABLE mailbox (
-	mail_id BIGINT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-	title VARCHAR(300) NOT NULL,
-	item_code INT NOT NULL,
-	item_cnt INT NOT NULL,
-	send_dt TIMESTAMP NOT NULL,
-	expire_dt TIMESTAMP NOT NULL,
-	receive_dt TIMESTAMP NULL,
-	receive_yn TINYINT NOT NULL DEFAULT 0 COMMENT '수령 유무',
-	FOREIGN KEY (player_uid) REFERENCES player_info(player_uid)
-);
-```
