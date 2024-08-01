@@ -26,6 +26,8 @@ public class ItemService : IItemService
 
     public async Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItem(string playerId, int itemPageNum)
     {
+        //TODO: (08.01) 미들웨어에서 playerId를 로딩했으니 미들웨어에서 컨트룰러로 넘겨주도록 해야합니다.
+          // 그러면 아래처럼 또 redis에서 플레이어 데이터 가져올 필요가 없습니다.
         // playerId로 MemoryDb에 있는 PlayerLoginInfo에서 PlayerUid 가져오기!
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if(playerUid == -1)
@@ -43,6 +45,7 @@ public class ItemService : IItemService
             var itemCodes = new List<int>();
             var itemCnts = new List<int>();
 
+            //TODO: (08.01) items가 null인 경우에 문제가 없나요?
             foreach (var item in items)
             {
                 playerItemCodes.Add(item.PlayerItemCode);
