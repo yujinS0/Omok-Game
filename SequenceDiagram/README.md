@@ -22,7 +22,7 @@
 * Update NickName : 닉네임 변경 요청
 
 ## [Item](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Item.md)
-* PlayerItem : 플레이어의 아이템을 가져오는 요청
+* Get Player Items : 플레이어의 아이템을 가져오는 요청
 
 ## [MailBox](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/MailBox.md)
 * Get Player MailBox : 플레이어의 우편함을 가져오는 요청
