@@ -89,15 +89,37 @@ public class GameDb : IGameDb
         try
         {
             //TODO: (08.01) 기본으로 주는 아이템에 돈이 있는 경우는 어디에 저장하나요?
-              // 돈도 아이템 슬롯에 저장하나요?
+            // 돈도 아이템 슬롯에 저장하나요?
+            //=> 수정 완료했습니다
+                // 새롭게 player_money 테이블을 만들어 해당 부분에 저장하도록 코드를 수정했습니다.
+                // 이때 MasterData 에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다.
             foreach (var item in firstItems)
             {
-                await _queryFactory.Query("player_item").InsertAsync(new
+                if (item.ItemCode == 1) // game_money
                 {
-                    player_uid = playerUid, // player_id를 player_uid로 변경
-                    item_code = item.ItemCode,
-                    item_cnt = item.Count
-                }, transaction);
+                    await _queryFactory.Query("player_money").InsertAsync(new
+                    {
+                        player_uid = playerUid,
+                        game_money = item.Count
+                    }, transaction);
+                }
+                else if (item.ItemCode == 2) // diamond
+                {
+                    await _queryFactory.Query("player_money").InsertAsync(new
+                    {
+                        player_uid = playerUid,
+                        diamond = item.Count
+                    }, transaction);
+                }
+                else
+                {
+                    await _queryFactory.Query("player_item").InsertAsync(new
+                    {
+                        player_uid = playerUid,
+                        item_code = item.ItemCode,
+                        item_cnt = item.Count
+                    }, transaction);
+                }
 
                 _logger.LogInformation($"Added item for player_uid={playerUid}: ItemCode={item.ItemCode}, Count={item.Count}");
             }
