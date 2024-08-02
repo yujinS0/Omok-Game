@@ -13,7 +13,7 @@ public interface IGameDb : IDisposable
     Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId);
     Task<long> GetPlayerUidByPlayerId(string playerId);
     Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize);
-    Task<(List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(long playerUid, int skip, int pageSize);
+    Task<(List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(long playerUid, int skip, int pageSize);
     Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId);
     Task UpdateMailReceiveStatus(long playerUid, Int64 mailId);
     Task AddPlayerItem(long playerUid, int itemCode, int itemCnt);

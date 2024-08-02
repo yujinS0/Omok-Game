@@ -18,7 +18,7 @@ public class MailBoxResponse
     public List<int> ItemCodes { get; set; }
     public List<DateTime> SendDates { get; set; }
     public List<long> ExpiryDurations { get; set; }
-    public List<bool> ReceiveYns { get; set; }
+    public List<int> ReceiveYns { get; set; }
 }
 
 public class ReadMailRequest
@@ -35,26 +35,37 @@ public class MailDetailResponse
     public string Content { get; set; }
     public Int64 ItemCode { get; set; }
     public int ItemCnt { get; set; }
-    public DateTime SendDate { get; set; }
-    public DateTime ExpireDate { get; set; }
+    public DateTime? SendDate { get; set; }
+    public DateTime? ExpireDate { get; set; }
     public DateTime? ReceiveDate { get; set; }
-    public bool ReceiveYn { get; set; }
+    public int ReceiveYn { get; set; }
 }
 public class ReceiveMailItemRequest
 {
     public string PlayerId { get; set; }
-    public int MailId { get; set; }
+    public Int64 MailId { get; set; }
+}
+
+public class ReceiveMailItemResponse
+{
+    public ErrorCode Result { get; set; }
+    public int? IsAlreadyReceived { get; set; }
+}
+
+public class DeleteMailResponse
+{
+    public ErrorCode Result { get; set; }
 }
 
 public class DeleteMailRequest
 {
     public string PlayerId { get; set; }
-    public int MailId { get; set; }
+    public Int64 MailId { get; set; }
 }
 
 public class MailDetail
 {
-    public int MailId { get; set; }
+    public Int64 MailId { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
     public int ItemCode { get; set; }
@@ -62,5 +73,5 @@ public class MailDetail
     public DateTime SendDate { get; set; }
     public DateTime ExpireDate { get; set; }
     public DateTime? ReceiveDate { get; set; }
-    public bool ReceiveYn { get; set; }
+    public int ReceiveYn { get; set; }
 }

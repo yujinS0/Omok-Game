@@ -25,7 +25,7 @@ public class MailService : IMailService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(string playerId, int pageNum)
+    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(string playerId, int pageNum)
     {
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
@@ -56,29 +56,29 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail);
     }
 
-    public async Task<ErrorCode> ReceiveMailItem(string playerId, Int64 mailId)
+    public async Task<(ErrorCode, int?)> ReceiveMailItem(string playerId, Int64 mailId)
     {
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
         {
-            return ErrorCode.InValidPlayerUidError;
+            return (ErrorCode.InValidPlayerUidError, null);
         }
 
         var (errorCode, mailDetail) = await ReadMail(playerId, mailId);
         if (errorCode != ErrorCode.None)
         {
-            return errorCode;
+            return (errorCode, null);
         }
 
-        if (mailDetail.ReceiveYn)
+        if (mailDetail.ReceiveYn == 1)
         {
-            return ErrorCode.MailItemAlreadyReceived;
+            return (ErrorCode.None, mailDetail.ReceiveYn);
         }
 
         await _gameDb.UpdateMailReceiveStatus(playerUid, mailId);
         await _gameDb.AddPlayerItem(playerUid, mailDetail.ItemCode, mailDetail.ItemCnt);
 
-        return ErrorCode.None;
+        return (ErrorCode.None, mailDetail.ReceiveYn);
     }
 
     public async Task<ErrorCode> DeleteMail(string playerId, Int64 mailId)

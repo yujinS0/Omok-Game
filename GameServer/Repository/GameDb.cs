@@ -302,7 +302,7 @@ public class GameDb : IGameDb
         return items;
     }
 
-    public async Task<(List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
+    public async Task<(List<long>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
     {
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
@@ -311,31 +311,37 @@ public class GameDb : IGameDb
                                           .Limit(pageSize)
                                           .GetAsync();
 
-        var mailIds = new List<Int64>();
+        var mailIds = new List<long>();
         var titles = new List<string>();
         var itemCodes = new List<int>();
         var sendDates = new List<DateTime>();
         var expiryDurations = new List<long>();
-        var receiveYns = new List<bool>();
+        var receiveYns = new List<int>();
 
         foreach (var result in results)
         {
-            mailIds.Add(result.mail_id);
-            titles.Add(result.title);
-            itemCodes.Add(result.item_code);
-            sendDates.Add(result.send_dt);
-            receiveYns.Add(result.receive_yn);
+            long mailId = Convert.ToInt64(result.mail_id);
+            string title = Convert.ToString(result.title);
+            int itemCode = Convert.ToInt32(result.item_code);
+            DateTime sendDate = Convert.ToDateTime(result.send_dt);
+            DateTime expireDate = Convert.ToDateTime(result.expire_dt);
+            int receiveYn = Convert.ToInt32(result.receive_yn);
+
+            mailIds.Add(mailId);
+            titles.Add(title);
+            itemCodes.Add(itemCode);
+            sendDates.Add(sendDate);
+            receiveYns.Add(receiveYn);
 
             // Calculate remaining hours
-            var expireDt = result.expire_dt;
-            var sendDt = result.send_dt;
-            var remainingTime = expireDt - sendDt;
-            var remainingTimeInHours = remainingTime.TotalHours;
+            var remainingTime = expireDate - sendDate;
+            var remainingTimeInHours = (long)remainingTime.TotalHours;
             expiryDurations.Add(remainingTimeInHours);
         }
 
         return (mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns);
     }
+
 
     public async Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId)
     {
@@ -389,6 +395,21 @@ public class GameDb : IGameDb
                            .Where("player_uid", playerUid)
                            .Where("mail_id", mailId)
                            .DeleteAsync();
+    }
+
+    public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt)
+    {
+        await _queryFactory.Query("mailbox").InsertAsync(new
+        {
+            player_uid = playerUid,
+            title = title,
+            content = content,
+            item_code = itemCode,
+            item_cnt = itemCnt,
+            send_dt = DateTime.Now,
+            expire_dt = expireDt,
+            receive_yn = 0
+        });
     }
 
 }

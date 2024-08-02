@@ -41,6 +41,23 @@ public class MailController : ControllerBase
     {
         var (errorCode, mailDetail) = await _mailService.ReadMail(request.PlayerId, request.MailId);
 
+        if(mailDetail == null)
+        {
+            return new MailDetailResponse
+            {
+                Result = errorCode,
+                MailId = -1,
+                Title = null,
+                Content = null,
+                ItemCode = -1,
+                ItemCnt = -1,
+                SendDate = null,
+                ExpireDate = null,
+                ReceiveDate = null,
+                ReceiveYn = -1
+            };
+        }
+
         return new MailDetailResponse
         {
             Result = errorCode,
@@ -57,16 +74,24 @@ public class MailController : ControllerBase
     }
 
     [HttpPost("receive-item")]
-    public async Task<ErrorCode> ReceiveMailItem([FromBody] ReceiveMailItemRequest request)
+    public async Task<ReceiveMailItemResponse> ReceiveMailItem([FromBody] ReceiveMailItemRequest request)
     {
-        var errorCode = await _mailService.ReceiveMailItem(request.PlayerId, request.MailId);
-        return errorCode;
+        var (result, isReceived) = await _mailService.ReceiveMailItem(request.PlayerId, request.MailId);
+
+        return new ReceiveMailItemResponse
+        {
+            Result = result,
+            IsAlreadyReceived = isReceived
+        };
     }
 
     [HttpPost("delete")]
-    public async Task<ErrorCode> DeleteMail([FromBody] DeleteMailRequest request)
+    public async Task<DeleteMailResponse> DeleteMail([FromBody] DeleteMailRequest request)
     {
-        var errorCode = await _mailService.DeleteMail(request.PlayerId, request.MailId);
-        return errorCode;
+        var result = await _mailService.DeleteMail(request.PlayerId, request.MailId);
+        return new DeleteMailResponse
+        {
+            Result = result
+        };
     }
 }
