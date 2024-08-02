@@ -1,9 +1,5 @@
 # 시퀀스 다이어그램 (MailBox)
-* Get Player MailBox : 플레이어의 우편함 리스트 받아오는 요청
-* Read Mail : 우편을 보는 요청
-* Receive Mail item : 우편에 있는 아이템 수령하는 요청
-* Delete Mail : 우편을 삭제하는 요청
-------------------------------
+
 
 ## 플레이어의 우편함 목록을 가져오는 요청
 ### : 플레이어의 우편함 리스트를 가져오는 요청 /mail/get-mailbox
