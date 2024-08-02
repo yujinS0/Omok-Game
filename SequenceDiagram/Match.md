@@ -1,6 +1,6 @@
 # 시퀀스 다이어그램 (Match)
 ------------------------------
-## Request Matching 
+## 매칭 시작 요청
 ### : 매칭 시작 요청 /requestMatching
 
 ```mermaid
@@ -10,7 +10,7 @@ sequenceDiagram
 	participant M as Match Server
 	participant R as Redis
 
-	P->>G: 매칭 시작 요청
+	P->>G: 매칭 시작 요청 (/requestMatching)
 	G->>M: 매칭 시작 요청
 	M->>M: 매칭 큐에 추가
 
@@ -25,7 +25,7 @@ sequenceDiagram
 
 ------------------------------
 
-## Check Matching 
+## 매칭 완료 여부 체크 (매칭 될 때까지 1초마다 요청)
 ### : 매칭 완료 여부 체크 (매칭 될 때까지 1초마다 요청) /checkMatching
 ```mermaid
 sequenceDiagram
@@ -45,7 +45,7 @@ sequenceDiagram
 			end
 	end
 
-	P->>G: 매칭 완료 여부 체크 요청
+	P->>G: 매칭 완료 여부 체크 요청 (/checkMatching)
 	G->>R: 매칭결과 존재하는지 확인
 	R-->>G: 
 	alt 매칭 결과 존재 O
