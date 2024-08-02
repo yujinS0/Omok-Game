@@ -41,8 +41,8 @@ sequenceDiagram
 		H -->> P : 하이브 로그인 실패 응답
 	end
 
-	P ->> G : ID와 토큰을 통해 게임 로그인 요청
-	G ->> H : 토큰 유효성 확인 요청
+	P ->> G : ID와 토큰을 통해 게임 로그인 요청 (/login)
+	G ->> H : 토큰 유효성 확인 요청 (/VerifyToken)
 	H ->> HD : ID와 토큰 정보 확인
 	HD -->> H :  
 	H -->> G : 토큰 유효 여부 응답

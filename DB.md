@@ -31,7 +31,7 @@ CREATE TABLE login_token (
 CREATE TABLE player_info (
   player_uid BIGINT AUTO_INCREMENT PRIMARY KEY,
   player_id VARCHAR(255) NOT NULL UNIQUE,
-  nickname VARCHAR(255),
+  nickname VARCHAR(27),
   exp INT,
   level INT,
   win INT,
