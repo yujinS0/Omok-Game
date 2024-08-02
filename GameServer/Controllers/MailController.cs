@@ -22,7 +22,7 @@ public class MailController : ControllerBase
     [HttpPost("get-mailbox")]
     public async Task<MailBoxResponse> GetPlayerMailBox([FromBody] GetPlayerMailBoxRequest request)
     {
-        var (errorCode, mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns) = await _mailService.GetPlayerMailBox(request.PlayerId, request.Page, request.PageSize);
+        var (errorCode, mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns) = await _mailService.GetPlayerMailBox(request.PlayerId, request.PageNum);
 
         return new MailBoxResponse
         {

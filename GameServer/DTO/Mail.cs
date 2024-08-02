@@ -7,8 +7,7 @@ namespace GameServer.DTO;
 public class GetPlayerMailBoxRequest
 {
     public string PlayerId { get; set; }
-    public int Page { get; set; }
-    public int PageSize { get; set; }
+    public int PageNum { get; set; }
 }
 
 public class MailBoxResponse

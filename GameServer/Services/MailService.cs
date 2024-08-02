@@ -24,7 +24,7 @@ public class MailService : IMailService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode, List<int>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(string playerId, int page, int pageSize)
+    public async Task<(ErrorCode, List<int>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(string playerId, int pageNum)
     {
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
@@ -32,8 +32,8 @@ public class MailService : IMailService
             return (ErrorCode.InValidPlayerUidError, null, null, null, null, null, null);
         }
 
-        int skip = (page - 1) * pageSize;
-        var (mailId, title, itemCode, sendDate, expriryDuration, receiveYns) = await _gameDb.GetPlayerMailBox(playerUid, skip, pageSize);
+        int skip = (pageNum - 1) * PageSize;
+        var (mailId, title, itemCode, sendDate, expriryDuration, receiveYns) = await _gameDb.GetPlayerMailBox(playerUid, skip, PageSize);
         
         return (ErrorCode.None, mailId, title, itemCode, sendDate, expriryDuration, receiveYns);
     }
