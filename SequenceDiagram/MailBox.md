@@ -5,7 +5,7 @@
 * Delete Mail : 우편을 삭제하는 요청
 ------------------------------
 
-## Get Player MailBox
+## 플레이어의 우편함 목록을 가져오는 요청
 ### : 플레이어의 우편함 리스트를 가져오는 요청 /mail/get-mailbox
 ```mermaid
 sequenceDiagram
@@ -23,7 +23,7 @@ sequenceDiagram
 
 ------------------------------
 
-## Read Mail
+## 플레이어가 우편함에서 우편을 열어보는 요청 (우편 내용 보기)
 ### : 플레이어가 자신의 우편함에서 우편을 읽는 요청 /mail/read
 ```mermaid
 sequenceDiagram
@@ -52,7 +52,7 @@ sequenceDiagram
 
 ------------------------------
 
-## Receive Mail item
+## 플레이어가 우편 속 아이템을 수령하는 요청
 ### : 플레이어가 우편 속 아이템을 수령하는 요청 /mail/receive-item
 ```mermaid
 sequenceDiagram
@@ -79,7 +79,7 @@ sequenceDiagram
 
 ------------------------------
 
-## Delete Mail
+## 플레이어가 우편을 삭제하는 요청
 ### : 플레이어가 우편을 삭제하는 요청 /mail/delete
 ```mermaid
 sequenceDiagram
