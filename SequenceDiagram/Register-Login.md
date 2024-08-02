@@ -1,5 +1,5 @@
 # 시퀀스 다이어그램 (Register-Login)
-## Register 
+## 계정 생성 요청
 ### : 계정 생성 요청 /register
 
 ```mermaid
@@ -8,7 +8,7 @@ sequenceDiagram
 	participant H as Hive Server
 	participant HD as HiveDB
 
-	P ->> H: 계정 생성 요청
+	P ->> H: 계정 생성 요청 (/register)
 	H ->> HD : 유저 정보 생성
 	HD -->> H : 
 	alt 계정 생성 성공
@@ -18,7 +18,7 @@ sequenceDiagram
 	end
 ```
 
-## Login 
+## 로그인 요청
 ### : 로그인 요청 /login
 ```mermaid
 sequenceDiagram
@@ -29,7 +29,7 @@ sequenceDiagram
 	participant GD as GameDB
 	participant R as Redis
 	
-	P ->> H: 하이브 로그인 요청
+	P ->> H: 하이브 로그인 요청 (/login)
   	H ->> HD : 회원 정보 요청
   	HD -->> H : 
 
