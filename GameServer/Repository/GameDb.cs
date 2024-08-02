@@ -43,7 +43,7 @@ public class GameDb : IGameDb
             var newPlayerInfo = new PlayerInfo
             {
                 PlayerId = playerId,
-                NickName = playerId,
+                NickName = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 27), // 초기 닉네임 랜덤 생성
                 Exp = 0,
                 Level = 1,
                 Win = 0,
