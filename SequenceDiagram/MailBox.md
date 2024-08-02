@@ -86,13 +86,8 @@ sequenceDiagram
 	Player ->> Game Server : 우편 삭제 요청(/mail/delete)
 	Game Server ->> GameDB : 우편 상태 조회
 	GameDB -->> Game Server :  
-	alt 보상 미수령 상태
-		Game Server ->> Player : 삭제 재확인
-		
-		Player -->> Game Server : 삭제 재요청
-		Game Server ->> GameDB : 삭제 요청
-		GameDB -->> Game Server: 
-		Game Server -->> Player : 삭제 완료 응답
+	alt 보상 미수령 상태 
+		Game Server -->> Player : 삭제 실패 에러코드 응답
 
 	else 보상 수령 상태
 		Game Server ->> GameDB : 삭제 요청
