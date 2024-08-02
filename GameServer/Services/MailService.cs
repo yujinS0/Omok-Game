@@ -25,9 +25,8 @@ public class MailService : IMailService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(string playerId, int pageNum)
+    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(Int64 playerUid, int pageNum)
     {
-        var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
         {
             return (ErrorCode.InValidPlayerUidError, null, null, null, null, null, null);
@@ -39,9 +38,8 @@ public class MailService : IMailService
         return (ErrorCode.None, mailId, title, itemCode, sendDate, expriryDuration, receiveYns);
     }
 
-    public async Task<(ErrorCode, MailDetail)> ReadMail(string playerId, Int64 mailId)
+    public async Task<(ErrorCode, MailDetail)> ReadMail(Int64 playerUid, Int64 mailId)
     {
-        var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
         {
             return (ErrorCode.InValidPlayerUidError, null);
@@ -56,15 +54,14 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail);
     }
 
-    public async Task<(ErrorCode, int?)> ReceiveMailItem(string playerId, Int64 mailId)
+    public async Task<(ErrorCode, int?)> ReceiveMailItem(Int64 playerUid, Int64 mailId)
     {
-        var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
         {
             return (ErrorCode.InValidPlayerUidError, null);
         }
 
-        var (errorCode, mailDetail) = await ReadMail(playerId, mailId);
+        var (errorCode, mailDetail) = await ReadMail(playerUid, mailId);
         if (errorCode != ErrorCode.None)
         {
             return (errorCode, null);
@@ -81,9 +78,8 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail.ReceiveYn);
     }
 
-    public async Task<ErrorCode> DeleteMail(string playerId, long mailId)
+    public async Task<ErrorCode> DeleteMail(Int64 playerUid, long mailId)
     {
-        var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
         {
             return ErrorCode.InValidPlayerUidError;
