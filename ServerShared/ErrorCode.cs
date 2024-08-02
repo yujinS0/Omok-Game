@@ -207,6 +207,7 @@ public enum ErrorCode : UInt16
     MailReceiveFailNotMailOwner = 8010,
     MailReceiveRewardsFailException = 8011,
     MailNotFound = 8020,
+    FailToDeleteMailItemNotReceived = 8021,
     FailToReadMailDetail = 8022,
 
     // Attendance

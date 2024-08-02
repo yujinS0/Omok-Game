@@ -81,7 +81,7 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail.ReceiveYn);
     }
 
-    public async Task<ErrorCode> DeleteMail(string playerId, Int64 mailId)
+    public async Task<ErrorCode> DeleteMail(string playerId, long mailId)
     {
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
@@ -89,14 +89,20 @@ public class MailService : IMailService
             return ErrorCode.InValidPlayerUidError;
         }
 
-        var (errorCode, mailDetail) = await ReadMail(playerId, mailId);
-        if (errorCode != ErrorCode.None)
+        var mailDetail = await _gameDb.GetMailDetail(playerUid, mailId);
+        if (mailDetail == null)
         {
-            return errorCode;
+            return ErrorCode.MailNotFound;
+        }
+
+        if (mailDetail.ReceiveYn == 0) // 보상 미수령 상태 확인
+        {
+            return ErrorCode.FailToDeleteMailItemNotReceived;
         }
 
         await _gameDb.DeleteMail(playerUid, mailId);
 
         return ErrorCode.None;
     }
+
 }
