@@ -306,7 +306,7 @@ public class GameDb : IGameDb
     {
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
-                                          .Select("mail_id", "title", "item_code", "send_dt", "TIMESTAMPDIFF(SECOND, NOW(), expire_dt) as expiry_duration", "receive_yn")
+                                          .Select("mail_id", "title", "item_code", "send_dt", "expire_dt", "receive_yn")
                                           .Skip(skip)
                                           .Limit(pageSize)
                                           .GetAsync();
@@ -324,8 +324,14 @@ public class GameDb : IGameDb
             titles.Add(result.title);
             itemCodes.Add(result.item_code);
             sendDates.Add(result.send_dt);
-            expiryDurations.Add(result.expiry_duration);
             receiveYns.Add(result.receive_yn);
+
+            // Calculate remaining hours
+            var expireDt = result.expire_dt;
+            var sendDt = result.send_dt;
+            var remainingTime = expireDt - sendDt;
+            var remainingTimeInHours = remainingTime.TotalHours;
+            expiryDurations.Add(remainingTimeInHours);
         }
 
         return (mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns);
