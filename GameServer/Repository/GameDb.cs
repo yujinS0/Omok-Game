@@ -302,7 +302,7 @@ public class GameDb : IGameDb
         return items;
     }
 
-    public async Task<(List<int>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
+    public async Task<(List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
     {
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
@@ -311,7 +311,7 @@ public class GameDb : IGameDb
                                           .Limit(pageSize)
                                           .GetAsync();
 
-        var mailIds = new List<int>();
+        var mailIds = new List<Int64>();
         var titles = new List<string>();
         var itemCodes = new List<int>();
         var sendDates = new List<DateTime>();
@@ -337,18 +337,58 @@ public class GameDb : IGameDb
         return (mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns);
     }
 
-
-
-
-    public async Task<MailDetailResponse> GetMailDetail(long playerUid, int mailId)
+    public async Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId)
     {
         var result = await _queryFactory.Query("mailbox")
-                                        .Where("player_uid", playerUid)
-                                        .Where("mail_id", mailId)
-                                        .Select("mail_id", "title", "content", "item_code", "item_cnt", "TIMESTAMPDIFF(SECOND, send_dt, expire_dt) as expiry_duration", "receive_yn")
-                                        .FirstOrDefaultAsync<MailDetailResponse>();
+                                    .Where("player_uid", playerUid)
+                                    .Where("mail_id", mailId)
+                                    .FirstOrDefaultAsync();
 
-        return result;
+        if (result == null)
+        {
+            return null;
+        }
+
+        var mailDetail = new MailDetail
+        {
+            MailId = result.mail_id,
+            Title = result.title,
+            Content = result.content,
+            ItemCode = result.item_code,
+            ItemCnt = result.item_cnt,
+            SendDate = result.send_dt,
+            ExpireDate = result.expire_dt,
+            ReceiveDate = result.receive_dt,
+            ReceiveYn = result.receive_yn
+        };
+
+        return mailDetail;
+    }
+
+    public async Task UpdateMailReceiveStatus(long playerUid, Int64 mailId)
+    {
+        await _queryFactory.Query("mailbox")
+                           .Where("player_uid", playerUid)
+                           .Where("mail_id", mailId)
+                           .UpdateAsync(new { receive_yn = true, receive_dt = DateTime.Now });
+    }
+
+    public async Task AddPlayerItem(long playerUid, int itemCode, int itemCnt)
+    {
+        await _queryFactory.Query("player_item").InsertAsync(new
+        {
+            player_uid = playerUid,
+            item_code = itemCode,
+            item_cnt = itemCnt
+        });
+    }
+
+    public async Task DeleteMail(long playerUid, Int64 mailId)
+    {
+        await _queryFactory.Query("mailbox")
+                           .Where("player_uid", playerUid)
+                           .Where("mail_id", mailId)
+                           .DeleteAsync();
     }
 
 }

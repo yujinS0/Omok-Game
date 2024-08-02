@@ -7,6 +7,7 @@ using GameServer.Services.Interfaces;
 using ServerShared;
 using StackExchange.Redis;
 using GameServer.Repository.Interfaces;
+using System;
 
 namespace GameServer.Services;
 
@@ -24,7 +25,7 @@ public class MailService : IMailService
         _memoryDb = memoryDb;
     }
 
-    public async Task<(ErrorCode, List<int>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(string playerId, int pageNum)
+    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<bool>)> GetPlayerMailBox(string playerId, int pageNum)
     {
         var playerUid = await _memoryDb.GetPlayerUid(playerId);
         if (playerUid == -1)
@@ -36,5 +37,66 @@ public class MailService : IMailService
         var (mailId, title, itemCode, sendDate, expriryDuration, receiveYns) = await _gameDb.GetPlayerMailBox(playerUid, skip, PageSize);
         
         return (ErrorCode.None, mailId, title, itemCode, sendDate, expriryDuration, receiveYns);
+    }
+
+    public async Task<(ErrorCode, MailDetail)> ReadMail(string playerId, Int64 mailId)
+    {
+        var playerUid = await _memoryDb.GetPlayerUid(playerId);
+        if (playerUid == -1)
+        {
+            return (ErrorCode.InValidPlayerUidError, null);
+        }
+
+        var mailDetail = await _gameDb.GetMailDetail(playerUid, mailId);
+        if (mailDetail == null)
+        {
+            return (ErrorCode.MailNotFound, null);
+        }
+
+        return (ErrorCode.None, mailDetail);
+    }
+
+    public async Task<ErrorCode> ReceiveMailItem(string playerId, Int64 mailId)
+    {
+        var playerUid = await _memoryDb.GetPlayerUid(playerId);
+        if (playerUid == -1)
+        {
+            return ErrorCode.InValidPlayerUidError;
+        }
+
+        var (errorCode, mailDetail) = await ReadMail(playerId, mailId);
+        if (errorCode != ErrorCode.None)
+        {
+            return errorCode;
+        }
+
+        if (mailDetail.ReceiveYn)
+        {
+            return ErrorCode.MailItemAlreadyReceived;
+        }
+
+        await _gameDb.UpdateMailReceiveStatus(playerUid, mailId);
+        await _gameDb.AddPlayerItem(playerUid, mailDetail.ItemCode, mailDetail.ItemCnt);
+
+        return ErrorCode.None;
+    }
+
+    public async Task<ErrorCode> DeleteMail(string playerId, Int64 mailId)
+    {
+        var playerUid = await _memoryDb.GetPlayerUid(playerId);
+        if (playerUid == -1)
+        {
+            return ErrorCode.InValidPlayerUidError;
+        }
+
+        var (errorCode, mailDetail) = await ReadMail(playerId, mailId);
+        if (errorCode != ErrorCode.None)
+        {
+            return errorCode;
+        }
+
+        await _gameDb.DeleteMail(playerUid, mailId);
+
+        return ErrorCode.None;
     }
 }

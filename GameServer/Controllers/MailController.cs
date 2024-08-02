@@ -35,4 +35,38 @@ public class MailController : ControllerBase
             ReceiveYns = receiveYns
         };
     }
+
+    [HttpPost("read")]
+    public async Task<MailDetailResponse> ReadPlayerMail([FromBody] ReadMailRequest request)
+    {
+        var (errorCode, mailDetail) = await _mailService.ReadMail(request.PlayerId, request.MailId);
+
+        return new MailDetailResponse
+        {
+            Result = errorCode,
+            MailId = mailDetail.MailId,
+            Title = mailDetail.Title,
+            Content = mailDetail.Content,
+            ItemCode = mailDetail.ItemCode,
+            ItemCnt = mailDetail.ItemCnt,
+            SendDate = mailDetail.SendDate,
+            ExpireDate = mailDetail.ExpireDate,
+            ReceiveDate = mailDetail.ReceiveDate,
+            ReceiveYn = mailDetail.ReceiveYn
+        };
+    }
+
+    [HttpPost("receive-item")]
+    public async Task<ErrorCode> ReceiveMailItem([FromBody] ReceiveMailItemRequest request)
+    {
+        var errorCode = await _mailService.ReceiveMailItem(request.PlayerId, request.MailId);
+        return errorCode;
+    }
+
+    [HttpPost("delete")]
+    public async Task<ErrorCode> DeleteMail([FromBody] DeleteMailRequest request)
+    {
+        var errorCode = await _mailService.DeleteMail(request.PlayerId, request.MailId);
+        return errorCode;
+    }
 }
