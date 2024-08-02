@@ -125,7 +125,7 @@ public class GameService : IGameService
         {
             //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
             //=> 수정중. try-catch로 기본 예외 처리
-            //=> + 메서드의 반환값을 통해 처리하기? Update 반환값 찾아보기 TODO SYJ
+            //=> + 메서드의 반환값을 통해 처리하기? Update 반환값 찾아보기 SYJ
             await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId); // GameDb에 결과 업데이트
         }
         catch (Exception ex)
@@ -173,6 +173,7 @@ public class GameService : IGameService
     }
 
     //TODO: (07.31) 코드를 함수로 나누어서 코드 가독성을 올려주시기 바랍니다.
+    //=> 수정 완료했습니다.
     public async Task<(ErrorCode, bool)> TurnChecking(string playerId)
     {
         var currentTurn = await GetCurrentTurn(playerId);
@@ -182,7 +183,19 @@ public class GameService : IGameService
             return (ErrorCode.GameTurnNotFound, false);
         }
 
+        var (errorCode, currentTurnPlayer) = await GetPlayerForCurrentTurn(currentTurn, playerId);
+        if (errorCode != ErrorCode.None)
+        {
+            return (errorCode, false);
+        }
+
+        return (ErrorCode.None, IsPlayerTurn(playerId, currentTurnPlayer));
+    }
+
+    private async Task<(ErrorCode, string)> GetPlayerForCurrentTurn(OmokStone currentTurn, string playerId)
+    {
         string currentTurnPlayer;
+
         if (currentTurn == OmokStone.Black)
         {
             currentTurnPlayer = await GetBlackPlayer(playerId);
@@ -193,22 +206,20 @@ public class GameService : IGameService
         }
         else
         {
-            return (ErrorCode.GameTurnPlayerNotFound, false);
+            return (ErrorCode.GameTurnPlayerNotFound, null);
         }
 
         if (string.IsNullOrEmpty(currentTurnPlayer))
         {
-            return (ErrorCode.GameTurnPlayerNotFound, false);
+            return (ErrorCode.GameTurnPlayerNotFound, null);
         }
 
-        if(currentTurnPlayer == playerId)
-        {
-            return (ErrorCode.None, true);
-        }
-        else
-        {
-            return (ErrorCode.None, false);
-        }
+        return (ErrorCode.None, currentTurnPlayer);
+    }
+
+    private bool IsPlayerTurn(string playerId, string currentTurnPlayer)
+    {
+        return currentTurnPlayer == playerId;
     }
 
     public async Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId)

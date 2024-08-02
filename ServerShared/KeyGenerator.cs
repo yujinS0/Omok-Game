@@ -22,7 +22,7 @@ public class KeyGenerator
 
     public static string GameRoomId()
     {
-        return Guid.NewGuid().ToString(); // [TODO] Ulid 확인 후, 바꾸기
+        return Guid.NewGuid().ToString(); // SYJ Ulid 확인 후, 바꾸기
     }
     public static string UserLockKey(string playerId)
     {
