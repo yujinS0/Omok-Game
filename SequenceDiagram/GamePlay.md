@@ -46,7 +46,7 @@ sequenceDiagram
   	G ->> R : GameRoomId로 GameData 가져오기
   	R -->> G: 
 
-	G ->> G : 자기 턴 맞는지 확인
+	G ->> G : 자기 턴 맞는지 확인 (ValidatePlayerTurn)
 	alt 내 차례 X
 		G-->>P: NotYourTurn 오류 응답
 	else 내 차례 o
