@@ -91,7 +91,8 @@ public class GameDb : IGameDb
             foreach (var item in firstItems)
             {
                 //TODO: (08.05) 매직넘버를 사용하면 안됩니다
-                if (item.ItemCode == 1) // game_money
+                //=> 수정 완료했습니다.
+                if (item.ItemCode == GameConstants.GameMoneyItemCode) // game_money
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
                     {
@@ -99,7 +100,7 @@ public class GameDb : IGameDb
                         game_money = item.Count
                     }, transaction);
                 }
-                else if (item.ItemCode == 2) // diamond
+                else if (item.ItemCode == GameConstants.DiamondItemCode) // diamond
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
                     {
@@ -165,7 +166,7 @@ public class GameDb : IGameDb
         }
     }
 
-    public async Task UpdateGameResult(string winnerId, string loserId) // SYJ 로직 분리하기? CheckForWinner
+    public async Task<bool> UpdateGameResult(string winnerId, string loserId, int WinExp, int LoseExp)
     {
         var winnerData = await GetPlayerInfoData(winnerId);
         var loserData = await GetPlayerInfoData(loserId);
@@ -173,31 +174,53 @@ public class GameDb : IGameDb
         if (winnerData == null)
         {
             _logger.LogError("Winner data not found for PlayerId: {PlayerId}", winnerId);
-            return;
+            return false;
         }
 
         if (loserData == null)
         {
             _logger.LogError("Loser data not found for PlayerId: {PlayerId}", loserId);
-            return;
+            return false;
         }
 
-        winnerData.Win++;
-        winnerData.Exp += GameConstants.WinExp;
+        using (var transaction = await _connection.BeginTransactionAsync())
+        {
+            try
+            {
+                winnerData.Win++;
+                winnerData.Exp += GameConstants.WinExp;
 
-        loserData.Lose++;
-        loserData.Exp += GameConstants.LoseExp;
+                loserData.Lose++;
+                loserData.Exp += GameConstants.LoseExp;
 
-        await _queryFactory.Query("player_info")
-            .Where("player_id", winnerId)
-            .UpdateAsync(new { win = winnerData.Win, exp = winnerData.Exp });
+                var winnerUpdateResult = await _queryFactory.Query("player_info")
+                    .Where("player_id", winnerId)
+                    .UpdateAsync(new { win = winnerData.Win, exp = winnerData.Exp }, transaction);
 
-        await _queryFactory.Query("player_info")
-            .Where("player_id", loserId)
-            .UpdateAsync(new { lose = loserData.Lose, exp = loserData.Exp });
+                var loserUpdateResult = await _queryFactory.Query("player_info")
+                    .Where("player_id", loserId)
+                    .UpdateAsync(new { lose = loserData.Lose, exp = loserData.Exp }, transaction);
 
-        _logger.LogInformation("Updated game result. Winner: {WinnerId}, Wins: {Wins}, Exp: {WinnerExp}, Loser: {LoserId}, Losses: {Losses}, Exp: {LoserExp}",
-            winnerId, winnerData.Win, winnerData.Exp, loserId, loserData.Lose, loserData.Exp);
+                if (winnerUpdateResult == 0 || loserUpdateResult == 0)
+                {
+                    _logger.LogError("Database update failed for winner or loser. WinnerId: {WinnerId}, LoserId: {LoserId}", winnerId, loserId);
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+
+                _logger.LogInformation("Updated game result. Winner: {WinnerId}, Wins: {Wins}, Exp: {WinnerExp}, Loser: {LoserId}, Losses: {Losses}, Exp: {LoserExp}",
+                    winnerId, winnerData.Win, winnerData.Exp, loserId, loserData.Lose, loserData.Exp);
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while updating game result for winner: {WinnerId}, loser: {LoserId}", winnerId, loserId);
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
     }
 
     public async Task<bool> UpdateNickName(string playerId, string newNickName)
@@ -329,7 +352,6 @@ public class GameDb : IGameDb
             sendDates.Add(sendDate);
             receiveYns.Add(receiveYn);
 
-            // Calculate remaining hours
             var remainingTime = expireDate - sendDate;
             var remainingTimeInHours = (long)remainingTime.TotalHours;
             expiryDurations.Add(remainingTimeInHours);

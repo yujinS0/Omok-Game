@@ -100,8 +100,8 @@ public class GameService : IGameService
             return (ErrorCode.GameAlreadyEnd, null, null);
         }
 
-        string currentTurnPlayerName = omokGameData.GetCurrentTurnPlayerName();
-        if (playerId != currentTurnPlayerName)
+        string currentTurnPlayerId = omokGameData.GetCurrentTurnPlayerId();
+        if (playerId != currentTurnPlayerId)
         {
             _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", playerId);
             return (ErrorCode.NotYourTurn, null, null);
@@ -118,16 +118,20 @@ public class GameService : IGameService
             return (ErrorCode.None, null);
         }
 
-        var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerName() : omokGameData.GetWhitePlayerName();
-        var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerName() : omokGameData.GetBlackPlayerName();
+        var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerId() : omokGameData.GetWhitePlayerId();
+        var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerId() : omokGameData.GetBlackPlayerId();
 
         try
         {
             //TODO: (08.05) 아직 작업 중인가요?
+            //=> 수정 완료했습니다
             //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
-            //=> 수정중. try-catch로 기본 예외 처리
-            //=> + 메서드의 반환값을 통해 처리하기? Update 반환값 찾아보기 SYJ
-            await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId); // GameDb에 결과 업데이트
+            //=> 수정 완료했습니다! (GameDb.UpdateGameResult 함수)
+            var updateResult = await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId, GameConstants.WinExp, GameConstants.LoseExp);
+            if (!updateResult)
+            {
+                return (ErrorCode.UpdateGameResultFail, null);
+            }
         }
         catch (Exception ex)
         {
@@ -169,7 +173,7 @@ public class GameService : IGameService
         return (ErrorCode.None, new GameInfo
         {
             Board = gameData,
-            CurrentTurn = await GetCurrentTurn(playerId)
+            CurrentTurn = await GetCurrentTurnStone(playerId)
         });
     }
 
@@ -177,51 +181,24 @@ public class GameService : IGameService
     //=> 수정 완료했습니다.
     public async Task<(ErrorCode, bool)> TurnChecking(string playerId)
     {
-        var currentTurn = await GetCurrentTurn(playerId);
+        var currentTurnPlayerId = await GetCurrentTurnPlayerId(playerId);
 
-        if (currentTurn == OmokStone.None)
+        if (string.IsNullOrEmpty(currentTurnPlayerId))
         {
-            return (ErrorCode.GameTurnNotFound, false);
+            return (ErrorCode.GameTurnPlayerNotFound, false);
         }
 
-        //TODO: (08.05) 이름이 원하는 행동과 맞지 않습니다. playerId가 현재 턴을 가진 플레이어가 맞는지 체크하는 함수인데 이 함수의 이름은 플레이어 정보를 요청하네요
-        var (errorCode, currentTurnPlayer) = await GetPlayerForCurrentTurn(currentTurn, playerId);
-        if (errorCode != ErrorCode.None)
+        if (playerId == currentTurnPlayerId)
         {
-            return (errorCode, false);
-        }
-
-        return (ErrorCode.None, IsPlayerTurn(playerId, currentTurnPlayer));
-    }
-
-    private async Task<(ErrorCode, string)> GetPlayerForCurrentTurn(OmokStone currentTurn, string playerId)
-    {
-        string currentTurnPlayer;
-
-        if (currentTurn == OmokStone.Black)
-        {
-            currentTurnPlayer = await GetBlackPlayer(playerId);
-        }
-        else if (currentTurn == OmokStone.White)
-        {
-            currentTurnPlayer = await GetWhitePlayer(playerId);
+            return (ErrorCode.None, true);
         }
         else
         {
-            return (ErrorCode.GameTurnPlayerNotFound, null);
+            return (ErrorCode.None, false);
         }
 
-        if (string.IsNullOrEmpty(currentTurnPlayer))
-        {
-            return (ErrorCode.GameTurnPlayerNotFound, null);
-        }
-
-        return (ErrorCode.None, currentTurnPlayer);
-    }
-
-    private bool IsPlayerTurn(string playerId, string currentTurnPlayer)
-    {
-        return currentTurnPlayer == playerId;
+        //TODO: (08.05) 이름이 원하는 행동과 맞지 않습니다. playerId가 현재 턴을 가진 플레이어가 맞는지 체크하는 함수인데 이 함수의 이름은 플레이어 정보를 요청하네요
+        //=> 수정 완료했습니다. 이전에는 불필요한 함수 호출을 하고있던 것 같아, 좀 더 간결하게 바꿨습니다!
     }
 
     public async Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId)
@@ -263,19 +240,13 @@ public class GameService : IGameService
         return omokGameData;
     }
 
-    private async Task<string> GetBlackPlayer(string playerId)
+    private async Task<string> GetCurrentTurnPlayerId(string playerId)
     {
         var omokGameData = await GetGameData(playerId);
-        return omokGameData?.GetBlackPlayerName();
+        return omokGameData?.GetCurrentTurnPlayerId();
     }
 
-    private async Task<string> GetWhitePlayer(string playerId)
-    {
-        var omokGameData = await GetGameData(playerId);
-        return omokGameData?.GetWhitePlayerName();
-    }
-
-    private async Task<OmokStone> GetCurrentTurn(string playerId)
+    private async Task<OmokStone> GetCurrentTurnStone(string playerId)
     {
         var omokGameData = await GetGameData(playerId);
         return omokGameData?.GetCurrentTurn() ?? OmokStone.None;
