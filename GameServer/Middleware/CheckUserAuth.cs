@@ -33,46 +33,94 @@ public class CheckUserAuth
 
         // 플레이어 요청 lock 풀기
 
-
         if (IsLoginOrRegisterRequest(context))
         {
             await _next(context);
             return;
         }
-                
+
+        if (!await GetPlayerInfo(context))
+        {
+            return;
+        }
+
+        if (!await CheckAuthentication(context))
+        {
+            return;
+        }
+
+        if (!await SetUserLock(context))
+        {
+            return;
+        }
+
+        await _next(context);
+
+        await ReleaseUserLock(context);
+    }
+
+    private async Task<bool> GetPlayerInfo(HttpContext context)
+    {
         if (!TryGetHeaders(context, out var playerId, out var token))
         {
             await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.MissingHeader);
-            return;
+            return false;
         }
 
         string bodyPlayerId = await GetBodyPlayerId(context);
 
-        if (IsPlayerIdMismatch(playerId, bodyPlayerId))
+        if (!IsPlayerIdMatch(playerId, bodyPlayerId))
         {
             await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.PlayerIdMismatch);
-            return;
+            return false;
         }
+
+        context.Items["PlayerId"] = playerId;
+        context.Items["Token"] = token;
+        return true;
+    }
+
+    private async Task<bool> CheckAuthentication(HttpContext context)
+    {
+        var playerId = context.Items["PlayerId"] as string;
+        var token = context.Items["Token"] as string;
 
         var (playerUid, redisToken) = await _memoryDb.GetPlayerUidAndLoginToken(playerId);
 
         if (!IsValidToken(token, redisToken))
         {
             await WriteErrorResponse(context, StatusCodes.Status401Unauthorized, ErrorCode.AuthTokenFailWrongAuthToken);
-            return;
+            return false;
         }
 
-        context.Items["PlayerUid"] = playerUid; // HttpContext.Items에 저장
+        context.Items["PlayerUid"] = playerUid;
+        return true;
+    }
 
-        if (!await SetUserLock(context, playerId))
+    private async Task<bool> SetUserLock(HttpContext context)
+    {
+        var playerId = context.Items["PlayerId"] as string;
+
+        var userLockKey = KeyGenerator.UserLockKey(playerId);
+        if (!await _memoryDb.SetUserReqLock(userLockKey))
         {
             await WriteErrorResponse(context, StatusCodes.Status429TooManyRequests, ErrorCode.AuthTokenFailSetNx);
-            return;
+            return false;
         }
 
-        await _next(context);
+        return true;
+    }
 
-        await ReleaseUserLock(context, playerId);
+    private async Task ReleaseUserLock(HttpContext context)
+    {
+        var playerId = context.Items["PlayerId"] as string;
+
+        var userLockKey = KeyGenerator.UserLockKey(playerId);
+        var lockReleaseResult = await _memoryDb.DelUserReqLock(userLockKey);
+        if (!lockReleaseResult)
+        {
+            await WriteErrorResponse(context, StatusCodes.Status500InternalServerError, ErrorCode.AuthTokenFailDelNx);
+        }
     }
 
     private bool IsLoginOrRegisterRequest(HttpContext context)
@@ -113,9 +161,9 @@ public class CheckUserAuth
         return null;
     }
 
-    private bool IsPlayerIdMismatch(string headerPlayerId, string bodyPlayerId)
+    private bool IsPlayerIdMatch(string headerPlayerId, string bodyPlayerId)
     {
-        return !string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != headerPlayerId;
+        return string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != headerPlayerId;
     }
 
     private bool IsValidToken(string token, string redisToken)
