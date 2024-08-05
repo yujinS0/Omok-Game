@@ -88,14 +88,9 @@ public class GameDb : IGameDb
 
         try
         {
-            //TODO: (08.01) 기본으로 주는 아이템에 돈이 있는 경우는 어디에 저장하나요?
-            // 돈도 아이템 슬롯에 저장하나요?
-            //=> 수정 완료했습니다
-                // 새롭게 player_money 테이블을 만들어 해당 부분에 저장하도록 코드를 수정했습니다.
-                // 이때 MasterData에서는 ItemCode 1, 2가 각각 game_money와 diamond 입니다. 
-                // (출석부 보상 처리를 위해 그렇게 결정했습니다)
             foreach (var item in firstItems)
             {
+                //TODO: (08.05) 매직넘버를 사용하면 안됩니다
                 if (item.ItemCode == 1) // game_money
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
@@ -122,6 +117,7 @@ public class GameDb : IGameDb
                     }, transaction);
                 }
 
+                //TODO: (08.05) 아이템 넣다가 하나라도 실패가 발생하면 롤백해야 합니다.
                 _logger.LogInformation($"Added item for player_uid={playerUid}: ItemCode={item.ItemCode}, Count={item.Count}");
             }
             return ErrorCode.None;
@@ -217,8 +213,6 @@ public class GameDb : IGameDb
     {
         try
         {
-            //TODO: (08.01) 플레이어의 게임머니(돈)에 대한 정보는 어떻게 가져오나요?
-            //=> 수정 완료했습니다. (게임머니의 경우 player_money 테이블에서 가져와서 PlayerBasicInfo 에 포함시키기)
             var playerInfoResult = await _queryFactory.Query("player_info")
                 .Where("player_id", playerId)
                 .Select("player_uid", "nickname", "exp", "level", "win", "lose", "draw")
@@ -229,6 +223,7 @@ public class GameDb : IGameDb
                 _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
                 return null;
             }
+
 
             long playerUid = playerInfoResult.player_uid;
 
@@ -242,6 +237,7 @@ public class GameDb : IGameDb
                 _logger.LogWarning("No money data found for playerId: {PlayerId}", playerId);
                 return null;
             }
+
 
             var playerBasicInfo = new PlayerBasicInfo
             {

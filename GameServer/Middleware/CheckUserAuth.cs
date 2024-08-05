@@ -20,16 +20,26 @@ public class CheckUserAuth
         _logger = logger;
     }
 
-    //TODO: (07.31) 함수가 너무 길어서 가독성이 떨어집니다. 함수를 쪼개서 가독성을 높이세요.
-    //=> 수정 완료했습니다
     public async Task Invoke(HttpContext context)
     {
+        //TODO: (08.05) 아래 주석처럼 함수를 만드는 것이 가독성에 좋습니다(이름도 비슷하게)
+        // 함수를 단순한 기능별로 나누지 말고 컨텍스트별로 분리하세요
+
+        // 플레이어 정보 가져오기 (이 미들웨어를 사용하지 않는 것이라면 안가져옴)
+
+        // 인증 여부 확인
+
+        // 플레이어 요청 lock 걸기
+
+        // 플레이어 요청 lock 풀기
+
+
         if (IsLoginOrRegisterRequest(context))
         {
             await _next(context);
             return;
         }
-
+                
         if (!TryGetHeaders(context, out var playerId, out var token))
         {
             await WriteErrorResponse(context, StatusCodes.Status400BadRequest, ErrorCode.MissingHeader);

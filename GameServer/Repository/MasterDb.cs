@@ -26,11 +26,7 @@ public class MasterDb : IMasterDb
         _logger = logger;
         _dbConfig = dbConfig;
 
-        //TODO: (08.01) 여기에서 DB 객체를 만들 필요 없습니다. Load()에서 만들고 함수 종료 때 DB 연결을 끊어야 합니다.
-        //=> 수정 완료했습니다.
-
-        //TODO: (08.01) 기획데이터 로딩이 실패하면 서버 실행이 중단되도록 해야합니다.
-        //=> 수정 완료했습니다.
+        
         var loadTask = Load();
         loadTask.Wait();
 
@@ -39,13 +35,12 @@ public class MasterDb : IMasterDb
             throw new InvalidOperationException("Failed to load master data from the database. Server is shutting down.");
         }
     }
-    
-    //TODO: (08.01) 불필요한 코드입니다
-    //=> 수정 완료했습니다. 기존 Dispose() 삭제 후 Load() 메서드 끝부분에서 항상 close 하도록 수정했습니다!
-
+        
 
     public async Task<bool> Load()
     {
+        //TODO: (08.05) 함수가 너무 큽니다. 적절하게 분리해주세요
+
         MySqlConnection connection = null;
         try
         {
