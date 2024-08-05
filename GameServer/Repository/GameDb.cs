@@ -298,7 +298,7 @@ public class GameDb : IGameDb
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving player UID for PlayerId: {PlayerId}", playerId);
-            return -1; // 오류코드 추가?
+            return -1; 
         }
     }
 
