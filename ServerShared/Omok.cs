@@ -97,11 +97,11 @@ public class OmokGameData
 
     public OmokStone GetCurrentTurn()
     {
-        int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length;
+        int index = BoardSizeSquare + 1 + GetBlackPlayerId().Length + 1 + GetWhitePlayerId().Length;
         return (OmokStone)_rawData[index];
     }
 
-    public string GetBlackPlayerName()
+    public string GetBlackPlayerId()
     {
         int index = BoardSizeSquare;
         int length = _rawData[index];
@@ -109,30 +109,30 @@ public class OmokGameData
         return Encoding.UTF8.GetString(_rawData, index, length);
     }
 
-    public string GetWhitePlayerName()
+    public string GetWhitePlayerId()
     {
         int index = BoardSizeSquare;
-        int blackPlayerNameLength = _rawData[index];
-        index += 1 + blackPlayerNameLength;
-        int whitePlayerNameLength = _rawData[index];
+        int blackPlayerIdLength = _rawData[index];
+        index += 1 + blackPlayerIdLength;
+        int whitePlayerIdLength = _rawData[index];
         index += 1;
-        return Encoding.UTF8.GetString(_rawData, index, whitePlayerNameLength);
+        return Encoding.UTF8.GetString(_rawData, index, whitePlayerIdLength);
     }
 
-    public string GetCurrentTurnPlayerName()
+    public string GetCurrentTurnPlayerId()
     {
-        return GetCurrentTurn() == OmokStone.Black ? GetBlackPlayerName() : GetWhitePlayerName();
+        return GetCurrentTurn() == OmokStone.Black ? GetBlackPlayerId() : GetWhitePlayerId();
     }
 
     public UInt64 GetTurnTime()
     {
-        int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1;
+        int index = BoardSizeSquare + 1 + GetBlackPlayerId().Length + 1 + GetWhitePlayerId().Length + 1;
         return BitConverter.ToUInt64(_rawData, index);
     }
 
     public OmokStone GetWinnerStone()
     {
-        int index = BoardSizeSquare + 1 + GetBlackPlayerName().Length + 1 + GetWhitePlayerName().Length + 1 + 8;
+        int index = BoardSizeSquare + 1 + GetBlackPlayerId().Length + 1 + GetWhitePlayerId().Length + 1 + 8;
         return (OmokStone)_rawData[index];
     }
 
@@ -141,7 +141,7 @@ public class OmokGameData
         var winner = GetWinnerStone();
         if (winner == OmokStone.None)
             return null;
-        return winner == OmokStone.Black ? GetBlackPlayerName() : GetWhitePlayerName();
+        return winner == OmokStone.Black ? GetBlackPlayerId() : GetWhitePlayerId();
     }
 
     public void Decoding(byte[] rawData)
@@ -171,8 +171,8 @@ public class OmokGameData
     public void SetStone(string playerId, int x, int y)
     {
         // 현재 턴인 플레이어 이름 확인
-        string currentTurnPlayerName = GetCurrentTurnPlayerName();
-        if (currentTurnPlayerName != playerId)
+        string currentTurnPlayerId = GetCurrentTurnPlayerId();
+        if (currentTurnPlayerId != playerId)
         {
             throw new InvalidOperationException("Not the player's turn.");
         }
@@ -185,7 +185,7 @@ public class OmokGameData
         }
 
         // 돌 두기
-        bool isBlack = playerId == GetBlackPlayerName();
+        bool isBlack = playerId == GetBlackPlayerId();
         _rawData[index] = (byte)(isBlack ? OmokStone.Black : OmokStone.White);
 
         // 턴 변경
@@ -256,14 +256,14 @@ public class OmokGameData
         Decoding(rawData);
 
         // 현재 턴인 플레이어 이름 확인
-        string currentTurnPlayerName = GetCurrentTurnPlayerName();
+        string currentTurnPlayerId = GetCurrentTurnPlayerId();
         
-        if (currentTurnPlayerName != playerId)
+        if (currentTurnPlayerId != playerId)
         {
             return (ErrorCode.ChangeTurnFailNotYourTurn, rawData);
         }
 
-        bool isBlack = playerId == GetBlackPlayerName();
+        bool isBlack = playerId == GetBlackPlayerId();
 
         // 턴 변경
         _turnPlayerStone = isBlack ? OmokStone.White : OmokStone.Black;
@@ -282,14 +282,14 @@ public class OmokGameData
     {
         var index = BoardSizeSquare;
 
-        int blackPlayerNameLength = _rawData[index];
+        int blackPlayerIdLength = _rawData[index];
         index += 1;
-        _blackPlayer = Encoding.UTF8.GetString(_rawData, index, blackPlayerNameLength);
+        _blackPlayer = Encoding.UTF8.GetString(_rawData, index, blackPlayerIdLength);
 
-        index += blackPlayerNameLength;
-        int whitePlayerNameLength = _rawData[index];
+        index += blackPlayerIdLength;
+        int whitePlayerIdLength = _rawData[index];
         index += 1;
-        _whitePlayer = Encoding.UTF8.GetString(_rawData, index, whitePlayerNameLength);
+        _whitePlayer = Encoding.UTF8.GetString(_rawData, index, whitePlayerIdLength);
     }
 
     void DecodingTurnAndTime()
