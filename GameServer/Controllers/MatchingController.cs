@@ -8,22 +8,22 @@ using GameServer.DTO;
 using GameServer.Services.Interfaces;
 using ServerShared;
 
-namespace GameServer.Controllers.Matching;
+namespace GameServer.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class CheckMatchingController : ControllerBase
+public class MatchingController : ControllerBase
 {
-    private readonly ILogger<CheckMatchingController> _logger;
+    private readonly ILogger<MatchingController> _logger;
     private readonly IMatchingService _matchingService;
 
-    public CheckMatchingController(ILogger<CheckMatchingController> logger, IMatchingService matchingService)
+    public MatchingController(ILogger<MatchingController> logger, IMatchingService matchingService)
     {
         _logger = logger;
         _matchingService = matchingService;
     }
 
-    [HttpPost]
+    [HttpPost("check")]
     public async Task<MatchCompleteResponse> CheckAndInitializeMatch([FromBody] MatchRequest request)
     {
         var (result, matchResult) = await _matchingService.CheckAndInitializeMatch(request.PlayerId);
@@ -41,6 +41,16 @@ public class CheckMatchingController : ControllerBase
         {
             Result = result,
             Success = 1
+        };
+    }
+    [HttpPost("request")]
+    public async Task<MatchResponse> RequestMatching([FromBody] MatchRequest request)
+    {
+        var result = await _matchingService.RequestMatching(request.PlayerId);
+
+        return new MatchResponse
+        {
+            Result = result
         };
     }
 }
