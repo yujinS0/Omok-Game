@@ -13,6 +13,7 @@ public class Item
     public int ItemCode { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
+    public int Countable { get; set; }
 }
 public class FirstItem
 {

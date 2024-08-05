@@ -127,13 +127,14 @@ public class MasterDb : IMasterDb
         {
             ItemCode = it.item_code,
             Name = it.name,
-            Description = it.description
+            Description = it.description,
+            Countable = it.countable
         }).ToList();
 
         _logger.LogInformation("Loaded items:");
         foreach (var item in _itemList)
         {
-            _logger.LogInformation($"ItemCode={item.ItemCode}, Name={item.Name}, Description={item.Description}");
+            _logger.LogInformation($"ItemCode={item.ItemCode}, Name={item.Name}, Description={item.Description}, Countable={item.Countable}");
         }
         return true;
     }
