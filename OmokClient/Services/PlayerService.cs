@@ -58,8 +58,45 @@ public class PlayerService : BaseService
             return new UpdateNickNameResponse { Result = ErrorCode.InternalServerError };
         }
     }
+
+    public async Task<PlayerItemResponse> GetPlayerItemsAsync(string playerId, int pageNum)
+    {
+        var request = new PlayerItemRequest { PlayerId = playerId, ItemPageNum = pageNum };
+        var client = await CreateClientWithHeadersAsync("GameAPI");
+        var response = await client.PostAsJsonAsync("/item/get-list", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<PlayerItemResponse>();
+        }
+        else
+        {
+            return new PlayerItemResponse { Result = ErrorCode.InternalServerError };
+        }
+    }
+
 }
 
+// ItemDTO
+public class PlayerItemRequest
+{
+    public string PlayerId { get; set; }
+    public int ItemPageNum { get; set; }
+}
+
+public class PlayerItemResponse
+{
+    public ErrorCode Result { get; set; }
+    public List<long> PlayerItemCode { get; set; }
+    public List<int> ItemCode { get; set; }
+    public List<int> ItemCnt { get; set; }
+}
+public class PlayerItem
+{
+    public long PlayerItemCode { get; set; }
+    public int ItemCode { get; set; }
+    public int ItemCnt { get; set; }
+}
 
 // Player DTO
 public class PlayerBasicInfoRequest

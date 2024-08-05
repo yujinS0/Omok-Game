@@ -20,7 +20,7 @@ public class MatchingService : BaseService
         var matchRequest = new MatchRequest { PlayerID = playerId };
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("RequestMatching", matchRequest);
+        var response = await gameClient.PostAsJsonAsync("matching/request", matchRequest);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<MatchResponse>();
@@ -33,7 +33,7 @@ public class MatchingService : BaseService
         var checkRequest = new MatchRequest { PlayerID = playerId };
         var gameClient = await CreateClientWithHeadersAsync("GameAPI");
 
-        var response = await gameClient.PostAsJsonAsync("CheckMatching", checkRequest);
+        var response = await gameClient.PostAsJsonAsync("matching/check", checkRequest);
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<MatchResponse>();
