@@ -22,6 +22,7 @@ public class MailController : ControllerBase
     [HttpPost("get-mailbox")]
     public async Task<MailBoxResponse> GetPlayerMailBox([FromBody] GetPlayerMailBoxRequest request)
     {
+        //TODO: (08.05) 미들웨어를 통과했으면 PlayerUid는 무조건 있다고 가정하죠.
         if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
         {
             var (errorCode, mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns) = await _mailService.GetPlayerMailBox(playerUid, request.PageNum);

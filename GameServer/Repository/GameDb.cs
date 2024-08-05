@@ -300,6 +300,11 @@ public class GameDb : IGameDb
 
     public async Task<(List<long>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(long playerUid, int skip, int pageSize)
     {
+        //TODO: (08.05) 우편 제목은 있는데 우편 내용은 없네요... 
+        //TODO: (08.05) 우편 보낸날짜로 정렬되나요? 
+        //TODO: (08.05) 우편 리스트를 보여주는 것인데 너무 많은 우편 정보를 보여주는 것 같습니다.
+        // 전제 조건으로 스케쥴러가 매일 특정 시간에 유효기간이 지난 메일은 삭제했다고 하시죠
+        // expire_dt 확인을 하지 않아도 됩니다.
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
                                           .Select("mail_id", "title", "item_code", "send_dt", "expire_dt", "receive_yn")
@@ -341,6 +346,8 @@ public class GameDb : IGameDb
 
     public async Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId)
     {
+        //TODO: (08.05) 여기서 주는 것과 우편함 리스트에서 받는 것과 별로 내용 차이가 없네요
+        // 본문을 여기에서 읽어야겠죠
         var result = await _queryFactory.Query("mailbox")
                                     .Where("player_uid", playerUid)
                                     .Where("mail_id", mailId)
@@ -377,6 +384,9 @@ public class GameDb : IGameDb
 
     public async Task AddPlayerItem(long playerUid, int itemCode, int itemCnt)
     {
+        //TODO: (08.05) 아이템으로 돈과 다이아몬드가 있을 수 있습니다
+        // 그리고 겹칠 수 있는 아이템이라면 겹쳐야 합니다
+
         await _queryFactory.Query("player_item").InsertAsync(new
         {
             player_uid = playerUid,
@@ -387,11 +397,13 @@ public class GameDb : IGameDb
 
     public async Task DeleteMail(long playerUid, Int64 mailId)
     {
+        //TODO: (08.05) mail_id가 유니크하므로 이것만 검색하면 됩니다
         await _queryFactory.Query("mailbox")
                            .Where("player_uid", playerUid)
                            .Where("mail_id", mailId)
                            .DeleteAsync();
     }
+
 
     public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt)
     {
