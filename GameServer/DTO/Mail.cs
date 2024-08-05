@@ -17,7 +17,6 @@ public class MailBoxResponse
     public List<string> Titles { get; set; }
     public List<int> ItemCodes { get; set; }
     public List<DateTime> SendDates { get; set; }
-    public List<long> ExpiryDurations { get; set; }
     public List<int> ReceiveYns { get; set; }
 }
 
