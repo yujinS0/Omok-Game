@@ -7,13 +7,13 @@ using GameServer.Repository.Interfaces;
 
 namespace GameServer.Middleware;
 
-public class CheckUserAuth
+public class CheckAuth
 {
     private readonly RequestDelegate _next;
     private readonly IMemoryDb _memoryDb;
-    private readonly ILogger<CheckUserAuth> _logger;
+    private readonly ILogger<CheckAuth> _logger;
 
-    public CheckUserAuth(RequestDelegate next, IMemoryDb memoryDb, ILogger<CheckUserAuth> logger)
+    public CheckAuth(RequestDelegate next, IMemoryDb memoryDb, ILogger<CheckAuth> logger)
     {
         _next = next;
         _memoryDb = memoryDb;

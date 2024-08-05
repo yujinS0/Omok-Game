@@ -46,7 +46,7 @@ var app = builder.Build();
 app.UseCors("AllowAllOrigins");
 
 app.UseMiddleware<GameServer.Middleware.CheckVersion>();
-app.UseMiddleware<GameServer.Middleware.CheckUserAuth>();
+app.UseMiddleware<GameServer.Middleware.CheckAuth>();
 
 app.MapControllers();
 
