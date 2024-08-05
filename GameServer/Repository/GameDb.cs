@@ -92,7 +92,7 @@ public class GameDb : IGameDb
             {
                 //TODO: (08.05) 매직넘버를 사용하면 안됩니다
                 //=> 수정 완료했습니다.
-                if (item.ItemCode == GameConstants.GameMoneyItemCode) // game_money
+                if (item.ItemCode == GameConstants.GameMoneyItemCode)
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
                     {
@@ -100,7 +100,7 @@ public class GameDb : IGameDb
                         game_money = item.Count
                     }, transaction);
                 }
-                else if (item.ItemCode == GameConstants.DiamondItemCode) // diamond
+                else if (item.ItemCode == GameConstants.DiamondItemCode)
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
                     {
@@ -119,6 +119,7 @@ public class GameDb : IGameDb
                 }
 
                 //TODO: (08.05) 아이템 넣다가 하나라도 실패가 발생하면 롤백해야 합니다.
+                //=> 수정 완료했습니다.
                 _logger.LogInformation($"Added item for player_uid={playerUid}: ItemCode={item.ItemCode}, Count={item.Count}");
             }
             return ErrorCode.None;
@@ -126,6 +127,7 @@ public class GameDb : IGameDb
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding initial items for playerUid: {PlayerUid}", playerUid);
+            await transaction.RollbackAsync();
             return ErrorCode.AddFirstItemsForPlayerFail;
         }
     }
