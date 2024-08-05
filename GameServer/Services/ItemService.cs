@@ -17,7 +17,7 @@ public class ItemService : IItemService
     private readonly IMemoryDb _memoryDb;
     private const int PageSize = 20; // 페이지 당 아이템 수
 
-    public ItemService( ILogger<ItemService> logger, IGameDb gameDb, IMemoryDb memoryDb)
+    public ItemService(ILogger<ItemService> logger, IGameDb gameDb, IMemoryDb memoryDb)
     {
         _logger = logger;
         _gameDb = gameDb;
@@ -25,31 +25,26 @@ public class ItemService : IItemService
     }
 
     //TODO: (08.01) 반환하는 개수가 너무 많네요. 이정도는 클래스를 정의해서 반환하죠
-    public async Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItems(Int64 playerUid, int itemPageNum)
+    //=> 수정 완료했습니다. 기존에 정의하고 사용하던 PlayerItem 활용
+    public async Task<(ErrorCode, List<PlayerItem>)> GetPlayerItems(Int64 playerUid, int itemPageNum)
     {
         try
         {
             var items = await _gameDb.GetPlayerItems(playerUid, itemPageNum, PageSize);
 
-            var playerItemCodes = new List<long>();
-            var itemCodes = new List<int>();
-            var itemCnts = new List<int>();
-
             if (items != null)
             {
-                foreach (var item in items)
-                {
-                    playerItemCodes.Add(item.PlayerItemCode);
-                    itemCodes.Add(item.ItemCode);
-                    itemCnts.Add(item.ItemCnt);
-                }
+                return (ErrorCode.None, items);
             }
-
-            return (ErrorCode.None, playerItemCodes, itemCodes, itemCnts);
+            else
+            {
+                return (ErrorCode.None, new List<PlayerItem>());
+            }
         }
         catch (Exception ex)
         {
-            return (ErrorCode.GameDatabaseError, null, null, null);
+            _logger.LogError(ex, "Error occurred while getting player items for playerUid: {PlayerUid}", playerUid);
+            return (ErrorCode.GameDatabaseError, null);
         }
     }
 }
