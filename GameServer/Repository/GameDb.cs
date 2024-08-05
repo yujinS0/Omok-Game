@@ -405,7 +405,7 @@ public class GameDb : IGameDb
 
         if (result == null)
         {
-            return (0, 0, 0); // 해당 메일이 없는 경우
+            return (-1, -1, -1); // 해당 메일이 없는 경우
         }
 
         return (result.receive_yn, result.item_code, result.item_cnt);
@@ -446,17 +446,15 @@ public class GameDb : IGameDb
         else
         {
             var itemInfo = _masterDb.GetItems().FirstOrDefault(i => i.ItemCode == itemCode);
-            if (itemInfo?.Countable == GameConstants.Countable)
+            if (itemInfo?.Countable == GameConstants.Countable) // 합칠 수 있는 아이템
             {
                 var existingItem = await _queryFactory.Query("player_item")
-                    .Where("player_uid", playerUid)
                     .Where("item_code", itemCode)
                     .FirstOrDefaultAsync();
 
                 if (existingItem != null)
                 {
                     var results = await _queryFactory.Query("player_item")
-                        .Where("player_uid", playerUid)
                         .Where("item_code", itemCode)
                         .IncrementAsync("item_cnt", itemCnt, transaction);
                     return results > 0;

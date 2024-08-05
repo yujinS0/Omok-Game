@@ -73,13 +73,21 @@ public class MailService : IMailService
     public async Task<(ErrorCode, int?)> ReceiveMailItem(long playerUid, long mailId)
     {
         //TODO: (08.05) 아직 아이템을 가져 가지 않은지와, 어떤 아이템인지만 알면 되겠네요
-        //=> 
+        //=> 수정 완료했습니다.
         var (receiveYn, itemCode, itemCnt) = await _gameDb.GetMailItemInfo(playerUid, mailId);
-        if (receiveYn == 1)
+        
+        if (receiveYn == -1)
         {
-            return (ErrorCode.None, receiveYn); // 이미 수령한 경우
+            return (ErrorCode.MailNotFound, null);
         }
 
+        if (receiveYn == 1) // 이미 수령한 경우
+        {
+            return (ErrorCode.None, receiveYn);
+        }
+
+        // 트랜잭션 처리를 Service에서 하고 싶어 ExecuteTransaction 사용
+        // Repository에서 로직을 처리하는 것보다 Service에서 처리하는 것이 더 좋다고 판단
         var result = await _gameDb.ExecuteTransaction(async transaction =>
         {
             //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
@@ -90,6 +98,7 @@ public class MailService : IMailService
                 return false;
             }
             //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
+            //=> 수정 완료했습니다.
 
             var addItemResult = await _gameDb.AddPlayerItem(playerUid, itemCode, itemCnt, transaction);
             return addItemResult;
