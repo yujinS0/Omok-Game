@@ -23,6 +23,7 @@ public class CheckAuth
     public async Task Invoke(HttpContext context)
     {
         //TODO: (08.05) 아래 주석처럼 함수를 만드는 것이 가독성에 좋습니다(이름도 비슷하게)
+        //=> 수정 완료했습니다.
         // 함수를 단순한 기능별로 나누지 말고 컨텍스트별로 분리하세요
 
         // 플레이어 정보 가져오기 (이 미들웨어를 사용하지 않는 것이라면 안가져옴)
