@@ -74,7 +74,6 @@ public class PlayerService : BaseService
             return new PlayerItemResponse { Result = ErrorCode.InternalServerError };
         }
     }
-
 }
 
 // ItemDTO
@@ -87,15 +86,16 @@ public class PlayerItemRequest
 public class PlayerItemResponse
 {
     public ErrorCode Result { get; set; }
-    public List<long> PlayerItemCode { get; set; }
-    public List<int> ItemCode { get; set; }
-    public List<int> ItemCnt { get; set; }
+    public List<Int64> PlayerItemCode { get; set; }
+    public List<Int32> ItemCode { get; set; }
+    public List<Int32> ItemCnt { get; set; }
 }
+
 public class PlayerItem
 {
-    public long PlayerItemCode { get; set; }
-    public int ItemCode { get; set; }
-    public int ItemCnt { get; set; }
+    public Int64 PlayerItemCode { get; set; }
+    public Int32 ItemCode { get; set; }
+    public Int32 ItemCnt { get; set; }
 }
 
 // Player DTO

@@ -82,6 +82,7 @@
     private bool IsHomePage => Navigation.Uri.EndsWith("/");
     private bool IsRegisterPage => Navigation.Uri.EndsWith("/register");
     private string userId = string.Empty;
+    private List<PlayerItem> playerItems;
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,13 +152,63 @@
         });
     }
 
-    private void ToggleItems()
+    private async Task ToggleItems()
     {
+        var playerId = sessionStorageId;
+        var response = await PlayerService.GetPlayerItemsAsync(playerId, 1); // 페이지 번호를 1로 하드코딩
+
+        if (response.Result == ErrorCode.None)
+        {
+            playerItems = response.PlayerItemCode.Select((code, index) => new PlayerItem
+                {
+                    PlayerItemCode = code,
+                    ItemCode = response.ItemCode[index],
+                    ItemCnt = response.ItemCnt[index]
+                }).ToList();
+        }
+        else
+        {
+            playerItems = new List<PlayerItem>(); // 오류 시 빈 리스트 반환
+        }
+
         ToggleOverlayContent(builder =>
         {
-            builder.AddContent(0, "아이템 내용");
+            builder.OpenElement(0, "table");
+            builder.AddAttribute(1, "class", "table");
+            builder.OpenElement(2, "thead");
+            builder.OpenElement(3, "tr");
+            builder.OpenElement(4, "th");
+            builder.AddContent(5, "Player Item Code");
+            builder.CloseElement();
+            builder.OpenElement(6, "th");
+            builder.AddContent(7, "Item Name");
+            builder.CloseElement();
+            builder.OpenElement(8, "th");
+            builder.AddContent(9, "Item Count");
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.OpenElement(10, "tbody");
+            foreach (var item in playerItems)
+            {
+                builder.OpenElement(11, "tr");
+                builder.OpenElement(12, "td");
+                builder.AddContent(13, item.PlayerItemCode);
+                builder.CloseElement();
+                builder.OpenElement(14, "td");
+                builder.AddContent(15, MasterData.ItemCodeToNameMap.ContainsKey(item.ItemCode) ? MasterData.ItemCodeToNameMap[item.ItemCode] : "Unknown Item");
+                builder.CloseElement();
+                builder.OpenElement(16, "td");
+                builder.AddContent(17, item.ItemCnt);
+                builder.CloseElement();
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+            builder.CloseElement();
         });
     }
+
+
 
     private void ToggleAttendance()
     {
@@ -175,3 +226,8 @@
         });
     }
 }
+<style>
+    .table th, .table td {
+        color: white;
+    }
+</style>
