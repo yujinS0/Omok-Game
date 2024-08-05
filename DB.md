@@ -55,7 +55,7 @@ CREATE TABLE player_money (
 ### player_item 테이블 
 
 ```sql
-CREATE TABLE IF NOT EXISTS player_item (
+CREATE TABLE player_item (
 	player_item_code BIGINT AUTO_INCREMENT PRIMARY KEY,
     	player_uid BIGINT NOT NULL COMMENT '플레이어 UID',
     	item_code INT NOT NULL COMMENT '아이템 ID',
