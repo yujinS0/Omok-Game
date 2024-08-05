@@ -25,25 +25,28 @@ public class ItemController : ControllerBase
 
         if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
         {
-            var (result, playerItemCode, itemCode, itemCnt) = await _itemService.GetPlayerItems(playerUid, request.ItemPageNum);
+            var (result, items) = await _itemService.GetPlayerItems(playerUid, request.ItemPageNum);
 
-            if (result != ErrorCode.None)
+            var playerItemCodes = new List<long>();
+            var itemCodes = new List<int>();
+            var itemCnts = new List<int>();
+
+            if (items != null)
             {
-                return new PlayerItemResponse
+                foreach (var item in items)
                 {
-                    Result = result,
-                    PlayerItemCode = null,
-                    ItemCode = null,
-                    ItemCnt = null
-                };
+                    playerItemCodes.Add(item.PlayerItemCode);
+                    itemCodes.Add(item.ItemCode);
+                    itemCnts.Add(item.ItemCnt);
+                }
             }
 
             return new PlayerItemResponse
             {
                 Result = result,
-                PlayerItemCode = playerItemCode,
-                ItemCode = itemCode,
-                ItemCnt = itemCnt
+                PlayerItemCode = playerItemCodes,
+                ItemCode = itemCodes,
+                ItemCnt = itemCnts
             };
         }
         else
