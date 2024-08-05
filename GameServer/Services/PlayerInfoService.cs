@@ -25,7 +25,6 @@ public class PlayerInfoService : IPlayerInfoService
 
     public async Task<(ErrorCode, PlayerBasicInfo?)> GetPlayerBasicData(string playerId)
     {
-        //TODO: (08.05) playerID가 아닌 player_uid로 검색하도록 해야합니다.
         var playerInfo = await _gameDb.GetplayerBasicInfo(playerId);
 
         if (playerInfo == null)
