@@ -164,7 +164,12 @@ public class CheckAuth
 
     private bool IsPlayerIdMatch(string headerPlayerId, string bodyPlayerId)
     {
-        return string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != headerPlayerId;
+        if (!string.IsNullOrEmpty(bodyPlayerId) && bodyPlayerId != headerPlayerId)
+        {
+            _logger.LogWarning("PlayerId mismatch: headerPlayerId = {HeaderPlayerId}, bodyPlayerId = {BodyPlayerId}", headerPlayerId, bodyPlayerId);
+            return false;
+        }
+        return true;
     }
 
     private bool IsValidToken(string token, string redisToken)
