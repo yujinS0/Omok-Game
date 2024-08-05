@@ -26,18 +26,28 @@ public class MailService : IMailService
     }
 
     //TODO: (08.05) 이렇게 반환 개수가 많으면 클래스를 정의해서 반환하세요
-    public async Task<(ErrorCode, List<Int64>, List<string>, List<int>, List<DateTime>, List<long>, List<int>)> GetPlayerMailBox(Int64 playerUid, int pageNum)
+    //=> 수정 완료했습니다.
+    public async Task<(ErrorCode, MailBoxList)> GetPlayerMailBoxList(Int64 playerUid, int pageNum)
     {
         //TODO: (08.05) playerUid == -1 는 할필요가 없습니다. 이것이 오류라면 미들웨어도 문제이니
-        if (playerUid == -1)
+        //=> 수정 완료했습니다.
+        try
         {
-            return (ErrorCode.InValidPlayerUidError, null, null, null, null, null, null);
-        }
+            int skip = (pageNum - 1) * PageSize; // SYJ 페이징할 때 고려해봐야함!
+            MailBoxList mailBoxList = await _gameDb.GetPlayerMailBoxList(playerUid, skip, PageSize);
 
-        int skip = (pageNum - 1) * PageSize;
-        var (mailId, title, itemCode, sendDate, expriryDuration, receiveYns) = await _gameDb.GetPlayerMailBox(playerUid, skip, PageSize);
-        
-        return (ErrorCode.None, mailId, title, itemCode, sendDate, expriryDuration, receiveYns);
+            if (mailBoxList == null || !mailBoxList.MailIds.Any())
+            {
+                return (ErrorCode.None, new MailBoxList()); // 비어있는 MailBoxList 반환
+            }
+
+            return (ErrorCode.None, mailBoxList);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the player's mailbox.");
+            return (ErrorCode.GameDatabaseError, null); // 적절한 오류 코드 반환
+        }
     }
 
     public async Task<(ErrorCode, MailDetail)> ReadMail(Int64 playerUid, Int64 mailId)
@@ -49,6 +59,7 @@ public class MailService : IMailService
         }
 
         //TODO: (08.05) 메일을 읽었다면 읽었다는 체크를 해야합니다
+        //=> 메일 읽었는지 여부 대신 아이템 수령 여부로 대체되었습니다!
 
         var mailDetail = await _gameDb.GetMailDetail(playerUid, mailId);
         if (mailDetail == null)
@@ -59,33 +70,34 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail);
     }
 
-    public async Task<(ErrorCode, int?)> ReceiveMailItem(Int64 playerUid, Int64 mailId)
+    public async Task<(ErrorCode, int?)> ReceiveMailItem(long playerUid, long mailId)
     {
-        if (playerUid == -1)
-        {
-            return (ErrorCode.InValidPlayerUidError, null);
-        }
-
         //TODO: (08.05) 아직 아이템을 가져 가지 않은지와, 어떤 아이템인지만 알면 되겠네요
-        var (errorCode, mailDetail) = await ReadMail(playerUid, mailId);
-        if (errorCode != ErrorCode.None)
+        //=> 
+        var (receiveYn, itemCode, itemCnt) = await _gameDb.GetMailItemInfo(playerUid, mailId);
+        if (receiveYn == 1)
         {
-            return (errorCode, null);
+            return (ErrorCode.None, receiveYn); // 이미 수령한 경우
         }
 
-        if (mailDetail.ReceiveYn == 1)
+        var result = await _gameDb.ExecuteTransaction(async transaction =>
         {
-            return (ErrorCode.None, mailDetail.ReceiveYn);
-        }
+            //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
+            // 로직 자체는 유지.함수 이름을 더 명확하게 수정하겠습니다!
+            var updateStatus = await _gameDb.UpdateMailReceiveStatus(playerUid, mailId, transaction);
+            if (!updateStatus)
+            {
+                return false;
+            }
+            //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
 
-        //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
-        await _gameDb.UpdateMailReceiveStatus(playerUid, mailId);
+            var addItemResult = await _gameDb.AddPlayerItem(playerUid, itemCode, itemCnt, transaction);
+            return addItemResult;
+        });
 
-        //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
-        await _gameDb.AddPlayerItem(playerUid, mailDetail.ItemCode, mailDetail.ItemCnt);
-
-        return (ErrorCode.None, mailDetail.ReceiveYn);
+        return result ? (ErrorCode.None, 1) : (ErrorCode.GameDatabaseError, null);
     }
+
 
     public async Task<ErrorCode> DeleteMail(Int64 playerUid, long mailId)
     {
