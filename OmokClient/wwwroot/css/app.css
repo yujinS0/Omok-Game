@@ -278,7 +278,8 @@ a, .btn-link {
 .overlay-content {
     background-color: rgba(0, 0, 0, 0.85);
     color: white;
-    width: 250px;
+    width: calc(50%);
+    min-width: 270px;
     height: calc(80%); /* player-info와 같은 높이 */
     padding: 20px;
     margin-right: 20px;
@@ -296,7 +297,7 @@ a, .btn-link {
 }
 
 .player-info {
-    width: 250px;
+    width: 270px;
     height: calc(80%); /* 부모 요소의 % */
     background-color: rgba(255, 255, 255, 0.8); /* 배경색 */
     padding: 10px;

@@ -106,10 +106,10 @@
 
     private async Task UpdatePlayerBasicInfo()
     {
-        var userId = sessionStorageId;
-        if (!string.IsNullOrEmpty(userId))
+        var playerId = sessionStorageId;
+        if (!string.IsNullOrEmpty(playerId))
         {
-            var characterInfo = await PlayerService.GetPlayerBasicInfoAsync(userId);
+            var characterInfo = await PlayerService.GetPlayerBasicInfoAsync(playerId);
             if (characterInfo != null && characterInfo.Result == ErrorCode.None)
             {
                 nickName = characterInfo.PlayerBasicInfo.NickName;
@@ -132,7 +132,7 @@
         }
     }
 
-    private void ToggleOverlayContent(RenderFragment? content)
+    private async Task ToggleOverlayContent(RenderFragment? content)
     {
         if (OverlayContent == content)
         {
@@ -142,6 +142,7 @@
         {
             OverlayContent = content;
         }
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
     private void ToggleMailbox()
