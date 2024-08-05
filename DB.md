@@ -117,20 +117,21 @@ CREATE TABLE attendance (
 
 ### item 테이블
 ```sql
-  CREATE TABLE item (
-    item_code INT,
-    name VARCHAR(64) NOT NULL,
-    description VARCHAR(128) NOT NULL
-  );
+CREATE TABLE item (
+  item_code INT,
+  name VARCHAR(64) NOT NULL,
+  description VARCHAR(128) NOT NULL,
+  countable TINYINT NOT NULL COMMENT '합칠 수 있는 아이템 : 1'
+);
 ```
 
 * 초기 데이터 (임시 수동 입력)
 ```sql
-INSERT INTO item (item_code, name, description) VALUES
-(1, 'game_money', '게임 머니(인게임 재화)'),
-(2, 'diamond', '다이아몬드(유료 재화)'),
-(3, '무르기 아이템', '자신의 차례에 턴을 무를 수 있음'),
-(4, '닉네임변경', '기본 닉네임에서 변경할 수 있음');
+INSERT INTO item (item_code, name, description, countable) VALUES
+(1, 'game_money', '게임 머니(인게임 재화)', 1),
+(2, 'diamond', '다이아몬드(유료 재화)', 1),
+(3, '무르기 아이템', '자신의 차례에 턴을 무를 수 있음', 1),
+(4, '닉네임변경', '기본 닉네임에서 변경할 수 있음', 1);
 ```
 
 
