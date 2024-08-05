@@ -81,6 +81,16 @@ CREATE TABLE mailbox (
 );
 ```
 
+### attendance 테이블
+
+```sql
+CREATE TABLE attendance (
+    player_uid BIGINT NOT NULL PRIMARY KEY, 
+    attendance_cnt INT NOT NULL COMMENT '출석 횟수', 
+    recent_attendance_dt DATETIME COMMENT '최근 출석 일시'
+);
+```
+
 --------------------
 # MasterData
 

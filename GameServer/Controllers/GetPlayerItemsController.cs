@@ -19,8 +19,6 @@ public class GetPlayerItemsController : ControllerBase
         _itemService = itemService;
     }
 
-    //TODO: (08.01) 복수의 아이템을 가져오면 GetPlayerItems로 이름을 변경해주세요. 시퀸스다이얼그램과 이름이 일치해야 합니다.
-    //=> 수정 완료했습니다.
     [HttpPost]
     public async Task<PlayerItemResponse> GetPlayerItems([FromBody] PlayerItemRequest request)
     {

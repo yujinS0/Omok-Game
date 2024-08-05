@@ -24,11 +24,9 @@ public class ItemService : IItemService
         _memoryDb = memoryDb;
     }
 
+    //TODO: (08.01) 반환하는 개수가 너무 많네요. 이정도는 클래스를 정의해서 반환하죠
     public async Task<(ErrorCode, List<long>, List<int>, List<int>)> GetPlayerItems(Int64 playerUid, int itemPageNum)
     {
-        //TODO: (08.01) 미들웨어에서 playerId를 로딩했으니 미들웨어에서 컨트룰러로 넘겨주도록 해야합니다.
-        // 그러면 아래처럼 또 redis에서 플레이어 데이터 가져올 필요가 없습니다.
-        //=> 수정 완료했습니다.(미들웨어에서 HttpContext.Items에 저장하도록)
         try
         {
             var items = await _gameDb.GetPlayerItems(playerUid, itemPageNum, PageSize);
@@ -37,8 +35,6 @@ public class ItemService : IItemService
             var itemCodes = new List<int>();
             var itemCnts = new List<int>();
 
-            //TODO: (08.01) items가 null인 경우에 문제가 없나요?
-            //=> 수정 완료했습니다.
             if (items != null)
             {
                 foreach (var item in items)

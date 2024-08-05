@@ -123,6 +123,7 @@ public class GameService : IGameService
 
         try
         {
+            //TODO: (08.05) 아직 작업 중인가요?
             //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
             //=> 수정중. try-catch로 기본 예외 처리
             //=> + 메서드의 반환값을 통해 처리하기? Update 반환값 찾아보기 SYJ
@@ -183,6 +184,7 @@ public class GameService : IGameService
             return (ErrorCode.GameTurnNotFound, false);
         }
 
+        //TODO: (08.05) 이름이 원하는 행동과 맞지 않습니다. playerId가 현재 턴을 가진 플레이어가 맞는지 체크하는 함수인데 이 함수의 이름은 플레이어 정보를 요청하네요
         var (errorCode, currentTurnPlayer) = await GetPlayerForCurrentTurn(currentTurn, playerId);
         if (errorCode != ErrorCode.None)
         {
