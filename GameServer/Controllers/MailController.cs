@@ -23,42 +23,27 @@ public class MailController : ControllerBase
     public async Task<MailBoxResponse> GetPlayerMailBox([FromBody] GetPlayerMailBoxRequest request)
     {
         //TODO: (08.05) 미들웨어를 통과했으면 PlayerUid는 무조건 있다고 가정하죠.
-        if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
-        {
-            var (errorCode, mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns) = await _mailService.GetPlayerMailBox(playerUid, request.PageNum);
+        //=> 수정 완료했습니다. (아래 함수들까지 다 적용)
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
+        var (errorCode, mailIds, titles, itemCodes, sendDates, expiryDurations, receiveYns) = await _mailService.GetPlayerMailBox(playerUid, request.PageNum);
 
-            return new MailBoxResponse
-            {
-                Result = errorCode,
-                MailIds = mailIds,
-                Titles = titles,
-                ItemCodes = itemCodes,
-                SendDates = sendDates,
-                ExpiryDurations = expiryDurations,
-                ReceiveYns = receiveYns
-            };
-        }
-        else
+        return new MailBoxResponse
         {
-            return new MailBoxResponse
-            {
-                Result = ErrorCode.PlayerUidNotFound,
-                MailIds = null,
-                Titles = null,
-                ItemCodes = null,
-                SendDates = null,
-                ExpiryDurations = null,
-                ReceiveYns = null
-            };
-        }
+            Result = errorCode,
+            MailIds = mailIds,
+            Titles = titles,
+            ItemCodes = itemCodes,
+            SendDates = sendDates,
+            ExpiryDurations = expiryDurations,
+            ReceiveYns = receiveYns
+        };
     }
 
     [HttpPost("read")]
     public async Task<MailDetailResponse> ReadPlayerMail([FromBody] ReadMailRequest request)
     {
-        if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
-        {
-            var (errorCode, mailDetail) = await _mailService.ReadMail(playerUid, request.MailId);
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
+        var (errorCode, mailDetail) = await _mailService.ReadMail(playerUid, request.MailId);
 
             if (mailDetail == null)
             {
@@ -90,65 +75,31 @@ public class MailController : ControllerBase
                 ReceiveDate = mailDetail.ReceiveDate,
                 ReceiveYn = mailDetail.ReceiveYn
             };
-        }
-        else
-        {
-            return new MailDetailResponse
-            {
-                Result = ErrorCode.PlayerUidNotFound,
-                MailId = -1,
-                Title = null,
-                Content = null,
-                ItemCode = -1,
-                ItemCnt = -1,
-                SendDate = null,
-                ExpireDate = null,
-                ReceiveDate = null,
-                ReceiveYn = -1
-            };
-        }
     }
 
     [HttpPost("receive-item")]
     public async Task<ReceiveMailItemResponse> ReceiveMailItem([FromBody] ReceiveMailItemRequest request)
     {
-        if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
-        {
-            var (result, isReceived) = await _mailService.ReceiveMailItem(playerUid, request.MailId);
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
 
-            return new ReceiveMailItemResponse
-            {
-                Result = result,
-                IsAlreadyReceived = isReceived
-            };
-        }
-        else
+        var (result, isReceived) = await _mailService.ReceiveMailItem(playerUid, request.MailId);
+
+        return new ReceiveMailItemResponse
         {
-            return new ReceiveMailItemResponse
-            {
-                Result = ErrorCode.PlayerUidNotFound,
-                IsAlreadyReceived = null
-            };
-        }
+            Result = result,
+            IsAlreadyReceived = isReceived
+        };
     }
 
     [HttpPost("delete")]
     public async Task<DeleteMailResponse> DeleteMail([FromBody] DeleteMailRequest request)
     {
-        if (HttpContext.Items.TryGetValue("PlayerUid", out var playerUidObj) && playerUidObj is long playerUid)
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
+
+        var result = await _mailService.DeleteMail(playerUid, request.MailId);
+        return new DeleteMailResponse
         {
-            var result = await _mailService.DeleteMail(playerUid, request.MailId);
-            return new DeleteMailResponse
-            {
-                Result = result
-            };
-        }
-        else
-        {
-            return new DeleteMailResponse
-            {
-                Result = ErrorCode.PlayerUidNotFound
-            };
-        }
+            Result = result
+        };
     }
 }
