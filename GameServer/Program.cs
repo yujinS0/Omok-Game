@@ -21,9 +21,9 @@ builder.Services.AddCors(options =>
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("ConnectionStrings")); 
 builder.Services.Configure<DbConfig>(builder.Configuration.GetSection("RedisConfig")); 
 
-builder.Services.AddScoped<IGameDb, GameDb>(); // game mysql
-builder.Services.AddSingleton<IMemoryDb, MemoryDb>(); // Game Redis
-builder.Services.AddSingleton<IMasterDb, MasterDb>(); // Master Data
+builder.Services.AddScoped<IGameDb, GameDb>();
+builder.Services.AddSingleton<IMemoryDb, MemoryDb>();
+builder.Services.AddSingleton<IMasterDb, MasterDb>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IMatchingService, MatchingService>();
 builder.Services.AddScoped<IGameService, GameService>();
@@ -31,7 +31,7 @@ builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IMailService, MailService>();
 
-builder.Services.AddHttpClient(); // HttpClientFactory 추가
+builder.Services.AddHttpClient();
 
 // 로깅 설정
 builder.Logging.ClearProviders();
@@ -42,7 +42,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// CORS 미들웨어 추가
 app.UseCors("AllowAllOrigins");
 
 app.UseMiddleware<GameServer.Middleware.CheckVersion>();
