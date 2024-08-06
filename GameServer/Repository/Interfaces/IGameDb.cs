@@ -19,10 +19,7 @@ public interface IGameDb : IDisposable
     Task<(int, int, int)> GetMailItemInfo(long playerUid, long mailId);
     Task<bool> UpdateMailReceiveStatus(long playerUid, long mailId, MySqlTransaction transaction);
     Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction);
-    Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation);
-
-    //Task UpdateMailReceiveStatus(long playerUid, Int64 mailId);
-    //Task AddPlayerItem(long playerUid, int itemCode, int itemCnt);
+    Task<(bool, int?)> ReceiveMailItemTransaction(long playerUid, long mailId);
     Task DeleteMail(long playerUid, Int64 mailId);
 
 }

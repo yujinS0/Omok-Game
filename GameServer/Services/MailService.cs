@@ -74,37 +74,17 @@ public class MailService : IMailService
     {
         //TODO: (08.05) 아직 아이템을 가져 가지 않은지와, 어떤 아이템인지만 알면 되겠네요
         //=> 수정 완료했습니다.
-        var (receiveYn, itemCode, itemCnt) = await _gameDb.GetMailItemInfo(playerUid, mailId);
-        
-        if (receiveYn == -1)
+        var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); // 트랜잭션 처리 GameDb.cs에서 진행중..
+
+        if (!success)
         {
-            return (ErrorCode.MailNotFound, null);
+            return (ErrorCode.GameDatabaseError, null);
         }
 
-        if (receiveYn == 1) // 이미 수령한 경우
-        {
-            return (ErrorCode.None, receiveYn);
-        }
-
-        // 트랜잭션 처리를 Service에서 하고 싶어 ExecuteTransaction 사용
-        // Repository에서 로직을 처리하는 것보다 Service에서 처리하는 것이 더 좋다고 판단
-        var result = await _gameDb.ExecuteTransaction(async transaction =>
-        {
-            //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
-            // 로직 자체는 유지.함수 이름을 더 명확하게 수정하겠습니다!
-            var updateStatus = await _gameDb.UpdateMailReceiveStatus(playerUid, mailId, transaction);
-            if (!updateStatus)
-            {
-                return false;
-            }
-            //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
-            //=> 수정 완료했습니다.
-
-            var addItemResult = await _gameDb.AddPlayerItem(playerUid, itemCode, itemCnt, transaction);
-            return addItemResult;
-        });
-
-        return result ? (ErrorCode.None, 1) : (ErrorCode.GameDatabaseError, null);
+        return (ErrorCode.None, receiveYn); 
+        //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
+        //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
+        //=> 수정 완료했습니다.
     }
 
 

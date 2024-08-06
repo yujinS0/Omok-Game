@@ -332,6 +332,7 @@ public class GameDb : IGameDb
         // "우편 제목, 첨부되어있는 아이템 종류, 받은 시간, 아이템 수령 여부"를 포함해야된다고 생각해 이런 식으로 가져왔습니다..!
         // 전제 조건으로 스케쥴러가 매일 특정 시간에 유효기간이 지난 메일은 삭제했다고 하시죠 -> 넵!
         // expire_dt 확인을 하지 않아도 됩니다.
+        //=> 수정 완료했습니다!
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
                                           .OrderByDesc("send_dt") // 최신 순으로 정렬
@@ -450,7 +451,7 @@ public class GameDb : IGameDb
             {
                 var existingItem = await _queryFactory.Query("player_item")
                     .Where("item_code", itemCode)
-                    .FirstOrDefaultAsync();
+                    .FirstOrDefaultAsync(transaction);
 
                 if (existingItem != null)
                 {
@@ -471,78 +472,49 @@ public class GameDb : IGameDb
             return result > 0;
         }
     }
-    public async Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation)
+    public async Task<(bool, int?)> ReceiveMailItemTransaction(long playerUid, long mailId)
     {
-        using var transaction = await _connection.BeginTransactionAsync();
-        try
+        var (receiveYn, itemCode, itemCnt) = await GetMailItemInfo(playerUid, mailId);
+
+        if (receiveYn == -1)
         {
-            var result = await operation(transaction);
-            if (result)
+            return (false, null); // Mail not found
+        }
+
+        if (receiveYn == 1) // 이미 수령한 경우
+        {
+            return (true, receiveYn);
+        }
+
+        using (var transaction = await _connection.BeginTransactionAsync())
+        {
+            try
             {
+                var updateStatus = await UpdateMailReceiveStatus(playerUid, mailId, transaction);
+                if (!updateStatus)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, null);
+                }
+
+                var addItemResult = await AddPlayerItem(playerUid, itemCode, itemCnt, transaction);
+                if (!addItemResult)
+                {
+                    await transaction.RollbackAsync();
+                    return (false, null);
+                }
+
                 await transaction.CommitAsync();
-                return true;
+                return (true, 0); // 첫수령
             }
-            else
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return false;
+                _logger.LogError(ex, "Transaction failed while receiving mail item for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
+                return (false, null);
             }
         }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            _logger.LogError(ex, "Transaction failed");
-            return false;
-        }
     }
-
-    //public async Task UpdateMailReceiveStatus(long playerUid, Int64 mailId)
-    //{
-    //    await _queryFactory.Query("mailbox")
-    //                       .Where("player_uid", playerUid)
-    //                       .Where("mail_id", mailId)
-    //                       .UpdateAsync(new { receive_yn = true, receive_dt = DateTime.Now });
-    //}
-
-    //public async Task<bool> AddPlayerItemWithTransaction(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction)
-    //{
-    //    try
-    //    {
-    //        await _queryFactory.Query("player_item").InsertAsync(new
-    //        {
-    //            player_uid = playerUid,
-    //            item_code = itemCode,
-    //            item_cnt = itemCnt
-    //        }, transaction);
-    //        return true;
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Failed to add player item for PlayerUid: {PlayerUid}, ItemCode: {ItemCode}", playerUid, itemCode);
-    //        return false;
-    //    }
-    //}
-
-    //public async Task AddPlayerItem(long playerUid, int itemCode, int itemCnt)
-    //{
-    //    //TODO: (08.05) 아이템으로 돈과 다이아몬드가 있을 수 있습니다
-    //        //=> 이 부분은 서비스에서 처리하는 게 맞는 것 같아 서비스에 추가
-    //    // 그리고 겹칠 수 있는 아이템이라면 겹쳐야 합니다
-    //        // => 일단 지금 존재하는 아이템들은 모두 겹칠 수 있도록,
-    //        //  masterData item 테이블의 필드에 겹칠 수 있는지에 대한 정보 추가
-
-    //    await _queryFactory.Query("player_item").InsertAsync(new
-    //    {
-    //        player_uid = playerUid,
-    //        item_code = itemCode,
-    //        item_cnt = itemCnt
-    //    });
-    //}
-
-    // AddPlayerGameMoney
-
-    // AddPlayerDiamond
-
 
     public async Task DeleteMail(long playerUid, Int64 mailId)
     {
