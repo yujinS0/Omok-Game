@@ -15,7 +15,7 @@ public interface IGameDb : IDisposable
     Task<long> GetPlayerUidByPlayerId(string playerId);
     Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize);
     Task<MailBoxList> GetPlayerMailBoxList(long playerUid, int skip, int pageSize);
-    Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId);
+    Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId);
     Task<(int, int, int)> GetMailItemInfo(long playerUid, long mailId);
     Task<bool> UpdateMailReceiveStatus(long playerUid, long mailId, MySqlTransaction transaction);
     Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction);

@@ -61,7 +61,7 @@ public class MailService : IMailService
         //TODO: (08.05) 메일을 읽었다면 읽었다는 체크를 해야합니다
         //=> 메일 읽었는지 여부 대신 아이템 수령 여부로 대체되었습니다!
 
-        var mailDetail = await _gameDb.GetMailDetail(playerUid, mailId);
+        var mailDetail = await _gameDb.ReadMailDetail(playerUid, mailId);
         if (mailDetail == null)
         {
             return (ErrorCode.MailNotFound, null);

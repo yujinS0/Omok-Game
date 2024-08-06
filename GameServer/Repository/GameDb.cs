@@ -361,7 +361,7 @@ public class GameDb : IGameDb
     }
 
 
-    public async Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId) // GET 함수명만 수정하기. 의미 전달이 제대로 안된다. 
+    public async Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId) // GET 함수명만 수정하기. 의미 전달이 제대로 안된다. 
     {
         //TODO: (08.05) 여기서 주는 것과 우편함 리스트에서 받는 것과 별로 내용 차이가 없네요 -> 질문 이후 추가적 피드백 내용 바탕으로 수정
         //=> 수정 완료했습니다.
