@@ -28,14 +28,11 @@ sequenceDiagram
   	participant GameDB
 
 	Player ->> Game Server : 우편 확인 요청(/mail/read)
-	Game Server ->> GameDB : 우편 조회
+	Game Server ->> GameDB : 우편 읽어오기(ReadMailDetail)
 	GameDB -->> Game Server : 
-	alt 우편 유효기간 경과 시
+	alt 우편 존재 X
 		Game Server -->> Player : 오류 응답
-	else 우편 유효
-		Game Server ->> GameDB : 우편 읽어오기
-		GameDB -->> Game Server : 
-	
+	else 우편 존재 O
 		Game Server -->> Player : 우편 내용 응답
 	end
 ```
