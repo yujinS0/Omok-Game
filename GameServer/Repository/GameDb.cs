@@ -569,9 +569,7 @@ public class GameDb : IGameDb
         //return true;
     }
 
-
-    // 인자 너무 많으니까 나중에 수정하기.
-    public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt)
+    public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt) // 아직 사용 안하는 함수 (추후 인자 class)
     {
         await _queryFactory.Query("mailbox").InsertAsync(new
         {
