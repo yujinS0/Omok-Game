@@ -52,12 +52,6 @@ public class MailService : IMailService
 
     public async Task<(ErrorCode, MailDetail)> ReadMail(Int64 playerUid, Int64 mailId)
     {
-        
-        if (playerUid == -1)
-        {
-            return (ErrorCode.InValidPlayerUidError, null);
-        }
-
         //TODO: (08.05) 메일을 읽었다면 읽었다는 체크를 해야합니다
         //=> 메일 읽었는지 여부 대신 아이템 수령 여부로 대체되었습니다!
 
@@ -91,11 +85,6 @@ public class MailService : IMailService
 
     public async Task<ErrorCode> DeleteMail(long playerUid, long mailId)
     {
-        if (playerUid == -1)
-        {
-            return ErrorCode.InValidPlayerUidError;
-        }
-
         var (receiveYn, itemCode, itemCnt) = await _gameDb.GetMailItemInfo(playerUid, mailId);
         if (receiveYn == -1)
         {
