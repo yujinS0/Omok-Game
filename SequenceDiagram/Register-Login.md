@@ -52,6 +52,8 @@ sequenceDiagram
 			G ->> GD : "플레이어 기본 게임 데이터" 생성
 			GD -->> G : 
 			G ->> GD : "초기 아이템 데이터" 생성
+			GD -->> G : 
+			G ->> GD : "초기 출석 데이터" 생성
 			GD -->> G :  
 		end
 
