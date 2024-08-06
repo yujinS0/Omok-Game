@@ -62,7 +62,7 @@ public class AttendanceService : IAttendanceService
             }
 
             // 보상 아이템 추가
-            var rewardResult = await _gameDb.AddAttendanceRewardToPlayer(playerUid, attendanceCount, transaction);
+            var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, attendanceCount, transaction);
             if (!rewardResult)
             {
                 return false;

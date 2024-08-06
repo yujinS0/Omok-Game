@@ -558,7 +558,7 @@ public class GameDb : IGameDb
         return true;        
     }
 
-    public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt) // 아직 사용 안하는 함수 (추후 인자 class)
+    public async Task AddMailInMailBox(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt) // 아직 사용 안하는 함수 (추후 인자 class)
     {
         await _queryFactory.Query("mailbox").InsertAsync(new
         {
@@ -635,18 +635,31 @@ public class GameDb : IGameDb
         return rewards.FirstOrDefault(reward => reward.DaySeq == count);
     }
 
-    public async Task<bool> AddAttendanceRewardToPlayer(long playerUid, int attendanceCount, MySqlTransaction transaction)
+
+    public async Task<bool> AddAttendanceRewardToMailbox(long playerUid, int attendanceCount, MySqlTransaction transaction)
     {
-        var rewardItem = GetAttendanceRewardByDaySeq(attendanceCount);
-        if (rewardItem == null)
+        var reward = GetAttendanceRewardByDaySeq(attendanceCount);
+
+        if (reward == null)
         {
+            _logger.LogWarning("No reward found for attendance count {AttendanceCount}.", attendanceCount);
             return false;
         }
 
-        var addItemResult = await AddPlayerItem(playerUid, rewardItem.RewardItem, rewardItem.ItemCount, transaction);
-        return addItemResult;
-    }
+        var result = await _queryFactory.Query("mailbox").InsertAsync(new
+        {
+            player_uid = playerUid,
+            title = $"{attendanceCount}차 출석 보상",
+            content = $"안녕하세요? 출석 보상 {attendanceCount}일차 입니다.",
+            item_code = reward.RewardItem,
+            item_cnt = reward.ItemCount,
+            send_dt = DateTime.Now,
+            expire_dt = DateTime.Now.AddDays(GameConstants.AttendanceRewardExpireDate),
+            receive_yn = 0
+        }, transaction);
 
+        return result > 0;
+    }
 
     public async Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation)
     {

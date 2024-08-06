@@ -30,8 +30,8 @@ public interface IGameDb : IDisposable
     Task<DateTime?> GetCurrentAttendanceDate(long playerUid);
     Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction);
     Task<int> GetAttendanceCount(long playerUid, MySqlTransaction transaction);
-    Task<bool> AddAttendanceRewardToPlayer(long playerUid, int attendanceCount, MySqlTransaction transaction);
-    
-    
+    Task<bool> AddAttendanceRewardToMailbox(long playerUid, int attendanceCount, MySqlTransaction transaction);
+
+
     Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation);
 }
