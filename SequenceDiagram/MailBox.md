@@ -54,7 +54,7 @@ sequenceDiagram
   	participant GameDB
 
 	Player ->> Game Server : 우편 속 아이템 수령 요청(/mail/receive-item)
-	Game Server ->> GameDB : 우편함 우편 상태 조회
+	Game Server ->> GameDB : 우편 아이템 상태 조회 (GetMailItemInfo)
 	GameDB -->> Game Server : 
 	alt 수령 불가능 상태
 		Game Server -->> Player : 오류 응답
@@ -81,7 +81,7 @@ sequenceDiagram
   	participant GameDB
 
 	Player ->> Game Server : 우편 삭제 요청(/mail/delete)
-	Game Server ->> GameDB : 우편 상태 조회
+	Game Server ->> GameDB : 우편 아이템 상태 조회 (GetMailItemInfo)
 	GameDB -->> Game Server :  
 	alt 보상 미수령 상태 
 		Game Server -->> Player : 삭제 실패 에러코드 응답
