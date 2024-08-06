@@ -23,9 +23,9 @@ public class AttendanceService : IAttendanceService
         _gameDb = gameDb;
     }
 
-    public async Task<(ErrorCode, AttendanceInfo?)> GetAttendanceInfo(string playerId)
+    public async Task<(ErrorCode, AttendanceInfo?)> GetAttendanceInfo(long playerUid)
     {
-        var attendanceInfo = await _gameDb.GetAttendanceInfo(playerId);
+        var attendanceInfo = await _gameDb.GetAttendanceInfo(playerUid);
 
         if (attendanceInfo == null)
         {
@@ -34,17 +34,42 @@ public class AttendanceService : IAttendanceService
         return (ErrorCode.None, attendanceInfo);
     }
 
-    public async Task<ErrorCode> AttendanceCheck(string playerId)
+    public async Task<ErrorCode> AttendanceCheck(long playerUid)
     {
         // 최근 출석 일시 가져오기
-        var result = await _gameDb.GetCurrentAttendanceDate(playerId);
-            // 만약 가져온 값이 오늘이라면, return ErroCode.AttendanceCheckFailAlreadyChecked
+        var lastAttendanceDate = await _gameDb.GetCurrentAttendanceDate(playerUid);
 
-        // 출석 정보 업데이트 후
-        // 출석 횟수 가져와서
-        // 보상 테이블에 추가하기
-            // 이때 실패시 롤백 생각해야 함
-        
+        if (lastAttendanceDate.HasValue && lastAttendanceDate.Value.Date == DateTime.Today)
+        {
+            return ErrorCode.AttendanceCheckFailAlreadyChecked;
+        }
+
+        // 트랜잭션 처리
+        var result = await _gameDb.ExecuteTransaction(async transaction =>
+        {
+            // 출석 정보 업데이트
+            var updateResult = await _gameDb.UpdateAttendanceInfo(playerUid, transaction);
+            if (!updateResult)
+            {
+                return false;
+            }
+
+            // 출석 횟수 가져오기
+            var attendanceCount = await _gameDb.GetAttendanceCount(playerUid, transaction);
+            if (attendanceCount == -1)
+            {
+                return false;
+            }
+
+            // 보상 아이템 추가
+            var rewardResult = await _gameDb.AddAttendanceRewardToPlayer(playerUid, attendanceCount, transaction);
+            if (!rewardResult)
+            {
+                return false;
+            }
+
+            return true;
+        });
 
         if (!result)
         {

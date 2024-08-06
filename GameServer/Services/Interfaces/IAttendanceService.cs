@@ -7,6 +7,6 @@ namespace GameServer.Services.Interfaces;
 
 public interface IAttendanceService
 {
-    Task<(ErrorCode, AttendanceInfo?)> GetAttendanceInfo(string playerId);
-    Task<ErrorCode> AttendanceCheck(string playerId);
+    Task<(ErrorCode, AttendanceInfo?)> GetAttendanceInfo(long playerUid);
+    Task<ErrorCode> AttendanceCheck(long playerUid);
 }

@@ -22,7 +22,9 @@ public class AttendanceController : ControllerBase
     [HttpPost("get-info")]
     public async Task<AttendanceInfoResponse> GetAttendanceInfo([FromBody] AttendanceInfoRequest request)
     {
-        var (result, attendanceInfo) = await _attendanceService.GetAttendanceInfo(request.PlayerId);
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
+
+        var (result, attendanceInfo) = await _attendanceService.GetAttendanceInfo(playerUid);
 
         if (result != ErrorCode.None)
         {
@@ -38,16 +40,18 @@ public class AttendanceController : ControllerBase
         {
             Result = result,
             AttendanceCnt = attendanceInfo.AttendanceCnt,
-            RecentAttendanceDate = attendanceInfo.RecentAttendanceDt
+            RecentAttendanceDate = attendanceInfo.RecentAttendanceDate
         };
     }
 
     [HttpPost("check")]
     public async Task<AttendanceCheckResponse> AttendanceCheck([FromBody] AttendanceCheckRequest request)
     {
-        var result = await _attendanceService.AttendanceCheck(request.PlayerId);
+        var playerUid = (long)HttpContext.Items["PlayerUid"];
 
-        return new UpdateNickNameResponse
+        var result = await _attendanceService.AttendanceCheck(playerUid);
+
+        return new AttendanceCheckResponse
         {
             Result = result
         };

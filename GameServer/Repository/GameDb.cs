@@ -71,6 +71,13 @@ public class GameDb : IGameDb
                 return null;
             }
 
+            var attendanceResult = await CreatePlayerAttendanceInfo(newPlayerInfo.PlayerUid, transaction);
+            if (!attendanceResult)
+            {
+                await transaction.RollbackAsync();
+                return null;
+            }
+
             await transaction.CommitAsync();
             return newPlayerInfo;
         }
@@ -125,6 +132,34 @@ public class GameDb : IGameDb
             _logger.LogError(ex, "Error adding initial items for playerUid: {PlayerUid}", playerUid);
             await transaction.RollbackAsync();
             return ErrorCode.AddFirstItemsForPlayerFail;
+        }
+    }
+
+    private async Task<bool> CreatePlayerAttendanceInfo(long playerUid, MySqlTransaction transaction)
+    {
+        try
+        {
+            var attendanceExists = await _queryFactory.Query("attendance")
+                .Where("player_uid", playerUid)
+                .ExistsAsync(transaction);
+
+            if (attendanceExists)
+            {
+                return true;
+            }
+
+            await _queryFactory.Query("attendance").InsertAsync(new
+            {
+                player_uid = playerUid,
+                attendance_cnt = 0,
+                recent_attendance_dt = (DateTime?)null
+            }, transaction);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating attendance info for playerUid: {PlayerUid}", playerUid);
+            return false;
         }
     }
 
@@ -538,5 +573,104 @@ public class GameDb : IGameDb
         });
     }
 
+
+    public async Task<AttendanceInfo?> GetAttendanceInfo(long playerUid)
+    {
+        var result = await _queryFactory.Query("attendance")
+        .Where("player_uid", playerUid)
+        .FirstOrDefaultAsync();
+
+        if (result == null)
+        {
+            return null;
+        }
+
+        var attendanceInfo = new AttendanceInfo
+        {
+            AttendanceCnt = result.attendance_cnt,
+            RecentAttendanceDate = result.recent_attendance_dt
+        };
+
+        return attendanceInfo;
+    }
+
+    public async Task<DateTime?> GetCurrentAttendanceDate(long playerUid)
+    {
+        var result = await _queryFactory.Query("attendance")
+            .Where("player_uid", playerUid)
+            .Select("recent_attendance_dt")
+            .FirstOrDefaultAsync<DateTime?>();
+
+        return result;
+    }
+
+    public async Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction)
+    {
+        var updateCountResult = await _queryFactory.Query("attendance")
+           .Where("player_uid", playerUid)
+           .IncrementAsync("attendance_cnt", 1, transaction);
+
+        var updateDateResult = await _queryFactory.Query("attendance")
+            .Where("player_uid", playerUid)
+            .UpdateAsync(new
+            {
+                recent_attendance_dt = DateTime.Now
+            }, transaction);
+
+        return updateCountResult > 0 && updateDateResult > 0;
+    }
+
+    public async Task<int> GetAttendanceCount(long playerUid, MySqlTransaction transaction)
+    {
+        var result = await _queryFactory.Query("attendance")
+            .Where("player_uid", playerUid)
+            .Select("attendance_cnt")
+            .FirstOrDefaultAsync<int>(transaction);
+
+        return result;
+    }
+    private AttendanceReward? GetAttendanceRewardByDaySeq(int count)
+    {
+        var rewards = _masterDb.GetAttendanceRewards();
+        return rewards.FirstOrDefault(reward => reward.DaySeq == count);
+    }
+
+    public async Task<bool> AddAttendanceRewardToPlayer(long playerUid, int attendanceCount, MySqlTransaction transaction)
+    {
+        var rewardItem = GetAttendanceRewardByDaySeq(attendanceCount);
+        if (rewardItem == null)
+        {
+            return false;
+        }
+
+        var addItemResult = await AddPlayerItem(playerUid, rewardItem.RewardItem, rewardItem.ItemCount, transaction);
+        return addItemResult;
+    }
+
+
+    public async Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation)
+    {
+        using var transaction = await _connection.BeginTransactionAsync();
+        try
+        {
+            var result = await operation(transaction);
+            if (result)
+            {
+                await transaction.CommitAsync();
+                return true;
+            }
+            else
+            {
+                await transaction.RollbackAsync();
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            _logger.LogError(ex, "Transaction failed");
+            return false;
+        }
+    }
 }
 

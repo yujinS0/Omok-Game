@@ -26,4 +26,12 @@ public interface IGameDb : IDisposable
     Task<bool> DeleteMail(long playerUid, Int64 mailId);
 
 
+    Task<AttendanceInfo?> GetAttendanceInfo(long playerUid);
+    Task<DateTime?> GetCurrentAttendanceDate(long playerUid);
+    Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction);
+    Task<int> GetAttendanceCount(long playerUid, MySqlTransaction transaction);
+    Task<bool> AddAttendanceRewardToPlayer(long playerUid, int attendanceCount, MySqlTransaction transaction);
+    
+    
+    Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation);
 }
