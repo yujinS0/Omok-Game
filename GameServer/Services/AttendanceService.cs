@@ -7,6 +7,7 @@ using GameServer.Services.Interfaces;
 using ServerShared;
 using StackExchange.Redis;
 using GameServer.Repository.Interfaces;
+using MySqlConnector;
 
 namespace GameServer.Services;
 
@@ -36,39 +37,16 @@ public class AttendanceService : IAttendanceService
 
     public async Task<ErrorCode> AttendanceCheck(long playerUid)
     {
-        // 최근 출석 일시 가져오기
-        var lastAttendanceDate = await _gameDb.GetCurrentAttendanceDate(playerUid);
+        var lastAttendanceDate = await _gameDb.GetRecentAttendanceDate(playerUid);
 
         if (lastAttendanceDate.HasValue && lastAttendanceDate.Value.Date == DateTime.Today)
         {
             return ErrorCode.AttendanceCheckFailAlreadyChecked;
         }
 
-        // 트랜잭션 처리
         var result = await _gameDb.ExecuteTransaction(async transaction =>
         {
-            // 출석 정보 업데이트
-            var updateResult = await _gameDb.UpdateAttendanceInfo(playerUid, transaction);
-            if (!updateResult)
-            {
-                return false;
-            }
-
-            // 출석 횟수 가져오기
-            var attendanceCount = await _gameDb.GetAttendanceCount(playerUid, transaction);
-            if (attendanceCount == -1)
-            {
-                return false;
-            }
-
-            // 보상 아이템 추가
-            var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, attendanceCount, transaction);
-            if (!rewardResult)
-            {
-                return false;
-            }
-
-            return true;
+            return await UpdateAttendanceInfoAndGiveReward(playerUid, transaction);
         });
 
         if (!result)
@@ -78,5 +56,27 @@ public class AttendanceService : IAttendanceService
 
         return ErrorCode.None;
     }
-    
+
+    private async Task<bool> UpdateAttendanceInfoAndGiveReward(long playerUid, MySqlTransaction transaction)
+    {
+        var updateResult = await _gameDb.UpdateAttendanceInfo(playerUid, transaction);
+        if (!updateResult)
+        {
+            return false;
+        }
+
+        var attendanceCount = await _gameDb.GetTodayAttendanceCount(playerUid, transaction);
+        if (attendanceCount == -1)
+        {
+            return false;
+        }
+
+        var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, attendanceCount, transaction);
+        if (!rewardResult)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

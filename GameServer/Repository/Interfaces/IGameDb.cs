@@ -27,9 +27,9 @@ public interface IGameDb : IDisposable
 
 
     Task<AttendanceInfo?> GetAttendanceInfo(long playerUid);
-    Task<DateTime?> GetCurrentAttendanceDate(long playerUid);
+    Task<DateTime?> GetRecentAttendanceDate(long playerUid);
     Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction);
-    Task<int> GetAttendanceCount(long playerUid, MySqlTransaction transaction);
+    Task<int> GetTodayAttendanceCount(long playerUid, MySqlTransaction transaction);
     Task<bool> AddAttendanceRewardToMailbox(long playerUid, int attendanceCount, MySqlTransaction transaction);
 
 

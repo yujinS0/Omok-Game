@@ -594,7 +594,7 @@ public class GameDb : IGameDb
         return attendanceInfo;
     }
 
-    public async Task<DateTime?> GetCurrentAttendanceDate(long playerUid)
+    public async Task<DateTime?> GetRecentAttendanceDate(long playerUid)
     {
         var result = await _queryFactory.Query("attendance")
             .Where("player_uid", playerUid)
@@ -620,7 +620,7 @@ public class GameDb : IGameDb
         return updateCountResult > 0 && updateDateResult > 0;
     }
 
-    public async Task<int> GetAttendanceCount(long playerUid, MySqlTransaction transaction)
+    public async Task<int> GetTodayAttendanceCount(long playerUid, MySqlTransaction transaction)
     {
         var result = await _queryFactory.Query("attendance")
             .Where("player_uid", playerUid)
