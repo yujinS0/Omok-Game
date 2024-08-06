@@ -1,6 +1,28 @@
 # 시퀀스 다이어그램 (Attendance)
-* 출석 체크 요청 (Attendance Check)
 * 출석 정보 가져오는 요청 (Attendance get info)
+* 출석 체크 요청 (Attendance Check)
+------------------------------
+
+## 출석 정보 가져오는 요청
+### 플레이어의 출석 정보 가져오는 요청 
+```mermaid
+sequenceDiagram
+	actor Player
+	participant Game Server
+  participant GameDB
+
+	Player ->> Game Server : 출석 정보 가져오기 요청(/attendance/get-info) 
+	Game Server ->> GameDB : 출석 정보 가져오기
+	GameDB -->> Game Server : 
+	alt 존재 X
+		Game Server -->> Player : 오류 응답
+	else 존재 O
+		Game Server -->> Player : 출석 정보 응답
+	end
+
+```
+
+
 ------------------------------
 
 ## 출석 체크 요청
@@ -31,27 +53,3 @@ sequenceDiagram
 
 
 ------------------------------
-
-
-## 출석 정보 가져오는 요청
-### 플레이어의 출석 정보 가져오는 요청 
-```mermaid
-sequenceDiagram
-	actor Player
-	participant Game Server
-  participant GameDB
-
-	Player ->> Game Server : 출석 정보 가져오기 요청(/attendance/get-info) 
-	Game Server ->> GameDB : 출석 정보 가져오기
-	GameDB -->> Game Server : 
-	alt 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : 출석 정보 응답
-	end
-
-```
-
-
-------------------------------
-
