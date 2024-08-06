@@ -13,7 +13,10 @@ public interface IGameDb : IDisposable
     Task<bool> UpdateNickName(string playerId, string newNickName);
     Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId);
     Task<long> GetPlayerUidByPlayerId(string playerId);
+
+
     Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize);
+
     Task<MailBoxList> GetPlayerMailBoxList(long playerUid, int skip, int pageSize);
     Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId);
     Task<(int, int, int)> GetMailItemInfo(long playerUid, long mailId);
@@ -21,5 +24,6 @@ public interface IGameDb : IDisposable
     Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction);
     Task<(bool, int?)> ReceiveMailItemTransaction(long playerUid, long mailId);
     Task<bool> DeleteMail(long playerUid, Int64 mailId);
+
 
 }

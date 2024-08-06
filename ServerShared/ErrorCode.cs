@@ -211,6 +211,7 @@ public enum ErrorCode : UInt16
     FailToReadMailDetail = 8022,
 
     // Attendance
+    AttendanceInfoNotFound = 9000,
     AttendanceInfoFailException = 9001,
     AttendanceCheckFailAlreadyChecked = 9002,
     AttendanceCheckFailException = 9003,
