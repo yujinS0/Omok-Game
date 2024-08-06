@@ -90,8 +90,6 @@ public class GameDb : IGameDb
         {
             foreach (var item in firstItems)
             {
-                //TODO: (08.05) 매직넘버를 사용하면 안됩니다
-                //=> 수정 완료했습니다.
                 if (item.ItemCode == GameConstants.GameMoneyItemCode)
                 {
                     await _queryFactory.Query("player_money").InsertAsync(new
@@ -118,8 +116,6 @@ public class GameDb : IGameDb
                     }, transaction);
                 }
 
-                //TODO: (08.05) 아이템 넣다가 하나라도 실패가 발생하면 롤백해야 합니다.
-                //=> 수정 완료했습니다.
                 _logger.LogInformation($"Added item for player_uid={playerUid}: ItemCode={item.ItemCode}, Count={item.Count}");
             }
             return ErrorCode.None;
@@ -325,13 +321,6 @@ public class GameDb : IGameDb
 
     public async Task<MailBoxList> GetPlayerMailBoxList(long playerUid, int skip, int pageSize)
     {
-        //TODO: (08.05) 우편 보낸날짜로 정렬되나요? 
-        //TODO: (08.05) 우편 리스트를 보여주는 것인데 너무 많은 우편 정보를 보여주는 것 같습니다.
-        // 최근에 보낸 우편이 위에오도록 가져와야한다!!!
-        // "우편 제목, 첨부되어있는 아이템 종류, 받은 시간, 아이템 수령 여부"를 포함해야된다고 생각해 이런 식으로 가져왔습니다..!
-        // 전제 조건으로 스케쥴러가 매일 특정 시간에 유효기간이 지난 메일은 삭제했다고 하시죠 -> 넵!
-        // expire_dt 확인을 하지 않아도 됩니다.
-        //=> 수정 완료했습니다!
         var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
                                           .OrderByDesc("send_dt") // 최신 순으로 정렬
@@ -363,11 +352,6 @@ public class GameDb : IGameDb
 
     public async Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId) // GET 함수명만 수정하기. 의미 전달이 제대로 안된다. 
     {
-        //TODO: (08.05) 여기서 주는 것과 우편함 리스트에서 받는 것과 별로 내용 차이가 없네요 -> 질문 이후 추가적 피드백 내용 바탕으로 수정
-        //=> 수정 완료했습니다.
-
-        // 처음에 player_uid로 이 메일 아이디가 이 사람의 메일이 맞는지만 확인하는 로직 추가하기
-            // => 구현은 했지만, 아래의 FirstOrDefaultAsync에서 where절에 player_uid 추가(기존 방식)은 1번만 접근하니까 더 빠를 것 같아 여쭤보고 싶습니다!
         var mailExists = await _queryFactory.Query("mailbox")
                                             .Where("mail_id", mailId)
                                             .Where("player_uid", playerUid)
@@ -381,7 +365,6 @@ public class GameDb : IGameDb
 
 
         var result = await _queryFactory.Query("mailbox")
-                                    //.Where("player_uid", playerUid)
                                     .Where("mail_id", mailId)
                                     .FirstOrDefaultAsync();
 
@@ -434,11 +417,6 @@ public class GameDb : IGameDb
 
     public async Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction)
     {
-        //TODO: (08.05) 아이템으로 돈과 다이아몬드가 있을 수 있습니다
-        // 그리고 겹칠 수 있는 아이템이라면 겹쳐야 합니다
-        // masterData item 테이블의 필드에 겹칠 수 있는지에 대한 정보 추가
-        //=> 수정 완료했습니다.
-
         if (itemCode == GameConstants.GameMoneyItemCode)
         {
             var result = await _queryFactory.Query("player_money")
@@ -527,10 +505,6 @@ public class GameDb : IGameDb
 
     public async Task<bool> DeleteMail(long playerUid, Int64 mailId)
     {
-        //플레이어의 메일이 맞는지 확인하는 코드 추가 필요
-        //=> 이 부분 구현을 아래처럼 구현했는데, 그냥 처음부터 DeleteAsync할 때 Where 조건 2개 거는 방법(기존방법)이 더 나은 것일지 궁금합니다.
-        // (1번만 접근하니까 더 빠를 것 같아 여쭤보고 싶습니다!)
-        
         // 메일이 해당 플레이어의 메일인지 확인
         var mailExists = await _queryFactory.Query("mailbox")
                                             .Where("mail_id", mailId)
@@ -543,30 +517,10 @@ public class GameDb : IGameDb
             return false;
         }
 
-        //TODO: (08.05) mail_id가 유니크하므로 이것만 검색하면 됩니다
-        //=> 수정 완료했습니다.
         await _queryFactory.Query("mailbox")
                            .Where("mail_id", mailId)
                            .DeleteAsync();
-        return true;
-
-        // [1번의 쿼리만 사용하는 방법!]
-        //_logger.LogInformation("Deleted mail with ID {MailId} for Player UID {PlayerUid}.", mailId, playerUid);
-        //return true;
-
-        //var affectedRows = await _queryFactory.Query("mailbox")
-        //                                  .Where("mail_id", mailId)
-        //                                  .Where("player_uid", playerUid)
-        //                                  .DeleteAsync();
-
-        //if (affectedRows == 0)
-        //{
-        //    _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found or not deleted.", mailId, playerUid);
-        //    return false;
-        //}
-
-        //_logger.LogInformation("Deleted mail with ID {MailId} for Player UID {PlayerUid}.", mailId, playerUid);
-        //return true;
+        return true;        
     }
 
     public async Task SendMail(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt) // 아직 사용 안하는 함수 (추후 인자 class)

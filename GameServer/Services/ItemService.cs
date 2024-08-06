@@ -24,8 +24,6 @@ public class ItemService : IItemService
         _memoryDb = memoryDb;
     }
 
-    //TODO: (08.01) 반환하는 개수가 너무 많네요. 이정도는 클래스를 정의해서 반환하죠
-    //=> 수정 완료했습니다. 기존에 정의하고 사용하던 PlayerItem 활용
     public async Task<(ErrorCode, List<PlayerItem>)> GetPlayerItems(Int64 playerUid, int itemPageNum)
     {
         try
