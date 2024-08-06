@@ -118,15 +118,12 @@ public class GameService : IGameService
             return (ErrorCode.None, null);
         }
 
+        //TODO: (08.06) 가독성을 위해서 승리자, 패배자를 얻는 것은 함수로 분리하죠
         var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerId() : omokGameData.GetWhitePlayerId();
         var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerId() : omokGameData.GetBlackPlayerId();
 
         try
         {
-            //TODO: (08.05) 아직 작업 중인가요?
-            //=> 수정 완료했습니다
-            //TODO: UpdateGameResult 메서드 호출시 실패가 발생했을 때에 대한 부분이 없습니다(예 DB업데이트 실패 등)
-            //=> 수정 완료했습니다! (GameDb.UpdateGameResult 함수)
             var updateResult = await _gameDb.UpdateGameResult(winnerPlayerId, loserPlayerId, GameConstants.WinExp, GameConstants.LoseExp);
             if (!updateResult)
             {
@@ -177,8 +174,6 @@ public class GameService : IGameService
         });
     }
 
-    //TODO: (07.31) 코드를 함수로 나누어서 코드 가독성을 올려주시기 바랍니다.
-    //=> 수정 완료했습니다.
     public async Task<(ErrorCode, bool)> TurnChecking(string playerId)
     {
         var currentTurnPlayerId = await GetCurrentTurnPlayerId(playerId);
@@ -196,9 +191,6 @@ public class GameService : IGameService
         {
             return (ErrorCode.None, false);
         }
-
-        //TODO: (08.05) 이름이 원하는 행동과 맞지 않습니다. playerId가 현재 턴을 가진 플레이어가 맞는지 체크하는 함수인데 이 함수의 이름은 플레이어 정보를 요청하네요
-        //=> 수정 완료했습니다. 이전에는 불필요한 함수 호출을 하고있던 것 같아, 좀 더 간결하게 바꿨습니다!
     }
 
     public async Task<(ErrorCode, byte[]?)> GetGameRawData(string playerId)

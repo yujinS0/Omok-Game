@@ -25,12 +25,8 @@ public class MailService : IMailService
         _memoryDb = memoryDb;
     }
 
-    //TODO: (08.05) 이렇게 반환 개수가 많으면 클래스를 정의해서 반환하세요
-    //=> 수정 완료했습니다.
     public async Task<(ErrorCode, MailBoxList)> GetPlayerMailBoxList(Int64 playerUid, int pageNum)
     {
-        //TODO: (08.05) playerUid == -1 는 할필요가 없습니다. 이것이 오류라면 미들웨어도 문제이니
-        //=> 수정 완료했습니다.
         try
         {
             int skip = (pageNum - 1) * PageSize; // SYJ 페이징할 때 고려해봐야함!
@@ -52,9 +48,6 @@ public class MailService : IMailService
 
     public async Task<(ErrorCode, MailDetail)> ReadMail(Int64 playerUid, Int64 mailId)
     {
-        //TODO: (08.05) 메일을 읽었다면 읽었다는 체크를 해야합니다
-        //=> 메일 읽었는지 여부 대신 아이템 수령 여부로 대체되었습니다!
-
         var mailDetail = await _gameDb.ReadMailDetail(playerUid, mailId);
         if (mailDetail == null)
         {
@@ -64,22 +57,17 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail);
     }
 
+    //TODO: (08.06) 반환 값에서 에러 코드를 주고 있으므로 int를 null 줄 필요 없습니다. 값타입은 원칙적으로 null 이라는 것이 없으니 특이하게 사용하지 않는 것이 좋습니다.
     public async Task<(ErrorCode, int?)> ReceiveMailItem(long playerUid, long mailId)
     {
-        //TODO: (08.05) 아직 아이템을 가져 가지 않은지와, 어떤 아이템인지만 알면 되겠네요
-        //=> 수정 완료했습니다. (ReceiveMailItemTransaction 내부에 GetMailItemInfo로 아이템 정보만 가져오기)
-        var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); // 현재는 트랜잭션 처리 GameDb에서 한번에 진행 하기 위해 gameDb에 함수 생성
-                                                                                                // (리턴값으로 받아서 인자로 넘겨주는 식으로 서비스에서 진행하는게 좋을까요..?)
+        var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); 
 
         if (!success)
         {
             return (ErrorCode.GameDatabaseError, null);
         }
 
-        return (ErrorCode.None, receiveYn); 
-        //TODO: (08.05) 아아 아이템을 가져갔다고 업데이트할 것 같은데 이 함수가 무엇을 업데이트 하는지 모르겠네요
-        //TODO: (08.05) 아이템 가져가기가 실패하면 위의 것도 롤백해야합니다
-        //=> 수정 완료했습니다.
+        return (ErrorCode.None, receiveYn);         
     }
 
 

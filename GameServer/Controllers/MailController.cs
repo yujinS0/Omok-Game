@@ -23,8 +23,6 @@ public class MailController : ControllerBase
     [HttpPost("get-mailbox")]
     public async Task<MailBoxResponse> GetPlayerMailBoxList([FromBody] GetPlayerMailBoxRequest request)
     {
-        //TODO: (08.05) 미들웨어를 통과했으면 PlayerUid는 무조건 있다고 가정하죠.
-        //=> 수정 완료했습니다. (아래 함수들까지 다 적용)
         var playerUid = (long)HttpContext.Items["PlayerUid"];
         (ErrorCode result, MailBoxList mailBoxList) = await _mailService.GetPlayerMailBoxList(playerUid, request.PageNum);
 

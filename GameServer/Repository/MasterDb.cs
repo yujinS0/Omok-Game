@@ -37,9 +37,8 @@ public class MasterDb : IMasterDb
 
     public async Task<bool> Load()
     {
-        //TODO: (08.05) 함수가 너무 큽니다. 적절하게 분리해주세요
-        //=> 수정 완료했습니다
         MySqlConnection connection = null;
+        
         try
         {
             connection = new MySqlConnection(_dbConfig.Value.MasterDBConnection);
