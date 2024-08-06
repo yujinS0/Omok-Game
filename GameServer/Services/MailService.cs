@@ -74,7 +74,7 @@ public class MailService : IMailService
     {
         //TODO: (08.05) 아직 아이템을 가져 가지 않은지와, 어떤 아이템인지만 알면 되겠네요
         //=> 수정 완료했습니다.
-        var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); // 트랜잭션 처리 GameDb.cs에서 진행중..
+        var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); // 트랜잭션 처리 GameDb에서 진행
 
         if (!success)
         {
@@ -88,25 +88,29 @@ public class MailService : IMailService
     }
 
 
-    public async Task<ErrorCode> DeleteMail(Int64 playerUid, long mailId)
+    public async Task<ErrorCode> DeleteMail(long playerUid, long mailId)
     {
         if (playerUid == -1)
         {
             return ErrorCode.InValidPlayerUidError;
         }
 
-        var mailDetail = await _gameDb.GetMailDetail(playerUid, mailId);
-        if (mailDetail == null)
+        var (receiveYn, itemCode, itemCnt) = await _gameDb.GetMailItemInfo(playerUid, mailId);
+        if (receiveYn == -1)
         {
             return ErrorCode.MailNotFound;
         }
 
-        if (mailDetail.ReceiveYn == 0) // 보상 미수령 상태 확인
+        if (receiveYn == 0) // 보상 미수령 상태 확인
         {
             return ErrorCode.FailToDeleteMailItemNotReceived;
         }
 
-        await _gameDb.DeleteMail(playerUid, mailId);
+        var deleteResult = await _gameDb.DeleteMail(playerUid, mailId);
+        if (!deleteResult)
+        {
+            return ErrorCode.MailNotFound;
+        }
 
         return ErrorCode.None;
     }

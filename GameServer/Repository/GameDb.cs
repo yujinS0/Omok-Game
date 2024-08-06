@@ -43,7 +43,7 @@ public class GameDb : IGameDb
             var newPlayerInfo = new PlayerInfo
             {
                 PlayerId = playerId,
-                NickName = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 27), // 초기 닉네임 랜덤 생성
+                NickName = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 27),
                 Exp = 0,
                 Level = 1,
                 Win = 0,
@@ -365,13 +365,25 @@ public class GameDb : IGameDb
     public async Task<MailDetail> GetMailDetail(long playerUid, Int64 mailId) // GET 함수명만 수정하기. 의미 전달이 제대로 안된다. 
     {
         //TODO: (08.05) 여기서 주는 것과 우편함 리스트에서 받는 것과 별로 내용 차이가 없네요 -> 질문 이후 추가적 피드백 내용 바탕으로 수정
-        //=>
+        //=> 수정 완료했습니다.
         // 아래 피드백처럼 여기서도 그냥 mailId로 읽어오도록 수정하겠습니다.
 
         // 처음에 player_uid로 이 메일 아이디가 이 사람의 메일이 맞는지만 확인하는 로직 추가하기
+            // => 구현은 했지만, 아래의 FirstOrDefaultAsync에서 where절에 player_uid 추가(기존 방식)은 1번만 접근하니까 더 빠를 것 같아 여쭤보고 싶습니다!
+        var mailExists = await _queryFactory.Query("mailbox")
+                                            .Where("mail_id", mailId)
+                                            .Where("player_uid", playerUid)
+                                            .ExistsAsync();
+
+        if (!mailExists)
+        {
+            _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
+            return null;
+        }
+
 
         var result = await _queryFactory.Query("mailbox")
-                                    .Where("player_uid", playerUid) // 여기서 where 절에 player_uid는 필요없 
+                                    //.Where("player_uid", playerUid)
                                     .Where("mail_id", mailId)
                                     .FirstOrDefaultAsync();
 
@@ -516,15 +528,49 @@ public class GameDb : IGameDb
         }
     }
 
-    public async Task DeleteMail(long playerUid, Int64 mailId)
+    public async Task<bool> DeleteMail(long playerUid, Int64 mailId)
     {
-        // TODO SYJ : 플레이어의 메일이 맞는지 확인하는 코드 추가 필요
+        //플레이어의 메일이 맞는지 확인하는 코드 추가 필요
+        //=> 이 부분 구현을 아래처럼 구현했는데, 그냥 처음부터 DeleteAsync할 때 Where 조건 2개 거는 방법(기존방법)이 더 나은 것일지 궁금합니다.
+        // (1번만 접근하니까 더 빠를 것 같아 여쭤보고 싶습니다!)
+        
+        // 메일이 해당 플레이어의 메일인지 확인
+        var mailExists = await _queryFactory.Query("mailbox")
+                                            .Where("mail_id", mailId)
+                                            .Where("player_uid", playerUid)
+                                            .ExistsAsync();
+
+        if (!mailExists)
+        {
+            _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
+            return false;
+        }
 
         //TODO: (08.05) mail_id가 유니크하므로 이것만 검색하면 됩니다
+        //=> 수정 완료했습니다.
         //=> 수정 완료했습니다.
         await _queryFactory.Query("mailbox")
                            .Where("mail_id", mailId)
                            .DeleteAsync();
+        return true;
+
+        // 1번의 쿼리만 사용하는 방법!
+        //_logger.LogInformation("Deleted mail with ID {MailId} for Player UID {PlayerUid}.", mailId, playerUid);
+        //return true;
+
+        //var affectedRows = await _queryFactory.Query("mailbox")
+        //                                  .Where("mail_id", mailId)
+        //                                  .Where("player_uid", playerUid)
+        //                                  .DeleteAsync();
+
+        //if (affectedRows == 0)
+        //{
+        //    _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found or not deleted.", mailId, playerUid);
+        //    return false;
+        //}
+
+        //_logger.LogInformation("Deleted mail with ID {MailId} for Player UID {PlayerUid}.", mailId, playerUid);
+        //return true;
     }
 
 
