@@ -323,7 +323,6 @@ public class GameDb : IGameDb
         return items;
     }
 
-    // 리턴값이 너무 많음 이건 class로 묶어서 하기. item 처럼
     public async Task<MailBoxList> GetPlayerMailBoxList(long playerUid, int skip, int pageSize)
     {
         //TODO: (08.05) 우편 보낸날짜로 정렬되나요? 
@@ -366,7 +365,6 @@ public class GameDb : IGameDb
     {
         //TODO: (08.05) 여기서 주는 것과 우편함 리스트에서 받는 것과 별로 내용 차이가 없네요 -> 질문 이후 추가적 피드백 내용 바탕으로 수정
         //=> 수정 완료했습니다.
-        // 아래 피드백처럼 여기서도 그냥 mailId로 읽어오도록 수정하겠습니다.
 
         // 처음에 player_uid로 이 메일 아이디가 이 사람의 메일이 맞는지만 확인하는 로직 추가하기
             // => 구현은 했지만, 아래의 FirstOrDefaultAsync에서 where절에 player_uid 추가(기존 방식)은 1번만 접근하니까 더 빠를 것 같아 여쭤보고 싶습니다!
@@ -437,10 +435,9 @@ public class GameDb : IGameDb
     public async Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction)
     {
         //TODO: (08.05) 아이템으로 돈과 다이아몬드가 있을 수 있습니다
-        //=> 이 부분은 서비스에서 처리하는 게 맞는 것 같아 서비스에 추가
         // 그리고 겹칠 수 있는 아이템이라면 겹쳐야 합니다
-        // => 일단 지금 존재하는 아이템들은 모두 겹칠 수 있도록,
-        //  masterData item 테이블의 필드에 겹칠 수 있는지에 대한 정보 추가
+        // masterData item 테이블의 필드에 겹칠 수 있는지에 대한 정보 추가
+        //=> 수정 완료했습니다.
 
         if (itemCode == GameConstants.GameMoneyItemCode)
         {
@@ -548,13 +545,12 @@ public class GameDb : IGameDb
 
         //TODO: (08.05) mail_id가 유니크하므로 이것만 검색하면 됩니다
         //=> 수정 완료했습니다.
-        //=> 수정 완료했습니다.
         await _queryFactory.Query("mailbox")
                            .Where("mail_id", mailId)
                            .DeleteAsync();
         return true;
 
-        // 1번의 쿼리만 사용하는 방법!
+        // [1번의 쿼리만 사용하는 방법!]
         //_logger.LogInformation("Deleted mail with ID {MailId} for Player UID {PlayerUid}.", mailId, playerUid);
         //return true;
 
