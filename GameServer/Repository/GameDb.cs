@@ -459,13 +459,13 @@ public class GameDb : IGameDb
             return result > 0;
         }
     }
-    public async Task<(bool, int?)> ReceiveMailItemTransaction(long playerUid, long mailId)
+    public async Task<(bool, int)> ReceiveMailItemTransaction(long playerUid, long mailId)
     {
         var (receiveYn, itemCode, itemCnt) = await GetMailItemInfo(playerUid, mailId);
 
         if (receiveYn == -1)
         {
-            return (false, null); // Mail not found
+            return (false, receiveYn); // Mail not found
         }
 
         if (receiveYn == 1) // 이미 수령한 경우
@@ -481,14 +481,14 @@ public class GameDb : IGameDb
                 if (!updateStatus)
                 {
                     await transaction.RollbackAsync();
-                    return (false, null);
+                    return (false, receiveYn);
                 }
 
                 var addItemResult = await AddPlayerItem(playerUid, itemCode, itemCnt, transaction);
                 if (!addItemResult)
                 {
                     await transaction.RollbackAsync();
-                    return (false, null);
+                    return (false, receiveYn);
                 }
 
                 await transaction.CommitAsync();
@@ -498,7 +498,7 @@ public class GameDb : IGameDb
             {
                 await transaction.RollbackAsync();
                 _logger.LogError(ex, "Transaction failed while receiving mail item for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
-                return (false, null);
+                return (false, receiveYn);
             }
         }
     }
