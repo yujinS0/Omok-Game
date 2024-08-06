@@ -29,3 +29,7 @@
 * 우편함에서 우편을 열어 내용을 보는 요청 (Read Mail)
 * 우편에 있는 아이템 수령하는 요청 (Receive item)
 * 우편을 삭제하는 요청 (Delete Mail)
+
+## [Attendance](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Attendance.md)
+* 출석 체크 요청 (Attendance Check)
+* 출석 정보 가져오는 요청 (Attendance get info)
