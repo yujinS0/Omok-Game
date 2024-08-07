@@ -727,17 +727,33 @@ public class GameDb : IGameDb
 
     public async Task<int> GetTodayAttendanceCount(long playerUid, MySqlTransaction transaction)
     {
-        var result = await _queryFactory.Query("attendance")
+        try
+        {
+            var result = await _queryFactory.Query("attendance")
             .Where("player_uid", playerUid)
             .Select("attendance_cnt")
             .FirstOrDefaultAsync<int>(transaction);
 
-        return result;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting today's attendance count for playerUid: {PlayerUid}", playerUid);
+            return -1;
+        }
     }
     private AttendanceReward? GetAttendanceRewardByDaySeq(int count)
     {
-        var rewards = _masterDb.GetAttendanceRewards();
-        return rewards.FirstOrDefault(reward => reward.DaySeq == count);
+        try
+        {
+            var rewards = _masterDb.GetAttendanceRewards();
+            return rewards.FirstOrDefault(reward => reward.DaySeq == count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting attendance reward by day sequence.");
+            return null;
+        }
     }
 
 
@@ -753,19 +769,27 @@ public class GameDb : IGameDb
             return false;
         }
 
-        var result = await _queryFactory.Query("mailbox").InsertAsync(new
+        try
         {
-            player_uid = playerUid,
-            title = $"{attendanceCount}차 출석 보상",
-            content = $"안녕하세요? 출석 보상 {attendanceCount}일차 입니다.",
-            item_code = reward.RewardItem,
-            item_cnt = reward.ItemCount,
-            send_dt = DateTime.Now,
-            expire_dt = DateTime.Now.AddDays(GameConstants.AttendanceRewardExpireDate),
-            receive_yn = 0
-        }, transaction);
+            var result = await _queryFactory.Query("mailbox").InsertAsync(new
+            {
+                player_uid = playerUid,
+                title = $"{attendanceCount}차 출석 보상",
+                content = $"안녕하세요? 출석 보상 {attendanceCount}일차 입니다.",
+                item_code = reward.RewardItem,
+                item_cnt = reward.ItemCount,
+                send_dt = DateTime.Now,
+                expire_dt = DateTime.Now.AddDays(GameConstants.AttendanceRewardExpireDate),
+                receive_yn = 0
+            }, transaction);
 
-        return result > 0;
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding attendance reward to mailbox for playerUid: {PlayerUid}, attendanceCount: {AttendanceCount}", playerUid, attendanceCount);
+            return false;
+        }
     }
 
     public async Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation)
