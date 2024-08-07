@@ -11,7 +11,8 @@ public enum OmokStone
 
 //TODO: (08.07) 객체 안에 오목 로직도 있어서 이름에 Data 라는 것이 붙는 것은 알맞지 않습니다.
 // 이르만 보면 단순하게 데이터만 가지고 있는 것 같습니다
-public class OmokGameData
+//=> 수정 완료했습니다. 게임의 상태 관리 및 게임 로직을 담고 있어서 Engine으로 선택했습니다.
+public class OmokGameEngine
 {
     public const int BoardSize = 15;
     public const int BoardSizeSquare = BoardSize * BoardSize;

@@ -709,14 +709,14 @@ public class GameDb : IGameDb
         try
         {
             var updateResult = await _queryFactory.Query("attendance")
-        .Where("player_uid", playerUid)
-        .UpdateAsync(new Dictionary<string, object>
-            {
-                { "attendance_cnt", new SqlKata.UnsafeLiteral("attendance_cnt + 1") },
-                { "recent_attendance_dt", DateTime.Now }
-            }, transaction);
+                .Where("player_uid", playerUid)
+                .UpdateAsync(new Dictionary<string, object>
+                    {
+                        { "attendance_cnt", new SqlKata.UnsafeLiteral("attendance_cnt + 1") },
+                        { "recent_attendance_dt", DateTime.Now }
+                    }, transaction);
 
-            return updateResult > 0;
+                    return updateResult > 0;
         }
         catch (Exception ex)
         {
