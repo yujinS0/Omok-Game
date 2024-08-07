@@ -57,8 +57,6 @@ public class MailService : IMailService
         return (ErrorCode.None, mailDetail);
     }
 
-    //TODO: (08.06) 반환 값에서 에러 코드를 주고 있으므로 int를 null 줄 필요 없습니다. 값타입은 원칙적으로 null 이라는 것이 없으니 특이하게 사용하지 않는 것이 좋습니다.
-    //=> 넵 수정 완료했습니다.
     public async Task<(ErrorCode, int)> ReceiveMailItem(long playerUid, long mailId)
     {
         var (success, receiveYn) = await _gameDb.ReceiveMailItemTransaction(playerUid, mailId); 

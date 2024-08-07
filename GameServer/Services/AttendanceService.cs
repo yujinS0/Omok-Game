@@ -65,6 +65,7 @@ public class AttendanceService : IAttendanceService
             return false;
         }
 
+        //TODO: (08.07) 이 메서드를 호출하기 전에 이미 출석 정보는 알고 있는데 또 정보를 가져올 필요가 있나요?
         var attendanceCount = await _gameDb.GetTodayAttendanceCount(playerUid, transaction);
         if (attendanceCount == -1)
         {

@@ -28,6 +28,7 @@ public class AttendanceController : ControllerBase
 
         if (result != ErrorCode.None)
         {
+            //TODO: (08.07) 결과가 실패인 경우는 그 이외의 데이터는 설정할 필요가 없습니다.
             return new AttendanceInfoResponse
             {
                 Result = result,
