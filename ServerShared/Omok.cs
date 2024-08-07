@@ -21,16 +21,14 @@ public class OmokGameEngine
     const byte WhiteStone = 2;
 
     // 오목판 정보 BoardSize * BoardSize
-    // 블랙 플레이어의 이름: 1(이름 바이트 수) + N(앞에서 구한 길이)
-    // 화이트 플레이어의 이름: 1(이름 바이트 수) + N(앞에서 구한 길이)
     byte[] _rawData;
 
     string _blackPlayer;
     string _whitePlayer;
 
 
-    OmokStone _turnPlayerStone; // 턴 받은 플레이어
-    UInt64 _turnTimeMilli; // 턴 받은 시간 유닉스 시간(초)
+    OmokStone _turnPlayerStone;
+    UInt64 _turnTimeMilli;
     OmokStone _winner;
 
 
@@ -92,7 +90,7 @@ public class OmokGameEngine
         return _rawData;
     }
 
-    public OmokStone GetStoneAt(int x, int y) // 좌표의 돌 색
+    public OmokStone GetStoneAt(int x, int y)
     {
         int index = y * BoardSize + x;
         return (OmokStone)_rawData[index];
