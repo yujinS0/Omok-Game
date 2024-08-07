@@ -113,7 +113,7 @@ public enum ErrorCode : UInt16
     GameWhiteNotFound = 2405,
     GameTurnNotFound = 2406,
     GameTurnPlayerNotFound = 2407,
-    UserGameDataNotFound = 2401,
+    PlayerGameDataNotFound = 2401,
 
     GameEnd = 2500,
     GameAlreadyEnd = 2501,

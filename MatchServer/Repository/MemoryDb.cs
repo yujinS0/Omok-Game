@@ -47,18 +47,18 @@ public class MemoryDb : IMemoryDb
         }
     }
 
-    public async Task StorePlayingUserInfoAsync(string key, PlayingUserInfo playingUserInfo, TimeSpan expiry) // key로 PlayingUserInfo 저장
+    public async Task StoreInGamePlayerInfoAsync(string key, InGamePlayerInfo inGamePlayerInfo, TimeSpan expiry) // key로 InGamePlayerInfo 저장
     {
         try
         {
-            var redisString = new RedisString<PlayingUserInfo>(_redisConn, key, expiry);
-            _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
-            await redisString.SetAsync(playingUserInfo);
-            _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+            var redisString = new RedisString<InGamePlayerInfo>(_redisConn, key, expiry);
+            _logger.LogInformation("Attempting to store playing player info: Key={Key}, GameInfo={inGamePlayerInfo}", key, inGamePlayerInfo);
+            await redisString.SetAsync(inGamePlayerInfo);
+            _logger.LogInformation("Stored playing player info: Key={Key}, GameInfo={inGamePlayerInfo}", key, inGamePlayerInfo);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to store playing user info: Key={Key}", key);
+            _logger.LogError(ex, "Failed to store playing player info: Key={Key}", key);
         }
     }
 

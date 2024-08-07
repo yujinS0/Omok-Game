@@ -11,11 +11,11 @@ public class KeyGenerator
         return $"M_{playerId}_Result";
     }
 
-    public static string PlayingUser(string playerId)
+    public static string InGamePlayerInfo(string playerId)
     {
-        return $"P_{playerId}_Info";
+        return $"GP_{playerId}_Info";
     }
-    public static string UserLogin(string playerId)
+    public static string PlayerLogin(string playerId)
     {
         return $"U_{playerId}_Login";
     }

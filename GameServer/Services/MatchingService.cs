@@ -51,7 +51,7 @@ public class MatchingService : IMatchingService
 
         if (errorCode == ErrorCode.None && matchResult != null)
         {
-            await InitializePlayingUser(playerId, matchResult.GameRoomId);
+            await InitializeInGamePlayerInfo(playerId, matchResult.GameRoomId);
         }
 
         return (errorCode, matchResult);
@@ -70,16 +70,16 @@ public class MatchingService : IMatchingService
         return (ErrorCode.None, null);
     }
 
-    private async Task<ErrorCode> InitializePlayingUser(string playerId, string gameRoomId)
+    private async Task<ErrorCode> InitializeInGamePlayerInfo(string playerId, string gameRoomId)
     {
-        var userGameDataKey = KeyGenerator.PlayingUser(playerId);
+        var inGamePlayerKey = KeyGenerator.InGamePlayerInfo(playerId);
 
-        var userGameData = new UserGameData
+        var inGamePlayerInfo = new InGamePlayerInfo
         {
             GameRoomId = gameRoomId
         };
 
-        var success = await _memoryDb.StorePlayingUserInfo(userGameDataKey, userGameData);
+        var success = await _memoryDb.StoreInGamePlayerInfo(inGamePlayerKey, inGamePlayerInfo);
         if (success)
         {
             return ErrorCode.None;

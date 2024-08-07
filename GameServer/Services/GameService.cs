@@ -43,7 +43,6 @@ public class GameService : IGameService
                 return (ErrorCode.UpdateGameDataFailException, null);
             }
 
-            // 오목 두고 승자 체크하기
             var (result, winner) = await CheckForWinner(omokGameData);
             if (result != ErrorCode.None)
             {
@@ -71,16 +70,16 @@ public class GameService : IGameService
 
     private async Task<(ErrorCode, OmokGameEngine, string)> ValidatePlayerTurn(string playerId)
     {
-        string playingUserKey = KeyGenerator.PlayingUser(playerId);
-        UserGameData userGameData = await _memoryDb.GetPlayingUserInfo(playingUserKey);
+        string inGamePlayerKey = KeyGenerator.InGamePlayerInfo(playerId);
+        InGamePlayerInfo inGamePlayerInfo = await _memoryDb.GetInGamePlayerInfo(inGamePlayerKey);
 
-        if (userGameData == null)
+        if (inGamePlayerInfo == null)
         {
-            _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.UserGameDataNotFound, null, null);
+            _logger.LogError("Failed to retrieve playing player info for PlayerId: {PlayerId}", playerId);
+            return (ErrorCode.PlayerGameDataNotFound, null, null);
         }
 
-        string gameRoomId = userGameData.GameRoomId;
+        string gameRoomId = inGamePlayerInfo.GameRoomId;
 
         byte[] rawData = await _memoryDb.GetGameData(gameRoomId);
         if (rawData == null)
@@ -137,25 +136,6 @@ public class GameService : IGameService
 
         return (ErrorCode.None, new Winner { Stone = omokGameData.GetWinnerStone(), PlayerId = winnerPlayerId });
     }
-
-    //private (string winnerPlayerId, string loserPlayerId) GetWinnerAndLoser(OmokStone winnerStone, OmokGameEngine omokGameData)
-    //{
-    //    string winnerPlayerId;
-    //    string loserPlayerId;
-
-    //    if (winnerStone == OmokStone.Black)
-    //    {
-    //        winnerPlayerId = omokGameData.GetBlackPlayerId();
-    //        loserPlayerId = omokGameData.GetWhitePlayerId();
-    //    }
-    //    else
-    //    {
-    //        winnerPlayerId = omokGameData.GetWhitePlayerId();
-    //        loserPlayerId = omokGameData.GetBlackPlayerId();
-    //    }
-
-    //    return (winnerPlayerId, loserPlayerId);
-    //}
 
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId)
     {
