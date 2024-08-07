@@ -7,6 +7,7 @@
 @inject NavigationManager Navigation
 @inject PlayerService PlayerService
 @inject MailService MailService
+@inject AttendanceService AttendanceService
 @using AntDesign
 @inject MessageService _message
 
@@ -88,6 +89,7 @@
     private List<PlayerItem> playerItems;
     private List<MailDetail> mailboxItems;
     private MailDetail? selectedMail;
+    private AttendanceInfo? attendanceInfo;
 
     protected override async Task OnInitializedAsync()
     {
@@ -450,19 +452,111 @@
 
     ////////////////////////////////////////////////////////////////////////////
     //// 출석부
-    private void ToggleAttendance()
+    private async Task ToggleAttendance()
     {
-        ToggleOverlayContent(builder =>
+        if (OverlayContent != null)
         {
-            builder.AddContent(0, "출석부 내용");
-        });
+            OverlayContent = null;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await LoadAttendanceInfo(); // 출석 정보 불러오기
+
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
+    private async Task LoadAttendanceInfo()
+    {
+        var playerId = sessionStorageId;
+        var response = await AttendanceService.GetAttendanceInfoAsync(playerId);
+
+        if (response.Result == ErrorCode.None)
+        {
+            attendanceInfo = new AttendanceInfo
+                {
+                    AttendanceCnt = response.AttendanceCnt,
+                    RecentAttendanceDate = response.RecentAttendanceDate
+                };
+        }
+        else
+        {
+            attendanceInfo = null;
+        }
+
+        OverlayContent = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.OpenElement(1, "h3");
+            builder.AddContent(2, "출석부");
+            builder.CloseElement();
+            if (attendanceInfo != null)
+            {
+                builder.OpenElement(3, "p");
+                builder.AddContent(4, $"이번 달 출석 횟수: {attendanceInfo.AttendanceCnt}");
+                builder.CloseElement();
+                builder.OpenElement(5, "p");
+                builder.AddContent(6, $"최근 출석 날짜: {attendanceInfo.RecentAttendanceDate?.ToString("yyyy-MM-dd") ?? "출석 기록 없음"}");
+                builder.CloseElement();
+                if (attendanceInfo.RecentAttendanceDate?.Date != DateTime.Today)
+                {
+                    builder.OpenElement(7, "button");
+                    builder.AddAttribute(8, "class", "btn btn-primary");
+                    builder.AddAttribute(9, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, CheckAttendance));
+                    builder.AddContent(10, "출석 체크");
+                    builder.CloseElement();
+                }
+                else
+                {
+                    builder.OpenElement(11, "p");
+                    builder.AddContent(12, "오늘 출석 완료!");
+                    builder.CloseElement();
+                }
+            }
+            else
+            {
+                builder.OpenElement(13, "p");
+                builder.AddContent(14, "출석 정보를 불러오지 못했습니다.");
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+        };
+    }
+
+    private async Task CheckAttendance()
+    {
+        var playerId = sessionStorageId;
+        var response = await AttendanceService.CheckAttendanceAsync(playerId);
+
+        if (response.Result == ErrorCode.None)
+        {
+            Console.WriteLine("Attendance checked successfully.");
+            await _message.Success("출석 체크 성공");
+        }
+        else if (response.Result == ErrorCode.AttendanceCheckFailAlreadyChecked)
+        {
+            Console.WriteLine("Attendance already checked today.");
+            await _message.Warning("오늘 이미 출석 체크를 완료했습니다.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to check attendance.");
+            await _message.Error("출석 체크 실패");
+        }
+
+        await LoadAttendanceInfo(); // 출석 정보 새로고침
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    //// 출석부
     private void ToggleShop()
     {
         ToggleOverlayContent(builder =>
         {
             builder.AddContent(0, "상점 내용");
+            builder.AddContent(1, "추후 공개 예정입니다 ^ㅁ^");
         });
     }
 }
