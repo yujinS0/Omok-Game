@@ -12,9 +12,6 @@ namespace OmokClient.Services;
 
 public class PlayerService : BaseService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ISessionStorageService _sessionStorage;
-
     public PlayerService(IHttpClientFactory httpClientFactory, ISessionStorageService sessionStorage)
             : base(httpClientFactory, sessionStorage) { }
 
