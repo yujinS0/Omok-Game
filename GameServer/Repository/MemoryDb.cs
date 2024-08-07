@@ -24,7 +24,7 @@ namespace GameServer.Repository
 
         public async Task<bool> SavePlayerLoginInfo(string playerId, Int64 playerUid, string token, string appVersion, string dataVersion)
         {
-            var key = KeyGenerator.UserLogin(playerId);
+            var key = KeyGenerator.PlayerLogin(playerId);
             var playerLoginInfo = new PlayerLoginInfo
             {
                 PlayerUid = playerUid,
@@ -33,101 +33,101 @@ namespace GameServer.Repository
                 DataVersion = dataVersion
             };
 
-            var redis = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var redis = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.PlayerLogin);
             bool result = await redis.SetAsync(playerLoginInfo);
             if (result)
             {
-                _logger.LogInformation("Successfully saved login info for UserId: {UserId}", playerId);
+                _logger.LogInformation("Successfully saved login info for playerId: {playerId}", playerId);
             }
             else
             {
-                _logger.LogWarning("Failed to save login info for UserId: {UserId}", playerId);
+                _logger.LogWarning("Failed to save login info for playerId: {playerId}", playerId);
             }
             return result;
         }
 
         public async Task<bool> DeletePlayerLoginInfo(string playerId)
         {
-            var key = KeyGenerator.UserLogin(playerId);
-            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var key = KeyGenerator.PlayerLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.PlayerLogin);
             bool result = await redisString.DeleteAsync();
             if (result)
             {
-                _logger.LogInformation("Successfully deleted login info for UserId: {UserId}", playerId);
+                _logger.LogInformation("Successfully deleted login info for playerId: {playerId}", playerId);
             }
             else
             {
-                _logger.LogWarning("Failed to delete login info for UserId: {UserId}", playerId);
+                _logger.LogWarning("Failed to delete login info for playerId: {playerId}", playerId);
             }
             return result;
         }
 
         public async Task<Int64> GetPlayerUid(string playerId)
         {
-            var key = KeyGenerator.UserLogin(playerId);
-            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var key = KeyGenerator.PlayerLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.PlayerLogin);
             var result = await redisString.GetAsync();
 
             if (result.HasValue)
             {
-                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                _logger.LogInformation("Successfully retrieved token for playerId={playerId}", playerId);
                 return result.Value.PlayerUid;
             }
             else
             {
-                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                _logger.LogWarning("No token found for playerId={playerId}", playerId);
                 return -1;
             }
         }
 
         public async Task<string> GetLoginToken(string playerId)
         {
-            var key = KeyGenerator.UserLogin(playerId);
-            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var key = KeyGenerator.PlayerLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.PlayerLogin);
             var result = await redisString.GetAsync();
 
             if (result.HasValue)
             {
-                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                _logger.LogInformation("Successfully retrieved token for playerId={playerId}", playerId);
                 return result.Value.Token;
             }
             else
             {
-                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                _logger.LogWarning("No token found for playerId={playerId}", playerId);
                 return null;
             }
         }
 
         public async Task<(Int64, string)> GetPlayerUidAndLoginToken(string playerId)
         {
-            var key = KeyGenerator.UserLogin(playerId);
-            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.UserLoginInfo);
+            var key = KeyGenerator.PlayerLogin(playerId);
+            var redisString = new RedisString<PlayerLoginInfo>(_redisConn, key, RedisExpireTime.PlayerLogin);
             var result = await redisString.GetAsync();
 
             if (result.HasValue)
             {
-                _logger.LogInformation("Successfully retrieved token for UserId={UserId}", playerId);
+                _logger.LogInformation("Successfully retrieved token for playerId={playerId}", playerId);
                 return (result.Value.PlayerUid , result.Value.Token);
             }
             else
             {
-                _logger.LogWarning("No token found for UserId={UserId}", playerId);
+                _logger.LogWarning("No token found for playerId={playerId}", playerId);
                 return (-1, null);
             }
         }
 
         public async Task<string> GetGameRoomId(string playerId)
         {
-            var key = KeyGenerator.PlayingUser(playerId);
-            var userGameData = await GetPlayingUserInfo(key);
+            var key = KeyGenerator.InGamePlayerInfo(playerId);
+            var playerGameData = await GetInGamePlayerInfo(key);
             
-            if (userGameData == null)
+            if (playerGameData == null)
             {
                 _logger.LogWarning("No game room found for PlayerId: {PlayerId}", playerId);
                 return null;
             }
 
-            return userGameData.GameRoomId;
+            return playerGameData.GameRoomId;
         }
 
         public async Task<byte[]> GetGameData(string key)
@@ -174,14 +174,14 @@ namespace GameServer.Repository
         {
             try
             {
-                var redisString = new RedisString<MatchResult>(_redisConn, key, RedisExpireTime.GameData); // 조회 결과 저장할 객체 초기화
+                var redisString = new RedisString<MatchResult>(_redisConn, key, RedisExpireTime.GameData);
                 _logger.LogInformation("Attempting to retrieve match result for Key={Key}", key);
-                var matchResult = await redisString.GetAsync(); // GET
+                var matchResult = await redisString.GetAsync();
 
                 if (matchResult.HasValue)
                 {
                     _logger.LogInformation("Retrieved match result for Key={Key}: MatchResult={MatchResult}", key, matchResult.Value);
-                    await redisString.DeleteAsync(); // 조회 후 삭제
+                    await redisString.DeleteAsync();
                     _logger.LogInformation("Deleted match result for Key={Key} from Redis", key);
                     return matchResult.Value;
                 }
@@ -199,45 +199,45 @@ namespace GameServer.Repository
         }
 
         // 매칭 완료 후 게임중인 유저 게임 데이터 저장하는
-        public async Task<bool> StorePlayingUserInfo(string key, UserGameData playingUserInfo) // key로 PlayingUserInfo 저장
+        public async Task<bool> StoreInGamePlayerInfo(string key, InGamePlayerInfo inGamePlayerInfo)
         {
             try
             {
-                var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
-                _logger.LogInformation("Attempting to store playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+                var redisString = new RedisString<InGamePlayerInfo>(_redisConn, key, RedisExpireTime.InGamePlayerInfo);
+                _logger.LogInformation("Attempting to store playing player info: Key={Key}, GameInfo={inGamePlayerInfo}", key, inGamePlayerInfo);
 
-                await redisString.SetAsync(playingUserInfo);
-                _logger.LogInformation("Stored playing user info: Key={Key}, GameInfo={playingUserInfo}", key, playingUserInfo);
+                await redisString.SetAsync(inGamePlayerInfo);
+                _logger.LogInformation("Stored playing player info: Key={Key}, GameInfo={inGamePlayerInfo}", key, inGamePlayerInfo);
                 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to store playing user info: Key={Key}", key);
+                _logger.LogError(ex, "Failed to store playing player info: Key={Key}", key);
                 return false;
             }
         }
-        public async Task<UserGameData> GetPlayingUserInfo(string key)
+        public async Task<InGamePlayerInfo> GetInGamePlayerInfo(string key)
         {
             try
             {
-                var redisString = new RedisString<UserGameData>(_redisConn, key, RedisExpireTime.PlayingUserInfo);
+                var redisString = new RedisString<InGamePlayerInfo>(_redisConn, key, RedisExpireTime.InGamePlayerInfo);
                 var result = await redisString.GetAsync();
 
                 if (result.HasValue)
                 {
-                    _logger.LogInformation("Successfully retrieved playing user info for Key={Key}", key);
+                    _logger.LogInformation("Successfully retrieved playing player info for Key={Key}", key);
                     return result.Value;
                 }
                 else
                 {
-                    _logger.LogWarning("No playing user info found for Key={Key}", key);
+                    _logger.LogWarning("No playing player info found for Key={Key}", key);
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to retrieve playing user info for Key={Key}", key);
+                _logger.LogError(ex, "Failed to retrieve playing player info for Key={Key}", key);
                 return null;
             }
         }

@@ -25,18 +25,9 @@ public class AttendanceController : ControllerBase
         var playerUid = (long)HttpContext.Items["PlayerUid"];
 
         var (result, attendanceInfo) = await _attendanceService.GetAttendanceInfo(playerUid);
-
-        if (result != ErrorCode.None)
-        {
-            //TODO: (08.07) 결과가 실패인 경우는 그 이외의 데이터는 설정할 필요가 없습니다.
-            return new AttendanceInfoResponse
-            {
-                Result = result,
-                AttendanceCnt = -1,
-                RecentAttendanceDate = null
-            };
-        }
-
+        
+        //TODO: (08.07) 결과가 실패인 경우는 그 이외의 데이터는 설정할 필요가 없습니다.
+        //=> 수정 완료했습니다.
         return new AttendanceInfoResponse
         {
             Result = result,

@@ -6,7 +6,7 @@ public class MatchResult
     public string Opponent { get; set; }
 }
 
-public class PlayingUserInfo
+public class InGamePlayerInfo
 {
     public string PlayerId { get; set; }
     public string GameRoomId { get; set; }

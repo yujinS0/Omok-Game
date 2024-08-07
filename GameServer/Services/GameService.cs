@@ -43,7 +43,6 @@ public class GameService : IGameService
                 return (ErrorCode.UpdateGameDataFailException, null);
             }
 
-            // 오목 두고 승자 체크하기
             var (result, winner) = await CheckForWinner(omokGameData);
             if (result != ErrorCode.None)
             {
@@ -69,18 +68,18 @@ public class GameService : IGameService
         }
     }
 
-    private async Task<(ErrorCode, OmokGameData, string)> ValidatePlayerTurn(string playerId)
+    private async Task<(ErrorCode, OmokGameEngine, string)> ValidatePlayerTurn(string playerId)
     {
-        string playingUserKey = KeyGenerator.PlayingUser(playerId);
-        UserGameData userGameData = await _memoryDb.GetPlayingUserInfo(playingUserKey);
+        string inGamePlayerKey = KeyGenerator.InGamePlayerInfo(playerId);
+        InGamePlayerInfo inGamePlayerInfo = await _memoryDb.GetInGamePlayerInfo(inGamePlayerKey);
 
-        if (userGameData == null)
+        if (inGamePlayerInfo == null)
         {
-            _logger.LogError("Failed to retrieve playing user info for PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.UserGameDataNotFound, null, null);
+            _logger.LogError("Failed to retrieve playing player info for PlayerId: {PlayerId}", playerId);
+            return (ErrorCode.PlayerGameDataNotFound, null, null);
         }
 
-        string gameRoomId = userGameData.GameRoomId;
+        string gameRoomId = inGamePlayerInfo.GameRoomId;
 
         byte[] rawData = await _memoryDb.GetGameData(gameRoomId);
         if (rawData == null)
@@ -89,7 +88,7 @@ public class GameService : IGameService
             return (ErrorCode.GameRoomNotFound, null, null);
         }
 
-        var omokGameData = new OmokGameData();
+        var omokGameData = new OmokGameEngine();
         omokGameData.Decoding(rawData);
 
         // 게임이 끝난 상태인지 체크
@@ -110,16 +109,16 @@ public class GameService : IGameService
         return (ErrorCode.None, omokGameData, gameRoomId);
     }
 
-    private async Task<(ErrorCode, Winner)> CheckForWinner(OmokGameData omokGameData)
+    private async Task<(ErrorCode, Winner)> CheckForWinner(OmokGameEngine omokGameData)
     {
-        var winnerStone = omokGameData.GetWinnerStone();
-        if (winnerStone == OmokStone.None)
+        //TODO: (08.07) GetWinnerAndLoser 이 함수는 omokGameData 객체의 메서드로 있는 것이 더 자연스럽습니다
+        //=> 수정 완료했습니다. 추가적으로 이전에 게임이 끝났는지 체크하는 로직도 해당 메서드로 이동시켰습니다.
+        var (winnerPlayerId, loserPlayerId) = omokGameData.GetWinnerAndLoser();
+
+        if (winnerPlayerId == null || loserPlayerId == null)
         {
             return (ErrorCode.None, null);
         }
-
-        //TODO: (08.07) GetWinnerAndLoser 이 함수는 omokGameData 객체의 메서드로 있는 것이 더 자연스럽습니다
-        var (winnerPlayerId, loserPlayerId) = GetWinnerAndLoser(winnerStone, omokGameData);
 
         try
         {
@@ -135,26 +134,7 @@ public class GameService : IGameService
             return (ErrorCode.UpdateGameResultFail, null);
         }
 
-        return (ErrorCode.None, new Winner { Stone = winnerStone, PlayerId = winnerPlayerId });
-    }
-
-    private (string winnerPlayerId, string loserPlayerId) GetWinnerAndLoser(OmokStone winnerStone, OmokGameData omokGameData)
-    {
-        string winnerPlayerId;
-        string loserPlayerId;
-
-        if (winnerStone == OmokStone.Black)
-        {
-            winnerPlayerId = omokGameData.GetBlackPlayerId();
-            loserPlayerId = omokGameData.GetWhitePlayerId();
-        }
-        else
-        {
-            winnerPlayerId = omokGameData.GetWhitePlayerId();
-            loserPlayerId = omokGameData.GetBlackPlayerId();
-        }
-
-        return (winnerPlayerId, loserPlayerId);
+        return (ErrorCode.None, new Winner { Stone = omokGameData.GetWinnerStone(), PlayerId = winnerPlayerId });
     }
 
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId)
@@ -166,7 +146,7 @@ public class GameService : IGameService
         }
         var rawData = await _memoryDb.GetGameData(gameRoomId);
 
-        var omokGameData = new OmokGameData();
+        var omokGameData = new OmokGameEngine();
 
         try
         {
@@ -230,7 +210,7 @@ public class GameService : IGameService
         return (ErrorCode.None, rawData);
     }
 
-    private async Task<OmokGameData> GetGameData(string playerId)
+    private async Task<OmokGameEngine> GetGameData(string playerId)
     {
         var gameRoomId = await _memoryDb.GetGameRoomId(playerId);
         if (gameRoomId == null)
@@ -244,7 +224,7 @@ public class GameService : IGameService
             return null;
         }
 
-        var omokGameData = new OmokGameData();
+        var omokGameData = new OmokGameEngine();
         omokGameData.Decoding(rawData);
 
         return omokGameData;

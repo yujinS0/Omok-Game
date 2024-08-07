@@ -93,7 +93,7 @@ namespace MatchServer.Services
         {
             try
             {
-                var omokGameData = new OmokGameData();
+                var omokGameData = new OmokGameEngine();
                 byte[] gameRawData = omokGameData.MakeRawData(playerA, playerB);
 
                 var task = _memoryDb.StoreGameDataAsync(gameRoomId, gameRawData, RedisExpireTime.GameData);

@@ -1,5 +1,6 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -34,6 +35,8 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<MatchingService>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<MailService>();
+builder.Services.AddScoped<AttendanceService>();
 
 // CustomAuthenticationStateProvider µî·Ï
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();

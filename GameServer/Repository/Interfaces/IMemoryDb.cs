@@ -11,10 +11,10 @@ public interface IMemoryDb : IDisposable
     Task<string> GetLoginToken(string playerId);
     Task<(Int64, string)> GetPlayerUidAndLoginToken(string playerId);
     Task<MatchResult> GetMatchResult(string key);
-    Task<bool> StorePlayingUserInfo(string key, UserGameData playingUserInfo);
+    Task<bool> StoreInGamePlayerInfo(string key, InGamePlayerInfo inGamePlayerInfo);
     Task<byte[]> GetGameData(string key);
     Task<bool> UpdateGameData(string key, byte[] rawData);
-    Task<UserGameData> GetPlayingUserInfo(string key);
+    Task<InGamePlayerInfo> GetInGamePlayerInfo(string key);
     Task<string> GetGameRoomId(string playerId);
     Task<bool> SetUserReqLock(string key);
     Task<bool> DelUserReqLock(string key);

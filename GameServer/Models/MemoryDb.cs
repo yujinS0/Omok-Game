@@ -7,7 +7,7 @@ public class PlayerLoginInfo
     public string AppVersion { get; set; }
     public string DataVersion { get; set; }
 }
-public class UserGameData
+public class InGamePlayerInfo
 {
     public string GameRoomId { get; set; }
     public DateTime CreatedAt { get; set; }

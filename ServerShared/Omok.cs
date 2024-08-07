@@ -11,7 +11,8 @@ public enum OmokStone
 
 //TODO: (08.07) 객체 안에 오목 로직도 있어서 이름에 Data 라는 것이 붙는 것은 알맞지 않습니다.
 // 이르만 보면 단순하게 데이터만 가지고 있는 것 같습니다
-public class OmokGameData
+//=> 수정 완료했습니다. 게임의 상태 관리 및 게임 로직을 담고 있어서 Engine으로 선택했습니다.
+public class OmokGameEngine
 {
     public const int BoardSize = 15;
     public const int BoardSizeSquare = BoardSize * BoardSize;
@@ -20,16 +21,14 @@ public class OmokGameData
     const byte WhiteStone = 2;
 
     // 오목판 정보 BoardSize * BoardSize
-    // 블랙 플레이어의 이름: 1(이름 바이트 수) + N(앞에서 구한 길이)
-    // 화이트 플레이어의 이름: 1(이름 바이트 수) + N(앞에서 구한 길이)
     byte[] _rawData;
 
     string _blackPlayer;
     string _whitePlayer;
 
 
-    OmokStone _turnPlayerStone; // 턴 받은 플레이어
-    UInt64 _turnTimeMilli; // 턴 받은 시간 유닉스 시간(초)
+    OmokStone _turnPlayerStone;
+    UInt64 _turnTimeMilli;
     OmokStone _winner;
 
 
@@ -91,7 +90,7 @@ public class OmokGameData
         return _rawData;
     }
 
-    public OmokStone GetStoneAt(int x, int y) // 좌표의 돌 색
+    public OmokStone GetStoneAt(int x, int y)
     {
         int index = y * BoardSize + x;
         return (OmokStone)_rawData[index];
@@ -144,6 +143,31 @@ public class OmokGameData
         if (winner == OmokStone.None)
             return null;
         return winner == OmokStone.Black ? GetBlackPlayerId() : GetWhitePlayerId();
+    }
+
+    public (string winnerPlayerId, string loserPlayerId) GetWinnerAndLoser()
+    {
+        var winnerStone = GetWinnerStone();
+        if (winnerStone == OmokStone.None)
+        {
+            return (null, null);
+        }
+
+        string winnerPlayerId;
+        string loserPlayerId;
+
+        if (winnerStone == OmokStone.Black)
+        {
+            winnerPlayerId = GetBlackPlayerId();
+            loserPlayerId = GetWhitePlayerId();
+        }
+        else
+        {
+            winnerPlayerId = GetWhitePlayerId();
+            loserPlayerId = GetBlackPlayerId();
+        }
+
+        return (winnerPlayerId, loserPlayerId);
     }
 
     public void Decoding(byte[] rawData)

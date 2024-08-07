@@ -31,7 +31,7 @@ public class LoginService : ILoginService
         var result = await VerifyToken(playerId, token);
         if (result != ErrorCode.None)
         {
-            _logger.LogError("Token verification failed for UserId: {UserId}", playerId);
+            _logger.LogError("Token verification failed for playerId: {playerId}", playerId);
             return result;
         }
 
@@ -48,7 +48,7 @@ public class LoginService : ILoginService
             return saveResult;
         }
 
-        _logger.LogInformation("Successfully authenticated user with token");
+        _logger.LogInformation("Successfully authenticated playerId with token");
 
         return ErrorCode.None;
     }
@@ -94,7 +94,7 @@ public class LoginService : ILoginService
         var saveResult = await _memoryDb.SavePlayerLoginInfo(playerId, playerUid, token, appVersion, dataVersion);
         if (!saveResult)
         {
-            _logger.LogError("Failed to save login info to Redis for UserId: {UserId}", playerId);
+            _logger.LogError("Failed to save login info to Redis for playerId: {playerId}", playerId);
             return ErrorCode.InternalError;
         }
         return ErrorCode.None;
@@ -108,7 +108,7 @@ public class LoginService : ILoginService
             var newPlayerInfo = await _gameDb.CreatePlayerInfoDataAndStartItems(playerId);
             if (newPlayerInfo == null)
             {
-                _logger.LogError("Failed to create new player info for UserId: {UserId}", playerId);
+                _logger.LogError("Failed to create new player info for playerId: {playerId}", playerId);
                 return ErrorCode.CreatePlayerInfoDataAndStartItemsFail;
             }
         }

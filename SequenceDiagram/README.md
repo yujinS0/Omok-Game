@@ -33,3 +33,9 @@
 ## [Attendance](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Attendance.md)
 * 출석 체크 요청 (Attendance Check)
 * 출석 정보 가져오는 요청 (Attendance get info)
+
+## [Friend](https://github.com/yujinS0/Omok-Game/blob/main/SequenceDiagram/Friend.md)
+* 친구 목록 가져오기 (Get Friend List)
+* 친구 신청 목록 가져오기 (Get Friend Request List)
+* 친구 신청 (Friend Request)
+* 친구 신청 수락하기 (Friend Request Accept)

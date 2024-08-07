@@ -6,6 +6,7 @@ using GameServer.Models;
 using GameServer.DTO;
 using ServerShared;
 using GameServer.Repository.Interfaces;
+using SqlKata.Extensions;
 
 namespace GameServer.Repository;
 
@@ -174,7 +175,7 @@ public class GameDb : IGameDb
 
             if (result == null)
             {
-                _logger.LogWarning("No data found for playerId: {PlayerId}", playerId);
+                _logger.LogError("No data found for playerId: {PlayerId}", playerId);
                 return null;
             }
 
@@ -258,11 +259,19 @@ public class GameDb : IGameDb
 
     public async Task<bool> UpdateNickName(string playerId, string newNickName)
     {
-        var affectedRows = await _queryFactory.Query("player_info")
-            .Where("player_id", playerId)
-            .UpdateAsync(new { nickname = newNickName });
+        try
+        {
+            var affectedRows = await _queryFactory.Query("player_info")
+                .Where("player_id", playerId)
+                .UpdateAsync(new { nickname = newNickName });
 
-        return affectedRows > 0;
+            return affectedRows > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating nickname for playerId: {PlayerId}", playerId);
+            return false;
+        }
     }
 
     public async Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId)
@@ -335,172 +344,224 @@ public class GameDb : IGameDb
 
     public async Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize)
     {
-        int skip = (page - 1) * pageSize;
+        try
+        {
+            int skip = (page - 1) * pageSize;
 
-        var rawItems = await _queryFactory.Query("player_item")
+            var rawItems = await _queryFactory.Query("player_item")
                                       .Where("player_uid", playerUid)
                                       .Select("player_item_code", "item_code", "item_cnt")
                                       .Skip(skip)
                                       .Limit(pageSize)
                                       .GetAsync();
 
-        var items = rawItems.Select(item => new PlayerItem
-        {
-            PlayerItemCode = item.player_item_code,
-            ItemCode = item.item_code,
-            ItemCnt = item.item_cnt
-        }).ToList();
+            var items = rawItems.Select(item => new PlayerItem
+            {
+                PlayerItemCode = item.player_item_code,
+                ItemCode = item.item_code,
+                ItemCnt = item.item_cnt
+            }).ToList();
 
-        return items;
+            return items;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting player items for playerUid: {PlayerUid}", playerUid);
+            return new List<PlayerItem>();
+        }
     }
 
     public async Task<MailBoxList> GetPlayerMailBoxList(long playerUid, int skip, int pageSize)
     {
-        var results = await _queryFactory.Query("mailbox")
+        try
+        {
+            var results = await _queryFactory.Query("mailbox")
                                           .Where("player_uid", playerUid)
-                                          .OrderByDesc("send_dt") // 최신 순으로 정렬
+                                          .OrderByDesc("send_dt")
                                           .Select("mail_id", "title", "item_code", "send_dt", "receive_yn")
                                           .Skip(skip)
                                           .Limit(pageSize)
                                           .GetAsync();
 
-        var mailBoxList = new MailBoxList();
+            var mailBoxList = new MailBoxList();
 
-        foreach (var result in results)
-        {
-            long mailId = Convert.ToInt64(result.mail_id);
-            string title = Convert.ToString(result.title);
-            int itemCode = Convert.ToInt32(result.item_code);
-            DateTime sendDate = Convert.ToDateTime(result.send_dt);
-            int receiveYn = Convert.ToInt32(result.receive_yn);
+            foreach (var result in results)
+            {
+                long mailId = Convert.ToInt64(result.mail_id);
+                string title = Convert.ToString(result.title);
+                int itemCode = Convert.ToInt32(result.item_code);
+                DateTime sendDate = Convert.ToDateTime(result.send_dt);
+                int receiveYn = Convert.ToInt32(result.receive_yn);
 
-            mailBoxList.MailIds.Add(mailId);
-            mailBoxList.MailTitles.Add(title);
-            mailBoxList.ItemCodes.Add(itemCode);
-            mailBoxList.SendDates.Add(sendDate);
-            mailBoxList.ReceiveYns.Add(receiveYn);
+                mailBoxList.MailIds.Add(mailId);
+                mailBoxList.MailTitles.Add(title);
+                mailBoxList.ItemCodes.Add(itemCode);
+                mailBoxList.SendDates.Add(sendDate);
+                mailBoxList.ReceiveYns.Add(receiveYn);
+            }
+
+            return mailBoxList;
         }
-
-        return mailBoxList;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting mailbox list for playerUid: {PlayerUid}", playerUid);
+            return new MailBoxList();
+        }
     }
 
 
-    public async Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId) // GET 함수명만 수정하기. 의미 전달이 제대로 안된다. 
+    public async Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId)
     {
-        var mailExists = await _queryFactory.Query("mailbox")
-                                            .Where("mail_id", mailId)
-                                            .Where("player_uid", playerUid)
-                                            .ExistsAsync();
-
-        if (!mailExists)
+        try
         {
-            _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
+            var mailExists = await _queryFactory.Query("mailbox")
+                                                .Where("mail_id", mailId)
+                                                .Where("player_uid", playerUid)
+                                                .ExistsAsync();
+
+            if (!mailExists)
+            {
+                _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
+                return null;
+            }
+
+
+            var result = await _queryFactory.Query("mailbox")
+                                        .Where("mail_id", mailId)
+                                        .FirstOrDefaultAsync();
+
+            if (result == null)
+            {
+                _logger.LogError("Mail with ID {MailId} not found.", mailId);
+                return null;
+            }
+
+            var mailDetail = new MailDetail
+            {
+                MailId = result.mail_id,
+                Title = result.title,
+                Content = result.content,
+                ItemCode = result.item_code,
+                ItemCnt = result.item_cnt,
+                SendDate = result.send_dt,
+                ExpireDate = result.expire_dt,
+                ReceiveDate = result.receive_dt,
+                ReceiveYn = result.receive_yn
+            };
+
+            return mailDetail;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while reading mail detail for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
             return null;
         }
-
-
-        var result = await _queryFactory.Query("mailbox")
-                                    .Where("mail_id", mailId)
-                                    .FirstOrDefaultAsync();
-
-        if (result == null)
-        {
-            return null;
-        }
-
-        var mailDetail = new MailDetail
-        {
-            MailId = result.mail_id,
-            Title = result.title,
-            Content = result.content,
-            ItemCode = result.item_code,
-            ItemCnt = result.item_cnt,
-            SendDate = result.send_dt,
-            ExpireDate = result.expire_dt,
-            ReceiveDate = result.receive_dt,
-            ReceiveYn = result.receive_yn
-        };
-
-        return mailDetail;
     }
 
     public async Task<(int, int, int)> GetMailItemInfo(long playerUid, long mailId)
     {
-        var result = await _queryFactory.Query("mailbox")
+        try
+        {
+            var result = await _queryFactory.Query("mailbox")
             .Where("player_uid", playerUid)
             .Where("mail_id", mailId)
             .Select("receive_yn", "item_code", "item_cnt")
             .FirstOrDefaultAsync();
 
-        if (result == null)
-        {
-            return (-1, -1, -1); // 해당 메일이 없는 경우
-        }
+            if (result == null)
+            {
+                _logger.LogWarning("Fail to get mail item info : Mail with ID {MailId} not found.", mailId);
+                return (-1, -1, -1);
+            }
 
-        return (result.receive_yn, result.item_code, result.item_cnt);
+            return (result.receive_yn, result.item_code, result.item_cnt);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting mail item info for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
+            return (-1, -1, -1);
+        }
     }
 
     public async Task<bool> UpdateMailReceiveStatus(long playerUid, long mailId, MySqlTransaction transaction)
     {
-        var updateResult = await _queryFactory.Query("mailbox")
+        try
+        {
+            var updateResult = await _queryFactory.Query("mailbox")
             .Where("player_uid", playerUid)
             .Where("mail_id", mailId)
             .UpdateAsync(new { receive_yn = true, receive_dt = DateTime.Now }, transaction);
 
-        return updateResult > 0;
+            return updateResult > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating mail receive status for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
+            return false;
+        }
     }
 
     public async Task<bool> AddPlayerItem(long playerUid, int itemCode, int itemCnt, MySqlTransaction transaction)
     {
-        if (itemCode == GameConstants.GameMoneyItemCode)
+        try
         {
-            var result = await _queryFactory.Query("player_money")
+            if (itemCode == GameConstants.GameMoneyItemCode)
+            {
+                var result = await _queryFactory.Query("player_money")
                 .Where("player_uid", playerUid)
                 .IncrementAsync("game_money", itemCnt, transaction);
-            return result > 0;
-        }
-        else if (itemCode == GameConstants.DiamondItemCode)
-        {
-            var result = await _queryFactory.Query("player_money")
+                return result > 0;
+            }
+            else if (itemCode == GameConstants.DiamondItemCode)
+            {
+                var result = await _queryFactory.Query("player_money")
                 .Where("player_uid", playerUid)
                 .IncrementAsync("diamond", itemCnt, transaction);
-            return result > 0;
-        }
-        else
-        {
-            var itemInfo = _masterDb.GetItems().FirstOrDefault(i => i.ItemCode == itemCode);
-            if (itemInfo?.Countable == GameConstants.Countable) // 합칠 수 있는 아이템
+                return result > 0;
+            }
+            else
             {
-                var existingItem = await _queryFactory.Query("player_item")
+                var itemInfo = _masterDb.GetItems().FirstOrDefault(i => i.ItemCode == itemCode);
+                if (itemInfo?.Countable == GameConstants.Countable) // 합칠 수 있는 아이템
+                {
+                    var existingItem = await _queryFactory.Query("player_item")
                     .Where("item_code", itemCode)
                     .FirstOrDefaultAsync(transaction);
 
-                if (existingItem != null)
-                {
-                    var results = await _queryFactory.Query("player_item")
+                    if (existingItem != null)
+                    {
+                        var results = await _queryFactory.Query("player_item")
                         .Where("item_code", itemCode)
                         .IncrementAsync("item_cnt", itemCnt, transaction);
-                    return results > 0;
+                        return results > 0;
+                    }
                 }
+
+                var result = await _queryFactory.Query("player_item").InsertAsync(new
+                {
+                    player_uid = playerUid,
+                    item_code = itemCode,
+                    item_cnt = itemCnt
+                }, transaction);
+
+                return result > 0;
             }
-
-            var result = await _queryFactory.Query("player_item").InsertAsync(new
-            {
-                player_uid = playerUid,
-                item_code = itemCode,
-                item_cnt = itemCnt
-            }, transaction);
-
-            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding player item for playerUid: {PlayerUid}, itemCode: {ItemCode}", playerUid, itemCode);
+            return false;
         }
     }
+
     public async Task<(bool, int)> ReceiveMailItemTransaction(long playerUid, long mailId)
     {
         var (receiveYn, itemCode, itemCnt) = await GetMailItemInfo(playerUid, mailId);
 
         if (receiveYn == -1)
         {
-            return (false, receiveYn); // Mail not found
+            _logger.LogWarning("Fail to receive mail item : Mail with ID {MailId} not found.", mailId);
+            return (false, receiveYn);
         }
 
         if (receiveYn == 1) // 이미 수령한 경우
@@ -527,7 +588,8 @@ public class GameDb : IGameDb
                 }
 
                 await transaction.CommitAsync();
-                return (true, 0); // 첫수령
+                _logger.LogInformation("First Receive mail item.");
+                return (true, 0);
             }
             catch (Exception ex)
             {
@@ -540,103 +602,158 @@ public class GameDb : IGameDb
 
     public async Task<bool> DeleteMail(long playerUid, Int64 mailId)
     {
-        // 메일이 해당 플레이어의 메일인지 확인
-        var mailExists = await _queryFactory.Query("mailbox")
+        try
+        {
+            var mailExists = await _queryFactory.Query("mailbox")
                                             .Where("mail_id", mailId)
                                             .Where("player_uid", playerUid)
                                             .ExistsAsync();
 
-        if (!mailExists)
-        {
-            _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
-            return false;
-        }
+            if (!mailExists)
+            {
+                _logger.LogWarning("Mail with ID {MailId} for Player UID {PlayerUid} not found.", mailId, playerUid);
+                return false;
+            }
 
-        await _queryFactory.Query("mailbox")
+            await _queryFactory.Query("mailbox")
                            .Where("mail_id", mailId)
                            .DeleteAsync();
-        return true;        
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while deleting mail for playerUid: {PlayerUid}, mailId: {MailId}", playerUid, mailId);
+            return false;
+        }
     }
 
     public async Task AddMailInMailBox(long playerUid, string title, string content, int itemCode, int itemCnt, DateTime expireDt) // 아직 사용 안하는 함수 (추후 인자 class)
     {
-        await _queryFactory.Query("mailbox").InsertAsync(new
+        try
         {
-            player_uid = playerUid,
-            title = title,
-            content = content,
-            item_code = itemCode,
-            item_cnt = itemCnt,
-            send_dt = DateTime.Now,
-            expire_dt = expireDt,
-            receive_yn = 0
-        });
+            await _queryFactory.Query("mailbox").InsertAsync(new
+            {
+                player_uid = playerUid,
+                title = title,
+                content = content,
+                item_code = itemCode,
+                item_cnt = itemCnt,
+                send_dt = DateTime.Now,
+                expire_dt = expireDt,
+                receive_yn = 0
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding mail in mailbox for playerUid: {PlayerUid}", playerUid);
+        }
     }
 
 
     public async Task<AttendanceInfo?> GetAttendanceInfo(long playerUid)
     {
         //TODO: (08.07) DB 호출에서는 예외를 사용해주세요
-
-        var result = await _queryFactory.Query("attendance")
+        //=> 수정 완료했습니다.
+        try
+        {
+            var result = await _queryFactory.Query("attendance")
         .Where("player_uid", playerUid)
         .FirstOrDefaultAsync();
 
-        //TODO: (08.07) null 인경우는 초기 데이터 생성에서 오류가 발생한 것으로 더 이상 게임을 진행하기 어려우니 큰 오류입니다. 꼭 로그를 남겨야합니다.
-        if (result == null)
+            //TODO: (08.07) null 인경우는 초기 데이터 생성에서 오류가 발생한 것으로 더 이상 게임을 진행하기 어려우니 큰 오류입니다. 꼭 로그를 남겨야합니다.
+            //=> 수정 완료했습니다.
+            if (result == null)
+            {
+                _logger.LogError("No attendance Info found with player_uid :{playerUid}.", playerUid);
+                return null;
+            }
+
+            var attendanceInfo = new AttendanceInfo
+            {
+                AttendanceCnt = result.attendance_cnt,
+                RecentAttendanceDate = result.recent_attendance_dt
+            };
+
+            return attendanceInfo;
+        }
+        catch (Exception ex) 
         {
+            _logger.LogError(ex, "An error occurred while fetching attendance info for player_uid: {PlayerUid}.", playerUid);
             return null;
         }
-
-        var attendanceInfo = new AttendanceInfo
-        {
-            AttendanceCnt = result.attendance_cnt,
-            RecentAttendanceDate = result.recent_attendance_dt
-        };
-
-        return attendanceInfo;
     }
 
     public async Task<DateTime?> GetRecentAttendanceDate(long playerUid)
     {
-        var result = await _queryFactory.Query("attendance")
+        try
+        {
+            var result = await _queryFactory.Query("attendance")
             .Where("player_uid", playerUid)
             .Select("recent_attendance_dt")
             .FirstOrDefaultAsync<DateTime?>();
 
-        return result;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting recent attendance date for playerUid: {PlayerUid}", playerUid);
+            return null;
+        }
     }
 
     public async Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction)
     {
         //TODO: (08.07) 같은 테이블의 2개의 컬럼을 업데이트 하는데 1번의 쿼리로 업데이트 하면 좋겠습니다.
-        var updateCountResult = await _queryFactory.Query("attendance")
-           .Where("player_uid", playerUid)
-           .IncrementAsync("attendance_cnt", 1, transaction);
+        //=> 수정 완료했습니다.
+            //=> 1만 증가시켜야하는 상황인데 찾아보니 따로 제공해주는 함수로 할 수는 없고 UnsafeLiteral를 활용해 쿼리문으로 넣었습니다
+        try
+        {
+            var updateResult = await _queryFactory.Query("attendance")
+                .Where("player_uid", playerUid)
+                .UpdateAsync(new Dictionary<string, object>
+                    {
+                        { "attendance_cnt", new SqlKata.UnsafeLiteral("attendance_cnt + 1") },
+                        { "recent_attendance_dt", DateTime.Now }
+                    }, transaction);
 
-        var updateDateResult = await _queryFactory.Query("attendance")
-            .Where("player_uid", playerUid)
-            .UpdateAsync(new
-            {
-                recent_attendance_dt = DateTime.Now
-            }, transaction);
-
-        return updateCountResult > 0 && updateDateResult > 0;
+                    return updateResult > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating attendance info for playerUid: {PlayerUid}", playerUid);
+            return false;
+        }
     }
 
     public async Task<int> GetTodayAttendanceCount(long playerUid, MySqlTransaction transaction)
     {
-        var result = await _queryFactory.Query("attendance")
+        try
+        {
+            var result = await _queryFactory.Query("attendance")
             .Where("player_uid", playerUid)
             .Select("attendance_cnt")
             .FirstOrDefaultAsync<int>(transaction);
 
-        return result;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting today's attendance count for playerUid: {PlayerUid}", playerUid);
+            return -1;
+        }
     }
     private AttendanceReward? GetAttendanceRewardByDaySeq(int count)
     {
-        var rewards = _masterDb.GetAttendanceRewards();
-        return rewards.FirstOrDefault(reward => reward.DaySeq == count);
+        try
+        {
+            var rewards = _masterDb.GetAttendanceRewards();
+            return rewards.FirstOrDefault(reward => reward.DaySeq == count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while getting attendance reward by day sequence.");
+            return null;
+        }
     }
 
 
@@ -644,26 +761,35 @@ public class GameDb : IGameDb
     {
         var reward = GetAttendanceRewardByDaySeq(attendanceCount);
 
-        //TODO: (08.07) 이 에러는 경고가 아닌 아주 중요한 에러입니다. 더 이상 출석 관련 콘텐츠 진행이 붌가능하니
+        //TODO: (08.07) 이 에러는 경고가 아닌 아주 중요한 에러입니다. 더 이상 출석 관련 콘텐츠 진행이 불가능하니
+        //=> 수정 완료했습니다.
         if (reward == null)
         {
-            _logger.LogWarning("No reward found for attendance count {AttendanceCount}.", attendanceCount);
+            _logger.LogError("No reward found for attendance count {AttendanceCount}.", attendanceCount);
             return false;
         }
 
-        var result = await _queryFactory.Query("mailbox").InsertAsync(new
+        try
         {
-            player_uid = playerUid,
-            title = $"{attendanceCount}차 출석 보상",
-            content = $"안녕하세요? 출석 보상 {attendanceCount}일차 입니다.",
-            item_code = reward.RewardItem,
-            item_cnt = reward.ItemCount,
-            send_dt = DateTime.Now,
-            expire_dt = DateTime.Now.AddDays(GameConstants.AttendanceRewardExpireDate),
-            receive_yn = 0
-        }, transaction);
+            var result = await _queryFactory.Query("mailbox").InsertAsync(new
+            {
+                player_uid = playerUid,
+                title = $"{attendanceCount}차 출석 보상",
+                content = $"안녕하세요? 출석 보상 {attendanceCount}일차 입니다.",
+                item_code = reward.RewardItem,
+                item_cnt = reward.ItemCount,
+                send_dt = DateTime.Now,
+                expire_dt = DateTime.Now.AddDays(GameConstants.AttendanceRewardExpireDate),
+                receive_yn = 0
+            }, transaction);
 
-        return result > 0;
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding attendance reward to mailbox for playerUid: {PlayerUid}, attendanceCount: {AttendanceCount}", playerUid, attendanceCount);
+            return false;
+        }
     }
 
     public async Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation)
