@@ -63,6 +63,7 @@
                     <button class="nav-button" @onclick="ToggleMailbox">우편함</button>
                     <button class="nav-button" @onclick="ToggleItems">아이템</button>
                     <button class="nav-button" @onclick="ToggleAttendance">출석부</button>
+                    <button class="nav-button" @onclick="ToggleFriend">친구</button>
                     <button class="nav-button" @onclick="ToggleShop">상점</button>
                 </div>
             </footer>
@@ -548,9 +549,20 @@
         await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    //// 친구
+    private void ToggleFriend()
+    {
+        ToggleOverlayContent(builder =>
+        {
+            builder.AddContent(0, "친구 내용");
+        });
+    }
+
+    
 
     ////////////////////////////////////////////////////////////////////////////
-    //// 출석부
+    //// 상점
     private void ToggleShop()
     {
         ToggleOverlayContent(builder =>
