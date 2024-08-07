@@ -6,6 +6,7 @@ using GameServer.Models;
 using GameServer.DTO;
 using ServerShared;
 using GameServer.Repository.Interfaces;
+using SqlKata.Extensions;
 
 namespace GameServer.Repository;
 
@@ -704,17 +705,16 @@ public class GameDb : IGameDb
     {
         //TODO: (08.07) 같은 테이블의 2개의 컬럼을 업데이트 하는데 1번의 쿼리로 업데이트 하면 좋겠습니다.
         //=> 수정 완료했습니다.
+            //=> 1만 증가시켜야하는 상황인데 찾아보니 따로 제공해주는 함수로 할 수는 없고 UnsafeLiteral를 활용해 쿼리문으로 넣었습니다
         try
         {
             var updateResult = await _queryFactory.Query("attendance")
-           .Where("player_uid", playerUid)
-           .UpdateAsync(new
-           {
-               attendance_cnt = await _queryFactory.Query("attendance")
-               .Where("player_uid", playerUid)
-               .IncrementAsync("attendance_cnt", 1, transaction),
-               recent_attendance_dt = DateTime.Now
-           }, transaction);
+        .Where("player_uid", playerUid)
+        .UpdateAsync(new Dictionary<string, object>
+            {
+                { "attendance_cnt", new SqlKata.UnsafeLiteral("attendance_cnt + 1") },
+                { "recent_attendance_dt", DateTime.Now }
+            }, transaction);
 
             return updateResult > 0;
         }
