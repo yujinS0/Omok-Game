@@ -576,10 +576,13 @@ public class GameDb : IGameDb
 
     public async Task<AttendanceInfo?> GetAttendanceInfo(long playerUid)
     {
+        //TODO: (08.07) DB 호출에서는 예외를 사용해주세요
+
         var result = await _queryFactory.Query("attendance")
         .Where("player_uid", playerUid)
         .FirstOrDefaultAsync();
 
+        //TODO: (08.07) null 인경우는 초기 데이터 생성에서 오류가 발생한 것으로 더 이상 게임을 진행하기 어려우니 큰 오류입니다. 꼭 로그를 남겨야합니다.
         if (result == null)
         {
             return null;
@@ -606,6 +609,7 @@ public class GameDb : IGameDb
 
     public async Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction)
     {
+        //TODO: (08.07) 같은 테이블의 2개의 컬럼을 업데이트 하는데 1번의 쿼리로 업데이트 하면 좋겠습니다.
         var updateCountResult = await _queryFactory.Query("attendance")
            .Where("player_uid", playerUid)
            .IncrementAsync("attendance_cnt", 1, transaction);
@@ -640,6 +644,7 @@ public class GameDb : IGameDb
     {
         var reward = GetAttendanceRewardByDaySeq(attendanceCount);
 
+        //TODO: (08.07) 이 에러는 경고가 아닌 아주 중요한 에러입니다. 더 이상 출석 관련 콘텐츠 진행이 붌가능하니
         if (reward == null)
         {
             _logger.LogWarning("No reward found for attendance count {AttendanceCount}.", attendanceCount);

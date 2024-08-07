@@ -9,6 +9,8 @@ public enum OmokStone
     White
 }
 
+//TODO: (08.07) 객체 안에 오목 로직도 있어서 이름에 Data 라는 것이 붙는 것은 알맞지 않습니다.
+// 이르만 보면 단순하게 데이터만 가지고 있는 것 같습니다
 public class OmokGameData
 {
     public const int BoardSize = 15;

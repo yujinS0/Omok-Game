@@ -118,8 +118,7 @@ public class GameService : IGameService
             return (ErrorCode.None, null);
         }
 
-        //TODO: (08.06) 가독성을 위해서 승리자, 패배자를 얻는 것은 함수로 분리하죠
-        //=> 수정 완료했습니다. 승자/패자 한번에 가져오는 함수로 분리했습니다!
+        //TODO: (08.07) GetWinnerAndLoser 이 함수는 omokGameData 객체의 메서드로 있는 것이 더 자연스럽습니다
         var (winnerPlayerId, loserPlayerId) = GetWinnerAndLoser(winnerStone, omokGameData);
 
         try
