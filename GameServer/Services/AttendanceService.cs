@@ -37,16 +37,21 @@ public class AttendanceService : IAttendanceService
 
     public async Task<ErrorCode> AttendanceCheck(long playerUid)
     {
-        var lastAttendanceDate = await _gameDb.GetRecentAttendanceDate(playerUid);
+        var attendanceInfo = await _gameDb.GetAttendanceInfo(playerUid);
 
-        if (lastAttendanceDate.HasValue && lastAttendanceDate.Value.Date == DateTime.Today)
+        if (attendanceInfo == null)
+        {
+            return ErrorCode.AttendanceInfoNotFound;
+        }
+
+        if (attendanceInfo.RecentAttendanceDate.HasValue && attendanceInfo.RecentAttendanceDate.Value.Date == DateTime.Today)
         {
             return ErrorCode.AttendanceCheckFailAlreadyChecked;
         }
 
         var result = await _gameDb.ExecuteTransaction(async transaction =>
         {
-            return await UpdateAttendanceInfoAndGiveReward(playerUid, transaction);
+            return await UpdateAttendanceInfoAndGiveReward(playerUid, attendanceInfo.AttendanceCnt, transaction);
         });
 
         if (!result)
@@ -57,7 +62,7 @@ public class AttendanceService : IAttendanceService
         return ErrorCode.None;
     }
 
-    private async Task<bool> UpdateAttendanceInfoAndGiveReward(long playerUid, MySqlTransaction transaction)
+    private async Task<bool> UpdateAttendanceInfoAndGiveReward(long playerUid, int currentAttendanceCnt, MySqlTransaction transaction)
     {
         var updateResult = await _gameDb.UpdateAttendanceInfo(playerUid, transaction);
         if (!updateResult)
@@ -66,13 +71,9 @@ public class AttendanceService : IAttendanceService
         }
 
         //TODO: (08.07) 이 메서드를 호출하기 전에 이미 출석 정보는 알고 있는데 또 정보를 가져올 필요가 있나요?
-        var attendanceCount = await _gameDb.GetTodayAttendanceCount(playerUid, transaction);
-        if (attendanceCount == -1)
-        {
-            return false;
-        }
+        //=> 수정 완료했습니다.
 
-        var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, attendanceCount, transaction);
+        var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, currentAttendanceCnt+1, transaction);
         if (!rewardResult)
         {
             return false;
