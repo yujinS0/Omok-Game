@@ -30,6 +30,7 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 builder.Services.AddHttpClient();
 

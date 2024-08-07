@@ -119,8 +119,8 @@ public class GameService : IGameService
         }
 
         //TODO: (08.06) 가독성을 위해서 승리자, 패배자를 얻는 것은 함수로 분리하죠
-        var winnerPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetBlackPlayerId() : omokGameData.GetWhitePlayerId();
-        var loserPlayerId = winnerStone == OmokStone.Black ? omokGameData.GetWhitePlayerId() : omokGameData.GetBlackPlayerId();
+        //=> 수정 완료했습니다. 승자/패자 한번에 가져오는 함수로 분리했습니다!
+        var (winnerPlayerId, loserPlayerId) = GetWinnerAndLoser(winnerStone, omokGameData);
 
         try
         {
@@ -137,6 +137,25 @@ public class GameService : IGameService
         }
 
         return (ErrorCode.None, new Winner { Stone = winnerStone, PlayerId = winnerPlayerId });
+    }
+
+    private (string winnerPlayerId, string loserPlayerId) GetWinnerAndLoser(OmokStone winnerStone, OmokGameData omokGameData)
+    {
+        string winnerPlayerId;
+        string loserPlayerId;
+
+        if (winnerStone == OmokStone.Black)
+        {
+            winnerPlayerId = omokGameData.GetBlackPlayerId();
+            loserPlayerId = omokGameData.GetWhitePlayerId();
+        }
+        else
+        {
+            winnerPlayerId = omokGameData.GetWhitePlayerId();
+            loserPlayerId = omokGameData.GetBlackPlayerId();
+        }
+
+        return (winnerPlayerId, loserPlayerId);
     }
 
     public async Task<(ErrorCode, GameInfo)> GiveUpPutOmok(string playerId)

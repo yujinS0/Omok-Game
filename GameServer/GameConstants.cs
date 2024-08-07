@@ -8,4 +8,6 @@ public class GameConstants
     public const int GameMoneyItemCode = 1;
     public const int DiamondItemCode = 2;
     public const int Countable = 1;
+
+    public const int AttendanceRewardExpireDate = 30;
 }
