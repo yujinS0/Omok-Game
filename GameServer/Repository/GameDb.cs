@@ -703,18 +703,26 @@ public class GameDb : IGameDb
     public async Task<bool> UpdateAttendanceInfo(long playerUid, MySqlTransaction transaction)
     {
         //TODO: (08.07) 같은 테이블의 2개의 컬럼을 업데이트 하는데 1번의 쿼리로 업데이트 하면 좋겠습니다.
-        var updateCountResult = await _queryFactory.Query("attendance")
+        //=> 수정 완료했습니다.
+        try
+        {
+            var updateResult = await _queryFactory.Query("attendance")
            .Where("player_uid", playerUid)
-           .IncrementAsync("attendance_cnt", 1, transaction);
+           .UpdateAsync(new
+           {
+               attendance_cnt = await _queryFactory.Query("attendance")
+               .Where("player_uid", playerUid)
+               .IncrementAsync("attendance_cnt", 1, transaction),
+               recent_attendance_dt = DateTime.Now
+           }, transaction);
 
-        var updateDateResult = await _queryFactory.Query("attendance")
-            .Where("player_uid", playerUid)
-            .UpdateAsync(new
-            {
-                recent_attendance_dt = DateTime.Now
-            }, transaction);
-
-        return updateCountResult > 0 && updateDateResult > 0;
+            return updateResult > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating attendance info for playerUid: {PlayerUid}", playerUid);
+            return false;
+        }
     }
 
     public async Task<int> GetTodayAttendanceCount(long playerUid, MySqlTransaction transaction)
