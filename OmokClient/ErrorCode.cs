@@ -10,5 +10,6 @@ public enum ErrorCode : UInt16
     RequestTurnTimeout = 2505,
     TurnChangedByTimeout = 2510,
     RequestFailed = 10000,
-    // 추가적인 에러 코드 정의
+
+    FailToDeleteMailItemNotReceived = 8021,
 }

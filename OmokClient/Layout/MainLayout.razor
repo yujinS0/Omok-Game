@@ -6,6 +6,9 @@
 @inject ISessionStorageService sessionStorage
 @inject NavigationManager Navigation
 @inject PlayerService PlayerService
+@inject MailService MailService
+@using AntDesign
+@inject MessageService _message
 
 <CascadingValue Value="this">
     <div class="page">
@@ -83,6 +86,8 @@
     private bool IsRegisterPage => Navigation.Uri.EndsWith("/register");
     private string userId = string.Empty;
     private List<PlayerItem> playerItems;
+    private List<MailDetail> mailboxItems;
+    private MailDetail? selectedMail;
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,16 +150,246 @@
         await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
-    private void ToggleMailbox()
+    ////////////////////////////////////////////////////////////////////////////
+    //// 우편함
+    private async Task ToggleMailbox()
     {
-        ToggleOverlayContent(builder =>
+        if (OverlayContent != null)
         {
-            builder.AddContent(0, "우편함 내용");
-        });
+            OverlayContent = null;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await LoadMailbox(); // 메일박스 목록 불러오기
+
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
+    private async Task LoadMailbox()
+    {
+        var playerId = sessionStorageId;
+        var response = await MailService.GetMailboxAsync(playerId, 1); // 페이지 번호를 1로 하드코딩
+
+        if (response.Result == ErrorCode.None)
+        {
+            mailboxItems = response.MailIds.Select((id, index) => new MailDetail
+                {
+                    MailId = id,
+                    Title = response.Titles[index],
+                    ItemCode = response.ItemCodes[index],
+                    SendDate = response.SendDates[index],
+                    ReceiveYn = response.ReceiveYns[index]
+                }).ToList();
+        }
+        else
+        {
+            mailboxItems = new List<MailDetail>(); // 오류 시 빈 리스트 반환
+        }
+
+        OverlayContent = builder =>
+        {
+            builder.OpenElement(0, "table");
+            builder.AddAttribute(1, "class", "table");
+            builder.OpenElement(2, "thead");
+            builder.OpenElement(3, "tr");
+            builder.OpenElement(4, "th");
+            builder.AddContent(5, "Title");
+            builder.CloseElement();
+            builder.OpenElement(6, "th");
+            builder.AddContent(7, "Item");
+            builder.CloseElement();
+            builder.OpenElement(8, "th");
+            builder.AddContent(9, "Date");
+            builder.CloseElement();
+            builder.OpenElement(10, "th");
+            builder.AddContent(11, "Actions");
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.OpenElement(12, "tbody");
+            foreach (var mail in mailboxItems)
+            {
+                builder.OpenElement(13, "tr");
+                builder.OpenElement(14, "td");
+                builder.AddContent(15, mail.Title);
+                builder.CloseElement();
+                builder.OpenElement(16, "td");
+                builder.AddContent(17, MasterData.ItemCodeToNameMap.ContainsKey(mail.ItemCode) ? MasterData.ItemCodeToNameMap[mail.ItemCode] : "Unknown Item");
+                builder.CloseElement();
+                builder.OpenElement(18, "td");
+                builder.AddContent(19, mail.SendDate.ToString("yyyy-MM-dd"));
+                builder.CloseElement();
+                builder.OpenElement(20, "td");
+                builder.OpenElement(21, "button");
+                builder.AddAttribute(22, "class", "btn btn-primary");
+                builder.AddAttribute(23, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => ReadMail(mail.MailId)));
+                builder.AddContent(24, "View");
+                builder.CloseElement();
+                builder.CloseElement();
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+            builder.CloseElement();
+        };
+    }
+
+    private async Task ReadMail(long mailId)
+    {
+        var playerId = sessionStorageId;
+        var response = await MailService.ReadMailAsync(playerId, mailId);
+
+        if (response.Result == ErrorCode.None && response.MailId == mailId)
+        {
+            selectedMail = new MailDetail
+                {
+                    MailId = response.MailId,
+                    Title = response.Title,
+                    Content = response.Content,
+                    ItemCode = response.ItemCode,
+                    ItemCnt = response.ItemCnt,
+                    SendDate = response.SendDate ?? DateTime.MinValue,
+                    ExpireDate = response.ExpireDate ?? DateTime.MinValue,
+                    ReceiveDate = response.ReceiveDate,
+                    ReceiveYn = response.ReceiveYn
+                };
+        }
+        else
+        {
+            selectedMail = null;
+        }
+
+        OverlayContent = builder =>
+        {
+            if (selectedMail != null)
+            {
+                builder.OpenElement(0, "div");
+                builder.OpenElement(1, "h3");
+                builder.AddContent(2, selectedMail.Title);
+                builder.CloseElement();
+                builder.OpenElement(3, "p");
+                builder.AddContent(4, selectedMail.Content);
+                builder.CloseElement();
+                builder.OpenElement(5, "p");
+                builder.AddContent(6, "Item: ");
+                if (MasterData.ItemCodeToNameMap.ContainsKey(selectedMail.ItemCode))
+                {
+                    builder.AddContent(7, MasterData.ItemCodeToNameMap[selectedMail.ItemCode]);
+                }
+                else
+                {
+                    builder.AddContent(7, "Unknown Item");
+                }
+                builder.CloseElement();
+                builder.OpenElement(8, "p");
+                builder.AddContent(9, "Count: ");
+                builder.AddContent(10, selectedMail.ItemCnt);
+                builder.CloseElement();
+                builder.OpenElement(11, "p");
+                builder.AddContent(12, $"Sent: {selectedMail.SendDate:yyyy-MM-dd}");
+                builder.CloseElement();
+                builder.OpenElement(13, "p");
+                builder.AddContent(14, $"Expires: {selectedMail.ExpireDate:yyyy-MM-dd}");
+                builder.CloseElement();
+                if (selectedMail.ReceiveYn == 0)
+                {
+                    builder.OpenElement(15, "button");
+                    builder.AddAttribute(16, "class", "btn btn-success");
+                    builder.AddAttribute(17, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => ReceiveMailItem(selectedMail.MailId)));
+                    builder.AddContent(18, "Receive");
+                    builder.CloseElement();
+                }
+                else
+                {
+                    builder.OpenElement(19, "p");
+                    builder.AddContent(20, "Already received.");
+                    builder.CloseElement();
+                }
+                builder.OpenElement(21, "button");
+                builder.AddAttribute(22, "class", "btn btn-danger");
+                builder.AddAttribute(23, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => DeleteMail(selectedMail.MailId)));
+                builder.AddContent(24, "Delete");
+                builder.CloseElement();
+                builder.OpenElement(25, "button");
+                builder.AddAttribute(26, "class", "btn btn-secondary");
+                builder.AddAttribute(27, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, LoadMailbox)); // 목록 다시 불러오기
+                builder.AddContent(28, "Back to List");
+                builder.CloseElement();
+                builder.CloseElement();
+            }
+        };
+
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
+    }
+
+    private async Task ReceiveMailItem(long mailId)
+    {
+        var playerId = sessionStorageId;
+        var response = await MailService.ReceiveMailItemAsync(playerId, mailId);
+
+        if (response == null)
+        {
+            Console.WriteLine("Response is null. Failed to receive mail item.");
+            await _message.Error("아이템 수령 실패");
+            return;
+        }
+
+        if (response.Result == ErrorCode.None)
+        {
+            await ReadMail(mailId);
+            Console.WriteLine("Mail item received successfully.");
+            await _message.Success("아이템 수령 성공");
+        }
+        else
+        {
+            Console.WriteLine("Failed to receive mail item.");
+            await _message.Error("아이템 수령 실패");
+        }
+    }
+
+    private async Task DeleteMail(long mailId)
+    {
+        var playerId = sessionStorageId;
+        var response = await MailService.DeleteMailAsync(playerId, mailId);
+
+        if (response == null)
+        {
+            Console.WriteLine("Response is null. Failed to delete mail.");
+            await _message.Error("우편 삭제 실패");
+            return;
+        }
+
+        if (response.Result == ErrorCode.FailToDeleteMailItemNotReceived)
+        {
+            Console.WriteLine("Failed to delete mail. Item Not Received");
+            await _message.Warning("수령하지 않은 아이템이 있습니다!");
+        }
+
+        if (response.Result == ErrorCode.None)
+        {
+            await LoadMailbox();
+            Console.WriteLine("Mail deleted successfully.");
+            await _message.Success("우편 삭제 성공");
+        }
+        else
+        {
+            Console.WriteLine("Failed to delete mail.");
+            await _message.Error("우편 삭제 실패");
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    //// 아이템
     private async Task ToggleItems()
     {
+        if (OverlayContent != null)
+        {
+            OverlayContent = null;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
         var playerId = sessionStorageId;
         var response = await PlayerService.GetPlayerItemsAsync(playerId, 1); // 페이지 번호를 1로 하드코딩
 
@@ -172,7 +407,7 @@
             playerItems = new List<PlayerItem>(); // 오류 시 빈 리스트 반환
         }
 
-        ToggleOverlayContent(builder =>
+        OverlayContent = builder =>
         {
             builder.OpenElement(0, "table");
             builder.AddAttribute(1, "class", "table");
@@ -206,11 +441,15 @@
             }
             builder.CloseElement();
             builder.CloseElement();
-        });
+        };
+
+        await InvokeAsync(StateHasChanged); // UI 업데이트 보장
     }
 
 
 
+    ////////////////////////////////////////////////////////////////////////////
+    //// 출석부
     private void ToggleAttendance()
     {
         ToggleOverlayContent(builder =>
