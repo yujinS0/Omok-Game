@@ -12,4 +12,5 @@ public enum ErrorCode : UInt16
     RequestFailed = 10000,
 
     FailToDeleteMailItemNotReceived = 8021,
+    AttendanceCheckFailAlreadyChecked = 9002,
 }
