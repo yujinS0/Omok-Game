@@ -3,6 +3,7 @@ using GameServer.Models;
 using GameServer.Services.Interfaces;
 using ServerShared;
 using GameServer.Repository.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace GameServer.Services;
 
@@ -31,17 +32,24 @@ public class FriendService : IFriendService
         }
     }
 
-    public async Task<(ErrorCode, List<string>, List<int>, List<DateTime>)> GetFriendRequestList(long playerUid)
+    public async Task<(ErrorCode, FriendRequestInfo)> GetFriendRequestList(long playerUid)
     {
         try
         {
             var friendRequests = await _gameDb.GetFriendRequestList(playerUid);
-            return (ErrorCode.None, friendRequests.Select(f => f.SendPlayerNickname).ToList(), friendRequests.Select(f => f.RequestState).ToList(), friendRequests.Select(f => f.CreateDt).ToList());
+            FriendRequestInfo friendRequestInfo = new FriendRequestInfo
+            {
+                ReqFriendNickNames = friendRequests.Select(f => f.SendPlayerNickname).ToList(),
+                ReqFriendUid = friendRequests.Select(f => f.SendPlayerUid).ToList(),
+                State = friendRequests.Select(f => f.RequestState).ToList(), 
+                CreateDt = friendRequests.Select(f => f.CreateDt).ToList()
+            };
+            return (ErrorCode.None, friendRequestInfo);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while fetching the friend request list.");
-            return (ErrorCode.GameDatabaseError, null, null, null);
+            return (ErrorCode.GameDatabaseError, null);
         }
     }
 
@@ -91,16 +99,16 @@ public class FriendService : IFriendService
         }
     }
 
-    public async Task<ErrorCode> AcceptFriend(long playerUid, string friendPlayerId)
+    public async Task<ErrorCode> AcceptFriend(long playerUid, long friendPlayerUid)
     {
         try
         {
-            var friendPlayerUid = await _gameDb.GetPlayerUidByPlayerId(friendPlayerId);
-            if (friendPlayerUid == -1)
-            {
-                _logger.LogWarning("Friend player ID not found: {FriendPlayerId}", friendPlayerId);
-                return ErrorCode.PlayerNotFound;
-            }
+            //var friendPlayerUid = await _gameDb.GetPlayerUidByPlayerId(friendPlayerId);
+            //if (friendPlayerUid == -1)
+            //{
+            //    _logger.LogWarning("Friend player ID not found: {FriendPlayerId}", friendPlayerId);
+            //    return ErrorCode.PlayerNotFound;
+            //}
 
             var request = await _gameDb.GetFriendRequest(friendPlayerUid, playerUid);
             if (request == null)

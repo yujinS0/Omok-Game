@@ -24,10 +24,10 @@ public class GetFriendRequestListResponse
 {
     public ErrorCode Result { get; set; }
     public List<String> ReqFriendNickNames { get; set; }
+    public List<long> ReqFriendUid { get; set; }
     public List<int> State { get; set; }
     public List<DateTime> CreateDt { get; set; }
 }
-
 public class RequestFriendRequest
 {
     public string PlayerId { get; set; }
@@ -42,10 +42,18 @@ public class RequestFriendResponse
 public class AcceptFriendRequest
 {
     public string PlayerId { get; set; }
-    public string FriendPlayerId { get; set; }
+    public long FriendPlayerUid { get; set; }
 }
 
 public class AcceptFriendResponse
 {
     public ErrorCode Result { get; set; }
+}
+
+public class FriendRequestInfo
+{
+    public List<String> ReqFriendNickNames { get; set; }
+    public List<long> ReqFriendUid { get; set; }
+    public List<int> State { get; set; }
+    public List<DateTime> CreateDt { get; set; }
 }

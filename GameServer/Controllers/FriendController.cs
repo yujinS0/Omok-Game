@@ -38,14 +38,15 @@ public class FriendController : ControllerBase
     public async Task<GetFriendRequestListResponse> GetFriendRequestList([FromBody] GetFriendRequestListRequest request)
     {
         var playerUid = (long)HttpContext.Items["PlayerUid"];
-        (ErrorCode result, List<string> reqFriendNickNames, List<int> state, List<DateTime> createDt) = await _friendService.GetFriendRequestList(playerUid);
+        (ErrorCode result, FriendRequestInfo friendRequestInfo) = await _friendService.GetFriendRequestList(playerUid);
 
         return new GetFriendRequestListResponse
         {
             Result = result,
-            ReqFriendNickNames = reqFriendNickNames,
-            State = state,
-            CreateDt = createDt
+            ReqFriendNickNames = friendRequestInfo.ReqFriendNickNames,
+            ReqFriendUid = friendRequestInfo.ReqFriendUid,
+            State = friendRequestInfo.State,
+            CreateDt = friendRequestInfo.CreateDt
         };
     }
 
@@ -65,7 +66,7 @@ public class FriendController : ControllerBase
     public async Task<AcceptFriendResponse> AcceptFriend([FromBody] AcceptFriendRequest request)
     {
         var playerUid = (long)HttpContext.Items["PlayerUid"];
-        var result = await _friendService.AcceptFriend(playerUid, request.FriendPlayerId);
+        var result = await _friendService.AcceptFriend(playerUid, request.FriendPlayerUid);
 
         return new AcceptFriendResponse
         {
