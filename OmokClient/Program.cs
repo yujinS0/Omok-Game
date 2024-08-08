@@ -37,6 +37,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<PlayerService>();
 builder.Services.AddScoped<MailService>();
 builder.Services.AddScoped<AttendanceService>();
+builder.Services.AddScoped<FriendService>();
 
 // CustomAuthenticationStateProvider µî·Ï
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
