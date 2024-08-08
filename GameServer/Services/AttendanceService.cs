@@ -70,9 +70,7 @@ public class AttendanceService : IAttendanceService
             return false;
         }
 
-        //TODO: (08.07) 이 메서드를 호출하기 전에 이미 출석 정보는 알고 있는데 또 정보를 가져올 필요가 있나요?
-        //=> 수정 완료했습니다.
-
+        
         var rewardResult = await _gameDb.AddAttendanceRewardToMailbox(playerUid, currentAttendanceCnt+1, transaction);
         if (!rewardResult)
         {

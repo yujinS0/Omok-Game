@@ -155,12 +155,15 @@ namespace GameServer.Repository
             }
         }
 
-        public async Task<bool> UpdateGameData(string key, byte[] rawData) // key로 OmokData 값 업데이트
+        public async Task<bool> UpdateGameData(string key, byte[] rawData) 
         {
             try
             {
+                //TODO: (08.08) 게임이 끝난 경우에는 재빠르게 데이터가 삭제되어야 하므로 expire 시간을 대략 1,2분 정도로 하는 것이 좋습니다.                
+
                 var redisString = new RedisString<byte[]>(_redisConn, key, RedisExpireTime.GameData);
                 var result = await redisString.SetAsync(rawData);
+                
                 _logger.LogInformation("Update game info: Key={Key}, GamerawData={rawData}", key, rawData);
                 return result;
             }
