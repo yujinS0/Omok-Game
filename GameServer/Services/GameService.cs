@@ -78,23 +78,24 @@ public class GameService : IGameService
         //TODO: (08.08) 코드 가독성을 위해 아래 코드들을 함수로 분리하도록 하시죠
 
         //TODO: (08.08) var gameRoomId = await _memoryDb.GetGameRoomId(playerId);와 중복코드 아닌가요?
-        string inGamePlayerKey = KeyGenerator.InGamePlayerInfo(playerId);
-        InGamePlayerInfo inGamePlayerInfo = await _memoryDb.GetInGamePlayerInfo(inGamePlayerKey);
+        //=> 맞습니다 수정 완료했습니다.
+        string gameRoomId = await _memoryDb.GetGameRoomId(playerId);
 
-        if (inGamePlayerInfo == null)
+        if (gameRoomId == null)
         {
             _logger.LogError("Failed to retrieve playing player info for PlayerId: {PlayerId}", playerId);
             return (ErrorCode.PlayerGameDataNotFound, null, null);
         }
 
-        string gameRoomId = inGamePlayerInfo.GameRoomId;
 
         byte[] rawData = await _memoryDb.GetGameData(gameRoomId);
+
         if (rawData == null)
         {
             _logger.LogError("Failed to retrieve game data for RoomId: {RoomId}", gameRoomId);
             return (ErrorCode.GameRoomNotFound, null, null);
         }
+
 
         var omokGameData = new OmokGameEngine();
         omokGameData.Decoding(rawData);
