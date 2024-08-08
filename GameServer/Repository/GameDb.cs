@@ -325,6 +325,7 @@ public class GameDb : IGameDb
         }
     }
 
+
     public async Task<long> GetPlayerUidByPlayerId(string playerId)
     {
         try
@@ -341,6 +342,32 @@ public class GameDb : IGameDb
             return -1; 
         }
     }
+
+    public async Task<string> GetPlayerNicknameByPlayerUid(long playerUid)
+    {
+        try
+        {
+            var result = await _queryFactory.Query("player_info")
+                                            .Where("player_uid", playerUid)
+                                            .Select("nickname")
+                                            .FirstOrDefaultAsync<string>();
+
+            if (result == null)
+            {
+                _logger.LogWarning("No nickname found for playerUid: {PlayerUid}", playerUid);
+                return null;
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the nickname for playerUid: {PlayerUid}", playerUid);
+            throw;
+        }
+    }
+
+
 
     public async Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize)
     {
@@ -408,7 +435,6 @@ public class GameDb : IGameDb
             return new MailBoxList();
         }
     }
-
 
     public async Task<MailDetail> ReadMailDetail(long playerUid, Int64 mailId)
     {
@@ -814,6 +840,160 @@ public class GameDb : IGameDb
             await transaction.RollbackAsync();
             _logger.LogError(ex, "Transaction failed");
             return false;
+        }
+    }
+
+
+    public async Task<List<Friend>> GetFriendList(long playerUid)
+    {
+        try
+        {
+            var results = await _queryFactory.Query("friend")
+                                             .Where("player_uid", playerUid)
+                                             .GetAsync();
+
+            if (!results.Any())
+            {
+                _logger.LogInformation("No friends found for playerUid: {PlayerUid}", playerUid);
+                return new List<Friend>();
+            }
+
+            var friends = results.Select(row => new Friend
+            {
+                PlayerUid = row.player_uid,
+                FriendPlayerUid = row.friend_player_uid,
+                FriendNickName = row.friend_player_nickname,
+                CreateDt = row.create_dt
+            }).ToList();
+
+            return friends;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the friend list for playerUid: {PlayerUid}", playerUid);
+            return new List<Friend>();
+        }
+    }
+
+    public async Task<List<FriendRequest>> GetFriendRequestList(long playerUid)
+    {
+        try
+        {
+            var results = await _queryFactory.Query("friend_request")
+                                             .Where("receive_player_uid", playerUid)
+                                             .GetAsync();
+
+            if (!results.Any())
+            {
+                _logger.LogInformation("No friend requests found for playerUid: {PlayerUid}", playerUid);
+                return new List<FriendRequest>();
+            }
+
+            var friendRequests = results.Select(row => new FriendRequest
+            {
+                SendPlayerUid = row.send_player_uid,
+                ReceivePlayerUid = row.receive_player_uid,
+                SendPlayerNickname = row.send_player_nickname,
+                ReceivePlayerNickname = row.receive_player_nickname,
+                RequestState = row.request_state,
+                CreateDt = row.create_dt
+            }).ToList();
+
+            return friendRequests;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the friend requests for playerUid: {PlayerUid}", playerUid);
+            return new List<FriendRequest>();
+        }
+    }
+
+    public async Task<FriendRequest> GetFriendRequest(long sendPlayerUid, long receivePlayerUid)
+    {
+        try
+        {
+            var results = await _queryFactory.Query("friend_request")
+                                            .Where("send_player_uid", sendPlayerUid)
+                                            .Where("receive_player_uid", receivePlayerUid)
+                                            .FirstOrDefaultAsync();
+
+            if (results == null)
+            {
+                return null;
+            }
+
+            var friendRequest = new FriendRequest
+            {
+                SendPlayerUid = results.send_player_uid,
+                ReceivePlayerUid = results.receive_player_uid,
+                SendPlayerNickname = results.send_player_nickname,
+                ReceivePlayerNickname = results.receive_player_nickname,
+                RequestState = results.request_state,
+                CreateDt = results.create_dt
+            };
+
+            return friendRequest;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while fetching the friend request from sendPlayerUid: {SendPlayerUid} to receivePlayerUid: {ReceivePlayerUid}", sendPlayerUid, receivePlayerUid);
+            return null;
+        }
+    }
+
+    public async Task AddFriendRequest(long sendPlayerUid, long receivePlayerUid, string sendPlayerNickname, string receivePlayerNickname)
+    {
+        try
+        {
+            await _queryFactory.Query("friend_request").InsertAsync(new
+            {
+                send_player_uid = sendPlayerUid,
+                receive_player_uid = receivePlayerUid,
+                send_player_nickname = sendPlayerNickname,
+                receive_player_nickname = receivePlayerNickname,
+                request_state = 0,
+                create_dt = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding a friend request from sendPlayerUid: {SendPlayerUid} to receivePlayerUid: {ReceivePlayerUid}", sendPlayerUid, receivePlayerUid);
+            throw;
+        }
+    }
+
+    public async Task UpdateFriendRequestStatus(long sendPlayerUid, long receivePlayerUid, int status)
+    {
+        try
+        {
+            await _queryFactory.Query("friend_request")
+                               .Where("send_player_uid", sendPlayerUid)
+                               .Where("receive_player_uid", receivePlayerUid)
+                               .UpdateAsync(new { request_state = status });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while updating the friend request status from sendPlayerUid: {SendPlayerUid} to receivePlayerUid: {ReceivePlayerUid}", sendPlayerUid, receivePlayerUid);
+            throw;
+        }
+    }
+
+    public async Task AddFriend(long playerUid, long friendPlayerUid, string friendPlayerNickname)
+    {
+        try
+        {
+            await _queryFactory.Query("friend").InsertAsync(new
+            {
+                player_uid = playerUid,
+                friend_player_uid = friendPlayerUid,
+                friend_player_nickname = friendPlayerNickname,
+                create_dt = DateTime.Now
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while adding a friend for playerUid: {PlayerUid} with friendPlayerUid: {FriendPlayerUid}", playerUid, friendPlayerUid);
+            throw;
         }
     }
 }
