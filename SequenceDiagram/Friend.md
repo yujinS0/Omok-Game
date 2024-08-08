@@ -18,11 +18,7 @@ sequenceDiagram
 	Player ->> Game Server : 친구 목록 가져오는 요청 (/friend/get-list)
 	Game Server ->> GameDB : 친구 목록 가져오기
 	GameDB -->> Game Server : 
-	alt PlayerUid 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : 친구 목록 응답
-	end
+	Game Server -->> Player : 친구 목록 응답
 
 ```
 
@@ -40,11 +36,7 @@ sequenceDiagram
 	Player ->> Game Server : 친구 신청 목록 가져오는 요청 (/friend/get-request-list)
 	Game Server ->> GameDB : 친구 신청 목록 가져오기
 	GameDB -->> Game Server : 
-	alt PlayerUid 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : 친구 신청 목록 응답
-	end
+	Game Server -->> Player : 친구 신청 목록 응답
 
 ```
 
