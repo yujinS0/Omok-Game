@@ -98,6 +98,7 @@ CREATE TABLE attendance (
 CREATE TABLE friend (
     player_uid BIGINT NOT NULL COMMENT '플레이어 UID',
     friend_player_uid BIGINT NOT NULL COMMENT '친구 UID',
+    friend_player_nickname VARCHAR(27) NOT NULL COMMENT '친구 닉네임',
     create_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
     PRIMARY KEY (player_uid, friend_player_uid)
 );
@@ -110,7 +111,9 @@ CREATE TABLE friend (
 CREATE TABLE friend_request (
     send_player_uid BIGINT NOT NULL COMMENT '발송 플레이어 UID',
     receive_player_uid BIGINT NOT NULL COMMENT '수령 플레이어 UID',
-    request_state TINYINT NOT NULL DEFAULT 0 COMMENT '요청 상태(0:대기, 1:수락, 2:거절)',
+    send_player_nickname VARCHAR(27) NOT NULL COMMENT '발송 플레이어 닉네임',
+    receive_player_nickname VARCHAR(27) NOT NULL COMMENT '수령 플레이어 닉네임',
+    request_state TINYINT NOT NULL DEFAULT 0 COMMENT '요청 상태(0:대기, 1:수락)',
     create_dt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
     PRIMARY KEY (send_player_uid, receive_player_uid)
 );
