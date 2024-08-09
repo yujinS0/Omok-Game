@@ -31,6 +31,7 @@ builder.Services.AddScoped<IPlayerInfoService, PlayerInfoService>();
 builder.Services.AddScoped<IItemService, ItemService>();
 builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
 
 builder.Services.AddHttpClient();
 

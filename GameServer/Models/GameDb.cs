@@ -29,3 +29,21 @@ public class MailBoxList
         ReceiveYns = new List<int>();
     }
 }
+
+public class Friend
+{
+    public long PlayerUid { get; set; }
+    public long FriendPlayerUid { get; set; }
+    public string FriendNickName { get; set; }
+    public DateTime CreateDt { get; set; }
+}
+
+public class FriendRequest
+{
+    public long SendPlayerUid { get; set; }
+    public long ReceivePlayerUid { get; set; }
+    public string SendPlayerNickname { get; set; }
+    public string ReceivePlayerNickname { get; set; }
+    public int RequestState { get; set; }
+    public DateTime CreateDt { get; set; }
+}

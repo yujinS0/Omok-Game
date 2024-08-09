@@ -12,7 +12,9 @@ public interface IGameDb : IDisposable
     Task<bool> UpdateGameResult(string winnerId, string loserId, int WinExp, int LoseExp);
     Task<bool> UpdateNickName(string playerId, string newNickName);
     Task<PlayerBasicInfo> GetplayerBasicInfo(string playerId);
+
     Task<long> GetPlayerUidByPlayerId(string playerId);
+    Task<string> GetPlayerNicknameByPlayerUid(long playerUid);
 
 
     Task<List<PlayerItem>> GetPlayerItems(long playerUid, int page, int pageSize);
@@ -34,4 +36,12 @@ public interface IGameDb : IDisposable
 
 
     Task<bool> ExecuteTransaction(Func<MySqlTransaction, Task<bool>> operation);
+
+
+    Task<List<Friend>> GetFriendList(long playerUid);
+    Task<List<FriendRequest>> GetFriendRequestList(long playerUid);
+    Task<FriendRequest> GetFriendRequest(long sendPlayerUid, long receivePlayerUid);
+    Task AddFriendRequest(long sendPlayerUid, long receivePlayerUid, string sendPlayerNickname, string receivePlayerNickname);
+    Task UpdateFriendRequestStatus(long sendPlayerUid, long receivePlayerUid, int status);
+    Task AddFriend(long playerUid, long friendPlayerUid, string friendPlayerNickname);
 }

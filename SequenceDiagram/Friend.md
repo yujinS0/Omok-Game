@@ -18,11 +18,7 @@ sequenceDiagram
 	Player ->> Game Server : 친구 목록 가져오는 요청 (/friend/get-list)
 	Game Server ->> GameDB : 친구 목록 가져오기
 	GameDB -->> Game Server : 
-	alt PlayerUid 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : 친구 목록 응답
-	end
+	Game Server -->> Player : 친구 목록 응답
 
 ```
 
@@ -40,11 +36,7 @@ sequenceDiagram
 	Player ->> Game Server : 친구 신청 목록 가져오는 요청 (/friend/get-request-list)
 	Game Server ->> GameDB : 친구 신청 목록 가져오기
 	GameDB -->> Game Server : 
-	alt PlayerUid 존재 X
-		Game Server -->> Player : 오류 응답
-	else 존재 O
-		Game Server -->> Player : 친구 신청 목록 응답
-	end
+	Game Server -->> Player : 친구 신청 목록 응답
 
 ```
 
@@ -78,7 +70,7 @@ sequenceDiagram
 			GameDB -->> Game Server :  
 			Game Server -->> Player : 친구 신청 성공 응답
 		else 상대가 보낸(순서가 바뀐) 요청 존재 O
-			Game Server -->> Player : 상대가 보낸 친구 신청 대기중 응답
+			Game Server -->> Player : 상대가 보낸 친구 신청 대기중 오류 응답
 		end
 	
 	end
@@ -112,12 +104,9 @@ sequenceDiagram
 
 			Game Server ->> GameDB : friend 테이블에 추가 (2번)
 			GameDB -->> Game Server :  
-				
-				alt 이미 존재 O
-					 Game Server -->> Player : 오류(이미 친구 관계) 응답
-				else 이미 존재 X
-					Game Server -->> Player : 친구 신청 수락 완료 응답
-				end
+			
+			Game Server -->> Player : 친구 신청 수락 완료 응답
+
 		else 신청 상태 == 1 (수락)
 			Game Server -->> Player : 이미 수락한 신청 응답
 		end

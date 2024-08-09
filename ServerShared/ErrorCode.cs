@@ -66,11 +66,12 @@ public enum ErrorCode : UInt16
     UpdateStartGameDataFailException = 2050,
 
     // Friend 2100
-    FriendSendReqFailUserNotExist = 2101,
-    FriendSendReqFailInsert = 2102,
-    FriendSendReqFailException = 2103,
-    FriendSendReqFailAlreadyExist = 2104,
-    SendFriendReqFailSameUid = 2105,
+    ReqFriendFailPlayerNotExist = 2101,
+    FriendRequestAlreadyPending = 2102,
+    ReverseFriendRequestPending = 2103,
+    AlreadyFriends = 2104,
+    FriendRequestNotFound = 2105,
+
     FriendGetListFailOrderby = 2106,
     FriendGetListFailException = 2107,
     FriendGetRequestListFailException = 2108,
