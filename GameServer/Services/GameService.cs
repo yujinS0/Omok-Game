@@ -48,6 +48,7 @@ public class GameService : IGameService
 
         //TODO: (08.08) 게임이 끝난 경우라면 GameRoomId 으로 만들어지는 두명의 플레이의 키를 저장한 데이터도 게임이 끝났을 때의 UpdateGameData에서 사용하는 expire 시간과 동일한 시간내에서 삭제되도록 해야합니다.
         // 이렇게 해야 게임이 끝났는데도 계속 데이터를 요청하는 어뷰징을 막을 수 있습니다
+        //=> 수정 완료했습니다. RedisExpireTime에서 GameData와 InGamePlayerInfo를 동일하게 설정했습니다.
         var (result, winner) = await CheckForWinner(omokGameData);
         if (result != ErrorCode.None)
         {
