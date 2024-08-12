@@ -34,7 +34,7 @@ public class GameService : IGameService
 
         //TODO: (08.08) 아래에서 예외가 발생할 일이 있을까요? 이미 레포지트에서 예외처리는 다 하고 있을테니
         //  다른 코드에도 이런 것이 보이는데 불필요하게 에외문을 사용하지는 마세요
-        //=> 진행중 다른 부분 코드 확인중
+        //=> [진행중] 다른 부분 코드 확인중입니다.
 
         //=> 바로 아래부분은 수정 완료했습니다.
         omokGameData.SetStone(playerId, x, y);
@@ -60,6 +60,7 @@ public class GameService : IGameService
     private async Task<(ErrorCode, OmokGameEngine, string)> ValidatePlayerTurn(string playerId)
     {
         //TODO: (08.08) 코드 가독성을 위해 아래 코드들을 함수로 분리하도록 하시죠
+        //=> 수정 완료했습니다.
 
         //TODO: (08.08) var gameRoomId = await _memoryDb.GetGameRoomId(playerId);와 중복코드 아닌가요?
         //=> 맞습니다 수정 완료했습니다.
@@ -72,35 +73,47 @@ public class GameService : IGameService
         }
 
 
-        byte[] rawData = await _memoryDb.GetGameData(gameRoomId);
+        var omokGameData = await GetGameDataByGameRoomId(gameRoomId);
 
-        if (rawData == null)
+        if (omokGameData == null)
         {
-            _logger.LogError("Failed to retrieve game data for RoomId: {RoomId}", gameRoomId);
             return (ErrorCode.GameRoomNotFound, null, null);
         }
 
 
-        var omokGameData = new OmokGameEngine();
-        omokGameData.Decoding(rawData);
+        var gameEndError = CheckIfGameEnded(omokGameData, playerId);
+        if (gameEndError != ErrorCode.None)
+        {
+            return (gameEndError, null, null);
+        }
 
-        // 게임이 끝난 상태인지 체크
+
+        var (result, isMyTurn) = await TurnChecking(playerId);
+        if (result != ErrorCode.None)
+        {
+            return (result, null, null);
+        }
+        else
+        {
+            if (isMyTurn == false)
+            {
+                _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", playerId);
+                return (ErrorCode.NotYourTurn, null, null);
+            }
+        }
+
+        return (ErrorCode.None, omokGameData, gameRoomId);
+    }
+
+    private ErrorCode CheckIfGameEnded(OmokGameEngine omokGameData, string playerId)
+    {
         OmokStone winnerStone = omokGameData.GetWinnerStone();
         if (winnerStone != OmokStone.None)
         {
             _logger.LogError("Game End. PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.GameAlreadyEnd, null, null);
+            return ErrorCode.GameAlreadyEnd;
         }
-
-
-        string currentTurnPlayerId = omokGameData.GetCurrentTurnPlayerId();
-        if (playerId != currentTurnPlayerId)
-        {
-            _logger.LogError("It is not the player's turn. PlayerId: {PlayerId}", playerId);
-            return (ErrorCode.NotYourTurn, null, null);
-        }
-        
-        return (ErrorCode.None, omokGameData, gameRoomId);
+        return ErrorCode.None;
     }
 
     private async Task<(ErrorCode, Winner)> CheckForWinner(OmokGameEngine omokGameData)
@@ -175,10 +188,12 @@ public class GameService : IGameService
 
         if (playerId == currentTurnPlayerId)
         {
+            _logger.LogInformation("It is your turn ! {PlayerId}", playerId);
             return (ErrorCode.None, true);
         }
         else
         {
+            _logger.LogWarning("It is not the player's turn. PlayerId: {PlayerId}", playerId);
             return (ErrorCode.None, false);
         }
     }
@@ -202,15 +217,10 @@ public class GameService : IGameService
         return (ErrorCode.None, rawData);
     }
 
-    private async Task<OmokGameEngine> GetGameData(string playerId)
-    {
-        var gameRoomId = await _memoryDb.GetGameRoomId(playerId);
-        if (gameRoomId == null)
-        {
-            return null;
-        }
 
-        var rawData = await _memoryDb.GetGameData(gameRoomId);
+    private async Task<OmokGameEngine> GetGameDataByGameRoomId(string gameRoomId)
+    {
+        byte[] rawData = await _memoryDb.GetGameData(gameRoomId);
         if (rawData == null)
         {
             return null;
@@ -218,19 +228,22 @@ public class GameService : IGameService
 
         var omokGameData = new OmokGameEngine();
         omokGameData.Decoding(rawData);
-
         return omokGameData;
     }
 
     private async Task<string> GetCurrentTurnPlayerId(string playerId)
     {
-        var omokGameData = await GetGameData(playerId);
+        string gameRoomId = await _memoryDb.GetGameRoomId(playerId);
+
+        var omokGameData = await GetGameDataByGameRoomId(gameRoomId);
         return omokGameData?.GetCurrentTurnPlayerId();
     }
 
     private async Task<OmokStone> GetCurrentTurnStone(string playerId)
     {
-        var omokGameData = await GetGameData(playerId);
+        string gameRoomId = await _memoryDb.GetGameRoomId(playerId);
+
+        var omokGameData = await GetGameDataByGameRoomId(gameRoomId);
         return omokGameData?.GetCurrentTurn() ?? OmokStone.None;
     }
 }
