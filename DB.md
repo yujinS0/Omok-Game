@@ -46,8 +46,8 @@ CREATE TABLE player_info (
 ```sql
 CREATE TABLE player_money (
   player_uid BIGINT NOT NULL PRIMARY KEY COMMENT '플레이어 UID',
-  game_money BIGINT,
-  diamond BIGINT
+  game_money BIGINT DEFAULT 0,
+  diamond BIGINT DEFAULT 0
 );
 ```
 
